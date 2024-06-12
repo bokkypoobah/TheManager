@@ -633,13 +633,13 @@ const dataModule = {
       //   await context.dispatch('collateRegistrations', parameter);
       // }
 
-      // if (options.tokens && !options.devThing) {
+      if (options.transfers && !options.devThing) {
         await context.dispatch('syncTokenEvents', parameter);
-      // }
+      }
 
-      // if (options.timestamps && !options.devThing) {
+      if (options.timestamps && !options.devThing) {
         await context.dispatch('syncTokenEventTimestamps', parameter);
-      // }
+      }
       // if (options.txData && !options.devThing) {
       //   await context.dispatch('syncTokenEventTxData', parameter);
       // }
@@ -657,7 +657,7 @@ const dataModule = {
       //   console.log("Dev Thing");
       // }
 
-      context.dispatch('saveData', ['addresses', 'registry' /*, 'blocks', 'txs', 'ensMap'*/]);
+      context.dispatch('saveData', ['addresses'/*, 'registry' , 'blocks', 'txs', 'ensMap'*/]);
       context.commit('setSyncSection', { section: null, total: null });
       context.commit('setSyncHalt', false);
       context.commit('forceRefresh');

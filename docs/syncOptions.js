@@ -4,6 +4,8 @@ const SyncOptions = {
       <b-modal ref="syncoptions" v-model="show" hide-footer body-bg-variant="light" size="sm">
         <template #modal-title>Sync Data</template>
 
+        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.transfers" @input="saveSettings" v-b-popover.hover="'ENS ERC-721 and ERC-1155 Transfer Events'" class="ml-2 mt-1">ENS Transfer Events</b-form-checkbox>
+
         <!-- <b-form-checkbox size="sm" switch :disabled="settings.devThing || chainId != 11155111" v-model="settings.stealthTransfers" @input="saveSettings" v-b-popover.hover="'ERC-5564: Stealth Addresses announcements'" class="ml-2 mt-1">Stealth Transfers</b-form-checkbox>
         <b-form-checkbox size="sm" switch :disabled="settings.devThing || chainId != 11155111" v-model="settings.stealthMetaAddressRegistry" @input="saveSettings" v-b-popover.hover="'ERC-6538: Stealth Meta-Address Registry entries'" class="ml-2 mt-1">Stealth Meta-Address Registry</b-form-checkbox>
         <b-form-checkbox v-if="false" size="sm" switch :disabled="true" v-model="settings.eth" @input="saveSettings" v-b-popover.hover="'Ether Balances'" class="ml-2 mt-1">TODO: Ether Balances</b-form-checkbox>
@@ -13,8 +15,8 @@ const SyncOptions = {
         <!-- <b-form-checkbox size="sm" switch :disabled="chainId != 1" v-model="settings.ens" @input="saveSettings" class="ml-2 mt-1">ENS Names on ETH Mainnet</b-form-checkbox>
         <b-form-checkbox v-if="false" size="sm" switch :disabled="true" v-model="settings.exchangeRates" @input="saveSettings" class="ml-2 mt-1">TODO: Exchange Rates</b-form-checkbox> -->
 
-        <!-- <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.timestamps" @input="saveSettings" v-b-popover.hover="'Timestamps'" class="ml-2 mt-1">Timestamps</b-form-checkbox>
-        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.txData" @input="saveSettings" v-b-popover.hover="'Transaction Data'" class="ml-2 mt-1">Transaction Data</b-form-checkbox> -->
+        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.timestamps" @input="saveSettings" v-b-popover.hover="'Timestamps'" class="ml-2 mt-1">Timestamps</b-form-checkbox>
+        <!-- <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.txData" @input="saveSettings" v-b-popover.hover="'Transaction Data'" class="ml-2 mt-1">Transaction Data</b-form-checkbox> -->
         <!-- <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.incrementalSync" @input="saveSettings" v-b-popover.hover="'Incremental sync or resync all events'" class="ml-2 mt-1">Incremental Sync</b-form-checkbox> -->
         <!-- <b-form-checkbox size="sm" switch v-model="settings.devThing" @input="saveSettings" v-b-popover.hover="'Do Some Dev Thing'" class="ml-2 mt-1">Dev Thing</b-form-checkbox> -->
 
@@ -27,17 +29,18 @@ const SyncOptions = {
   data: function () {
     return {
       settings: {
-        stealthTransfers: true,
-        stealthMetaAddressRegistry: true,
-        ethers: true,
-        tokens: true,
-        metadata: true,
-        ens: true,
-        exchangeRates: true,
+        transfers: true,
+        // stealthTransfers: true,
+        // stealthMetaAddressRegistry: true,
+        // ethers: true,
+        // tokens: true,
+        // metadata: true,
+        // ens: true,
+        // exchangeRates: true,
         // incrementalSync: true,
         timestamps: true,
-        txData: true,
-        devThing: false,
+        // txData: true,
+        // devThing: false,
         version: 0,
       },
     }
@@ -79,7 +82,8 @@ const SyncOptions = {
         // ens: this.settings.ens,
         // exchangeRates: this.settings.exchangeRates,
         // // incrementalSync: this.settings.incrementalSync,
-        // timestamps: this.settings.timestamps,
+        transfers: this.settings.transfers,
+        timestamps: this.settings.timestamps,
         // txData: this.settings.txData,
         // devThing: this.settings.devThing,
       });

@@ -221,10 +221,10 @@ const Addresses = {
             </div> -->
           </template>
           <template #cell(icons)="data">
-            <span v-if="data.item.account.substring(0, 3) == 'st:'">
+            <!-- <span v-if="data.item.account.substring(0, 3) == 'st:'">
               <b-button size="sm" @click="newTransfer(data.item.account);" variant="link" v-b-popover.hover="'New Stealth Transfer to ' + data.item.account" class="m-0 ml-2 p-0"><b-icon-caret-right shift-v="+1" font-scale="1.1"></b-icon-caret-right></b-button>
-            </span>
-            <b-button size="sm" :pressed.sync="data.item.mine" @click="toggleAddressField(data.item.account, 'mine')" variant="transparent" v-b-popover.hover="addressTypeInfo[data.item.type].name" class="m-0 ml-1 p-0"><b-icon :icon="data.item.mine ? 'star-fill' : 'star'" shift-v="+1" font-scale="0.95" variant="warning"></b-icon></b-button>
+            </span> -->
+            <b-button size="sm" :pressed.sync="data.item.mine" @click="toggleAddressField(data.item.account, 'mine')" variant="transparent" class="m-0 ml-1 p-0"><b-icon :icon="data.item.mine ? 'star-fill' : 'star'" shift-v="+1" font-scale="0.95" variant="warning"></b-icon></b-button>
             <b-button size="sm" :pressed.sync="data.item.favourite" @click="toggleAddressField(data.item.account, 'favourite')" variant="transparent" v-b-popover.hover="'Favourite?'" class="m-0 ml-1 p-0"><b-icon :icon="data.item.favourite ? 'heart-fill' : 'heart'" shift-v="+1" font-scale="0.95" variant="danger"></b-icon></b-button>
           </template>
           <template #cell(account)="data">
@@ -263,7 +263,7 @@ const Addresses = {
         selectedAccounts: {},
         currentPage: 1,
         pageSize: 10,
-        sortOption: 'typenameasc',
+        sortOption: 'nameaddressasc',
         version: 0,
       },
       defaultPhrase: "I want to login into my stealth wallet on Ethereum mainnet.",
@@ -299,8 +299,8 @@ const Addresses = {
         { value: 'notmine', text: 'Not My Accounts' },
       ],
       sortOptions: [
-        { value: 'typenameasc', text: '▲ Type, ▲ Name' },
-        { value: 'typenamedsc', text: '▼ Type, ▲ Name' },
+        // { value: 'typenameasc', text: '▲ Type, ▲ Name' },
+        // { value: 'typenamedsc', text: '▼ Type, ▲ Name' },
         { value: 'nameaddressasc', text: '▲ Name, ▲ Address' },
         { value: 'nameaddressdsc', text: '▼ Name, ▲ Address' },
         { value: 'addressasc', text: '▲ Address' },
@@ -345,6 +345,7 @@ const Addresses = {
       return Object.keys(this.addresses).length;
     },
     filteredAddresses() {
+      logInfo("Addresses", "filteredAddresses - this.addresses: " + JSON.stringify(this.addresses, null, 2));
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       const filterLower = this.settings.filter && this.settings.filter.toLowerCase() || null;
       for (const [account, accountData] of Object.entries(this.addresses)) {

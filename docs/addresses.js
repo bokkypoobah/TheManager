@@ -232,7 +232,7 @@ const Addresses = {
               {{ formatAddress(data.item.account) }}
             </div>
             <div v-else>
-              <b-link size="sm" :href="'https://sepolia.etherscan.io/address/' + data.item.account" variant="link" v-b-popover.hover="'View in explorer'" target="_blank">{{ formatAddress(data.item.account) }}</b-link>
+              <b-link size="sm" :href="'https://etherscan.io/address/' + data.item.account" variant="link" v-b-popover.hover="'View in explorer'" target="_blank">{{ formatAddress(data.item.account) }}</b-link>
             </div>
           </template>
           <template #cell(name)="data">

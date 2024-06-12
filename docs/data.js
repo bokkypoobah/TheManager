@@ -480,7 +480,7 @@ const dataModule = {
       const db0 = new Dexie(context.state.db.name);
       db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       for (let type of types) {
-        await db0.cache.put({ objectName: type, object: context.state[type] }).then (function() {
+        await db0.cache.put({ objectName: type, object: context.state[type] }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });
@@ -729,7 +729,7 @@ const dataModule = {
     //     }
     //     // console.log("records: " + JSON.stringify(records, null, 2));
     //     if (records.length) {
-    //       await db.announcements.bulkAdd(records).then (function(lastKey) {
+    //       await db.announcements.bulkAdd(records).then(function(lastKey) {
     //         console.log("syncStealthTransfers.bulkAdd lastKey: " + JSON.stringify(lastKey));
     //       }).catch(Dexie.BulkError, function(e) {
     //         console.log("syncStealthTransfers.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
@@ -835,7 +835,7 @@ const dataModule = {
     //       context.commit('setSyncCompleted', rows);
     //     }
     //     if (records.length > 0) {
-    //       await db.announcements.bulkPut(records).then (function() {
+    //       await db.announcements.bulkPut(records).then(function() {
     //       }).catch(function(error) {
     //         console.log("syncStealthTransfersData.bulkPut error: " + error);
     //       });
@@ -940,7 +940,7 @@ const dataModule = {
     //       writeRecords.push(item);
     //     }
     //     if (writeRecords.length > 0) {
-    //       await db.announcements.bulkPut(writeRecords).then (function() {
+    //       await db.announcements.bulkPut(writeRecords).then(function() {
     //       }).catch(function(error) {
     //         console.log("processData.bulkPut error: " + error);
     //       });
@@ -1028,7 +1028,7 @@ const dataModule = {
     //     }
     //     if (records.length) {
     //       // console.log("syncRegistrations.bulkAdd: " + JSON.stringify(records));
-    //       await db.registrations.bulkAdd(records).then (function(lastKey) {
+    //       await db.registrations.bulkAdd(records).then(function(lastKey) {
     //         console.log("syncRegistrations.bulkAdd lastKey: " + JSON.stringify(lastKey));
     //       }).catch(Dexie.BulkError, function(e) {
     //         console.log("syncRegistrations.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
@@ -1130,7 +1130,7 @@ const dataModule = {
     //     }
     //     if (records.length > 0) {
     //       // console.log("records: " + JSON.stringify(records, null, 2));
-    //       await db.registrations.bulkPut(records).then (function() {
+    //       await db.registrations.bulkPut(records).then(function() {
     //       }).catch(function(error) {
     //         console.log("syncRegistrationsData.bulkPut error: " + error);
     //       });
@@ -1297,7 +1297,8 @@ const dataModule = {
             // if (eventRecord && (!testAddresses || testAddresses.has(contract)) && eventRecord.eventType == "erc1155") {
             // if (eventRecord && contract == "0xB32979486938AA9694BFC898f35DBED459F44424") {
             // if (eventRecord && (contract == "0xB32979486938AA9694BFC898f35DBED459F44424" || contract == "0x286E531F363768Fed5E18b468f5B76a9FFc33af5")) {
-            if (eventRecord) {
+
+            if (eventRecord && (contract == ENS_ERC721_ADDRESS || contract == ENS_ERC1155_ADDRESS)) {
               records.push( {
                 chainId: parameter.chainId,
                 blockNumber: parseInt(log.blockNumber),
@@ -1312,7 +1313,7 @@ const dataModule = {
           }
         }
         if (records.length) {
-          await db.tokenEvents.bulkAdd(records).then (function(lastKey) {
+          await db.tokenEvents.bulkAdd(records).then(function(lastKey) {
             console.log("syncTokenEvents.bulkAdd lastKey: " + JSON.stringify(lastKey));
           }).catch(Dexie.BulkError, function(e) {
             console.log("syncTokenEvents.bulkAdd e: " + JSON.stringify(e.failures, null, 2));

@@ -1875,7 +1875,7 @@ const reportModule = {
       const db0 = new Dexie(db.name);
       db0.version(db.version).stores(db.schemaDefinition);
       for (let type of types) {
-        await db0.cache.put({ objectName: CHAIN_ID + '.' + type, object: context.state[type] }).then (function() {
+        await db0.cache.put({ objectName: CHAIN_ID + '.' + type, object: context.state[type] }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });

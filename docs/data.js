@@ -638,7 +638,7 @@ const dataModule = {
       // }
 
       // if (options.timestamps && !options.devThing) {
-      //   await context.dispatch('syncTokenEventTimestamps', parameter);
+        await context.dispatch('syncTokenEventTimestamps', parameter);
       // }
       // if (options.txData && !options.devThing) {
       //   await context.dispatch('syncTokenEventTxData', parameter);
@@ -1396,47 +1396,47 @@ const dataModule = {
       logInfo("dataModule", "actions.syncTokenEvents END");
     },
 
-    // async syncTokenEventTimestamps(context, parameter) {
-    //   logInfo("dataModule", "actions.syncTokenEventTimestamps: " + JSON.stringify(parameter));
-    //   const db = new Dexie(context.state.db.name);
-    //   db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //   let rows = 0;
-    //   let done = false;
-    //   const existingTimestamps = context.state.timestamps[parameter.chainId] || {};
-    //   const newBlocks = {};
-    //   do {
-    //     let data = await db.tokenEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-    //     logInfo("dataModule", "actions.syncTokenEventTimestamps - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-    //     for (const item of data) {
-    //       if (!(item.blockNumber in existingTimestamps) && !(item.blockNumber in newBlocks)) {
-    //         newBlocks[item.blockNumber] = true;
-    //       }
-    //     }
-    //     rows += data.length;
-    //     done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-    //   } while (!done);
-    //   const total = Object.keys(newBlocks).length;
-    //   logInfo("dataModule", "actions.syncTokenEventTimestamps - total: " + total);
-    //   context.commit('setSyncSection', { section: 'Token Event Timestamps', total });
-    //   let completed = 0;
-    //   for (let blockNumber of Object.keys(newBlocks)) {
-    //     const block = await provider.getBlock(parseInt(blockNumber));
-    //     context.commit('addTimestamp', {
-    //       chainId: parameter.chainId,
-    //       blockNumber,
-    //       timestamp: block.timestamp,
-    //     });
-    //     completed++;
-    //     context.commit('setSyncCompleted', completed);
-    //     if (context.state.sync.halt) {
-    //       break;
-    //     }
-    //   }
-    //   // console.log("context.state.timestamps: " + JSON.stringify(context.state.timestamps, null, 2));
-    //   await context.dispatch('saveData', ['timestamps']);
-    //   logInfo("dataModule", "actions.syncTokenEventTimestamps END");
-    // },
+    async syncTokenEventTimestamps(context, parameter) {
+      logInfo("dataModule", "actions.syncTokenEventTimestamps: " + JSON.stringify(parameter));
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      let rows = 0;
+      let done = false;
+      const existingTimestamps = context.state.timestamps[parameter.chainId] || {};
+      const newBlocks = {};
+      do {
+        let data = await db.tokenEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
+        logInfo("dataModule", "actions.syncTokenEventTimestamps - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
+        for (const item of data) {
+          if (!(item.blockNumber in existingTimestamps) && !(item.blockNumber in newBlocks)) {
+            newBlocks[item.blockNumber] = true;
+          }
+        }
+        rows += data.length;
+        done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
+      } while (!done);
+      const total = Object.keys(newBlocks).length;
+      logInfo("dataModule", "actions.syncTokenEventTimestamps - total: " + total);
+      context.commit('setSyncSection', { section: 'Token Event Timestamps', total });
+      let completed = 0;
+      for (let blockNumber of Object.keys(newBlocks)) {
+        const block = await provider.getBlock(parseInt(blockNumber));
+        context.commit('addTimestamp', {
+          chainId: parameter.chainId,
+          blockNumber,
+          timestamp: block.timestamp,
+        });
+        completed++;
+        context.commit('setSyncCompleted', completed);
+        if (context.state.sync.halt) {
+          break;
+        }
+      }
+      // console.log("context.state.timestamps: " + JSON.stringify(context.state.timestamps, null, 2));
+      await context.dispatch('saveData', ['timestamps']);
+      logInfo("dataModule", "actions.syncTokenEventTimestamps END");
+    },
 
     // async syncTokenEventTxData(context, parameter) {
     //   logInfo("dataModule", "actions.syncTokenEventTxData: " + JSON.stringify(parameter));

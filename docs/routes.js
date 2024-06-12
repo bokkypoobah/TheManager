@@ -10,10 +10,10 @@ const routes = [{
   //   path: '/account',
   //   component: Account,
   //   name: 'Account',
-  // }, {
-  //   path: '/nonFungibleTokens',
-  //   component: NonFungibleTokens,
-  //   name: 'NonFungibleTokens',
+  }, {
+    path: '/nonFungibleTokens',
+    component: NonFungibleTokens,
+    name: 'NonFungibleTokens',
   // }, {
   //   path: '/fungibleTokens',
   //   component: FungibleTokens,

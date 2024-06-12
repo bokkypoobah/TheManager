@@ -189,13 +189,7 @@ const Addresses = {
             <div v-if="totalAddresses == 0">
               <ul>
                 <li>
-                  Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button> above to either:
-                  <ul>
-                    <li>Add your attached web3 address</li>
-                    <li>Add an address</li>
-                    <li>Add a Stealth Meta-Address</li>
-                    <li>Generate a Stealth Meta-Address</li>
-                  </ul>
+                  Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button> above to add a new address
                 </li>
               </ul>
             </div>

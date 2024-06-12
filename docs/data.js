@@ -1627,21 +1627,14 @@ const dataModule = {
         }
       }
       // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
-      const processList = [];
+      let processList = [];
       for (const [contract, contractData] of Object.entries(tokensToProcess)) {
         const contractType = context.state.tokens[parameter.chainId][contract].type;
         for (const [tokenId, tokenData] of Object.entries(contractData)) {
           processList.push({ contract, tokenId });
-          // TODO
-          if (processList.length >= 3) {
-            break;
-          }
-        }
-        // TODO
-        if (processList.length >= 3) {
-          break;
         }
       }
+      processList = processList.slice(0, 3); // TODO
       // console.log("processList: " + JSON.stringify(processList, null, 2));
       const BATCHSIZE = 50;
       const DELAYINMILLIS = 2000;

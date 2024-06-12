@@ -11,7 +11,7 @@ const Welcome = {
               <b-card-text>
                 <h5>Welcome</h5>
 
-                Magical Internet Money is an lightweight serverless multi-chain implementation of <b-link href="https://eips.ethereum.org/EIPS/eip-5564" target="_blank">ERC-5564: Stealth Addresses</b-link> and <b-link href="https://eips.ethereum.org/EIPS/eip-6538" target="_blank">ERC-6538: Stealth Meta-Address Registry</b-link> (using <i>address</i> instead of <i>bytes</i>). Status: <b>WIP</b>
+                The Manager is an lightweight serverless dapp to manager your ENS names. Status: <b>WIP</b>
 
                 <br />
                 <br />
@@ -92,7 +92,7 @@ const Welcome = {
                 <h6>This Web3 Dapp</h6>
                 <ul>
                   <li>
-                    <b-link href="https://bokkypoobah.github.io/MagicalInternetMoney/" target="_blank">https://bokkypoobah.github.io/MagicalInternetMoney/</b-link>
+                    <b-link href="https://bokkypoobah.github.io/TheManager/" target="_blank">https://bokkypoobah.github.io/TheManager/</b-link>
                   </li>
                 </ul>
               </b-card-text>
@@ -101,7 +101,7 @@ const Welcome = {
                 <h6>Source Code</h6>
                 <ul>
                   <li>
-                    <b-link href="https://github.com/bokkypoobah/MagicalInternetMoney" target="_blank">https://github.com/bokkypoobah/MagicalInternetMoney</b-link>
+                    <b-link href="https://github.com/bokkypoobah/TheManager" target="_blank">https://github.com/bokkypoobah/TheManager</b-link>
                   </li>
                 </ul>
               </b-card-text>

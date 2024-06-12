@@ -1632,6 +1632,14 @@ const dataModule = {
         const contractType = context.state.tokens[parameter.chainId][contract].type;
         for (const [tokenId, tokenData] of Object.entries(contractData)) {
           processList.push({ contract, tokenId });
+          // TODO
+          if (processList.length >= 3) {
+            break;
+          }
+        }
+        // TODO
+        if (processList.length >= 3) {
+          break;
         }
       }
       // console.log("processList: " + JSON.stringify(processList, null, 2));
@@ -1641,6 +1649,29 @@ const dataModule = {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
         console.log("batch: " + JSON.stringify(batch, null, 2));
         let continuation = null;
+        do {
+          let url = "https://api.reservoir.tools/tokens/v7?";
+          let separator = "";
+          for (let j = 0; j < batch.length; j++) {
+            url = url + separator + "tokens=" + batch[j].contract + "%3A" + batch[j].tokenId;
+            separator = "&";
+          }
+          url = url + (continuation != null ? "&continuation=" + continuation : '');
+          url = url + "&limit=50&includeTopBid=true&includeAttributes=true&includeQuantity=true&includeLastSale=true";
+          console.log(url);
+          const data = await fetch(url).then(response => response.json());
+          // state.progress.completed = parseInt(state.progress.completed) + data.tokens.length;
+          // // continuation = data.continuation;
+          console.log(JSON.stringify(data, null, 2));
+          for (token of data.tokens) {
+            console.log(JSON.stringify(token, null, 2));
+          //   prices[price.token.tokenId] = {
+          //     floorAskPrice: price.market && price.market.floorAsk && price.market.floorAsk.price && price.market.floorAsk.price.amount && price.market.floorAsk.price.amount.decimal || null,
+          //     source: price.market && price.market.floorAsk && price.market.floorAsk.source && price.market.floorAsk.source.name || null,
+          //   };
+          }
+          await delay(DELAYINMILLIS);
+        } while (continuation != null /*&& !state.halt && !state.sync.error */);
       }
 
     },

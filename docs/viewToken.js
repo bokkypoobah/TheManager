@@ -26,13 +26,13 @@ const ViewToken = {
           </b-input-group>
         </b-form-group>
 
-        <b-form-group label="Collection Symbol:" label-for="token-collectionsymbol" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+        <!-- <b-form-group label="Collection Symbol:" label-for="token-collectionsymbol" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-form-input size="sm" plaintext id="token-collectionsymbol" :value="collectionSymbol" class="px-2 w-100"></b-form-input>
-        </b-form-group>
+        </b-form-group> -->
 
-        <b-form-group label="Collection Name:" label-for="token-collectionname" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+        <!-- <b-form-group label="Collection Name:" label-for="token-collectionname" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-form-input size="sm" plaintext id="token-collectionname" :value="collectionName" class="px-2 w-100"></b-form-input>
-        </b-form-group>
+        </b-form-group> -->
 
         <b-form-group label="Name:" label-for="token-name" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-form-input size="sm" plaintext id="token-name" :value="name" class="px-2 w-100"></b-form-input>

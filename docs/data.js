@@ -593,15 +593,16 @@ const dataModule = {
     },
     async refreshTokenMetadata(context, token) {
       console.log("actions.refreshTokenMetadata - token: " + JSON.stringify(token));
-      const url = "https://api.reservoir.tools/tokens/v5?tokens=" + token.contract + ":" + token.tokenId;
+      let url = "https://api.reservoir.tools/tokens/v7?tokens=" + token.contract + ":" + token.tokenId;
+      url = url + "&limit=100&includeAttributes=true&includeLastSale=true&includeTopBid=true";
       console.log(url);
       const data = await fetch(url).then(response => response.json());
       if (data.tokens) {
-        for (let record of data.tokens) {
-          context.commit('updateAccountToken', record.token);
+        for (let token of data.tokens) {
+          context.commit('addTokenMetadata', token);
         }
       }
-      await context.dispatch('saveData', ['accounts']);
+      await context.dispatch('saveData', ['tokenMetadata']);
     },
     async setSyncHalt(context, halt) {
       context.commit('setSyncHalt', halt);

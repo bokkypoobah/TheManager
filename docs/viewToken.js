@@ -283,7 +283,6 @@ const ViewToken = {
     },
 
     async refreshTokenMetadata() {
-
       const imageUrlToBase64 = async url => {
         const response = await fetch(url /*, { mode: 'cors' }*/);
         const blob = await response.blob();
@@ -297,43 +296,76 @@ const ViewToken = {
           }
         });
       };
+      logInfo("ViewToken", "refreshTokenMetadata(): " + this.contract + ":" + this.tokenId);
 
-      logInfo("ViewToken", "refreshTokenMetadata()");
+      const options = {
+        method: 'POST',
+        // mode: 'no-cors', // cors, no-cors, *cors, same-origin
+        headers: { accept: '*/*', 'content-type': 'application/json', 'x-api-key': 'demo-api-key' },
+        body: JSON.stringify({
+          liquidityOnly: false,
+          overrideCoolDown: false,
+          tokens: [
+            this.contract + ':' + this.tokenId,
+          ],
+        })
+      };
+      console.log("options: " + JSON.stringify(options, null, 2));
 
-      const url = "https://api.reservoir.tools/tokens/v7?tokens=" + this.contract + "%3A" + this.tokenId + "&includeAttributes=true";
-      console.log("url: " + url);
-      const data = await fetch(url).then(response => response.json());
-      // console.log("data: " + JSON.stringify(data, null, 2));
-      if (data.tokens.length > 0) {
-        const tokenData = data.tokens[0].token;
-        // console.log("tokenData: " + JSON.stringify(tokenData, null, 2));
-        // const base64 = await imageUrlToBase64(tokenData.image);
-        const attributes = tokenData.attributes.map(e => ({ trait_type: e.key, value: e.value }));
-        attributes.sort((a, b) => {
-          return ('' + a.trait_type).localeCompare(b.trait_type);
-        });
-        const address = ethers.utils.getAddress(tokenData.contract);
-        let expiry = undefined;
-        if (address == ENS_ERC721_ADDRESS) {
-          const expiryRecord = attributes.filter(e => e.trait_type == "Expiration Date");
-          console.log("expiryRecord: " + JSON.stringify(expiryRecord, null, 2));
-          expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
-        }
-        const metadata = {
-          chainId: tokenData.chainId,
-          contract: this.contract,
-          tokenId: tokenData.tokenId,
-          expiry,
-          name: tokenData.name,
-          description: tokenData.description,
-          image: tokenData.image,
-          attributes,
-          // image: base64,
-        };
-        console.log("metadata: " + JSON.stringify(metadata, null, 2));
-        store.dispatch('data/addTokenMetadata', metadata);
-        store.dispatch('data/saveData', ['tokenMetadata']);
-      }
+      // fetch('https://api.reservoir.tools/tokens/refresh/v2', options)
+      //   .then(response => response.json())
+      //   .then(response => console.log(response))
+      //   .catch(err => console.error(err));
+      // // console.log("results: " + JSON.stringify(results));
+      //
+      // this.$bvToast.toast("Please retry after 5 minutes if required", {
+      //   title: 'Metadata Refresh Requested',
+      //   autoHideDelay: 5000,
+      //   appendToast: true,
+      // });
+
+      const t = this;
+      setTimeout(function() {
+        store.dispatch('data/refreshTokenMetadata', { contract: t.contract, tokenId: t.tokenId });
+      }, 5000);
+
+      // // alert("Request sent and will data will be auto-refreshed in 5 seconds. Manually refresh the locally cached token metadata if required")
+
+
+      // const url = "https://api.reservoir.tools/tokens/v7?tokens=" + this.contract + "%3A" + this.tokenId + "&includeAttributes=true";
+      // console.log("url: " + url);
+      // const data = await fetch(url).then(response => response.json());
+      // // console.log("data: " + JSON.stringify(data, null, 2));
+      // if (data.tokens.length > 0) {
+      //   const tokenData = data.tokens[0].token;
+      //   console.log("tokenData: " + JSON.stringify(tokenData, null, 2));
+      //   // const base64 = await imageUrlToBase64(tokenData.image);
+      //   // const attributes = tokenData.attributes.map(e => ({ trait_type: e.key, value: e.value }));
+      //   // attributes.sort((a, b) => {
+      //   //   return ('' + a.trait_type).localeCompare(b.trait_type);
+      //   // });
+      //   // const address = ethers.utils.getAddress(tokenData.contract);
+      //   // let expiry = undefined;
+      //   // if (address == ENS_ERC721_ADDRESS) {
+      //   //   const expiryRecord = attributes.filter(e => e.trait_type == "Expiration Date");
+      //   //   console.log("expiryRecord: " + JSON.stringify(expiryRecord, null, 2));
+      //   //   expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
+      //   // }
+      //   // const metadata = {
+      //   //   chainId: tokenData.chainId,
+      //   //   contract: this.contract,
+      //   //   tokenId: tokenData.tokenId,
+      //   //   expiry,
+      //   //   name: tokenData.name,
+      //   //   description: tokenData.description,
+      //   //   image: tokenData.image,
+      //   //   attributes,
+      //   //   // image: base64,
+      //   // };
+      //   // console.log("metadata: " + JSON.stringify(metadata, null, 2));
+      //   // store.dispatch('data/addTokenMetadata', metadata);
+      //   // store.dispatch('data/saveData', ['tokenMetadata']);
+      // }
     },
 
     async deleteAddress(account) {

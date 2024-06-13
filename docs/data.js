@@ -381,6 +381,12 @@ const dataModule = {
         const priceAmount = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.native || null;
         const priceAmountUSD = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.usd || null;
 
+        const topBidCurrency = market.topBid.price && market.topBid.price.currency && market.topBid.price.currency.symbol || null;
+        const topBidAmount = market.topBid.price && market.topBid.price.amount && market.topBid.price.amount.native || null;
+        const topBidAmountUSD = market.topBid.price && market.topBid.price.amount && market.topBid.price.amount.usd || null;
+        const topBidNetAmount = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.native || null;
+        const topBidNetAmountUSD = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.usd || null;
+
         Vue.set(state.tokenMetadata[token.chainId][contract], token.tokenId, {
           name: token.name,
           description: token.description,
@@ -401,6 +407,13 @@ const dataModule = {
             amount: priceAmount,
             amountUSD: priceAmountUSD,
           },
+          topBid: {
+            currency: topBidCurrency,
+            amount: topBidAmount,
+            amountUSD: topBidAmountUSD,
+            netAmount: topBidNetAmount,
+            netAmountUSD: topBidNetAmountUSD,
+          },
           attributes: [
             { trait_type: "Character Set", value: characterSet },
             { trait_type: "Length", value: length },
@@ -411,7 +424,7 @@ const dataModule = {
           ],
         });
       }
-      // console.log("state.tokenMetadata: " + JSON.stringify(state.tokenMetadata, null, 2));
+      // console.log("state.tokenMetadata[chainId][contract][tokenId]: " + JSON.stringify(state.tokenMetadata[token.chainId][contract][token.tokenId], null, 2));
     },
     addStealthTransfer(state, info) {
       // logInfo("dataModule", "mutations.addStealthTransfer: " + JSON.stringify(info, null, 2));
@@ -1684,7 +1697,7 @@ const dataModule = {
       }
       // processList = processList.slice(0, 1); // TODO
       // console.log("processList: " + JSON.stringify(processList, null, 2));
-      const BATCHSIZE = 25;
+      const BATCHSIZE = 50;
       const DELAYINMILLIS = 2000;
       let completed = 0;
       context.commit('setSyncSection', { section: 'Token Contract Metadata', total: processList.length });
@@ -1701,7 +1714,7 @@ const dataModule = {
             separator = "&";
           }
           url = url + (continuation != null ? "&continuation=" + continuation : '');
-          url = url + "&limit=50&includeAttributes=true&includeLastSale=true";
+          url = url + "&limit=100&includeAttributes=true&includeLastSale=true&includeTopBid=true";
           console.log(url);
           const data = await fetch(url).then(response => response.json());
           continuation = data.continuation;

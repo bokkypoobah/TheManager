@@ -312,17 +312,17 @@ const ViewToken = {
       };
       console.log("options: " + JSON.stringify(options, null, 2));
 
-      // fetch('https://api.reservoir.tools/tokens/refresh/v2', options)
-      //   .then(response => response.json())
-      //   .then(response => console.log(response))
-      //   .catch(err => console.error(err));
-      // // console.log("results: " + JSON.stringify(results));
-      //
-      // this.$bvToast.toast("Please retry after 5 minutes if required", {
-      //   title: 'Metadata Refresh Requested',
-      //   autoHideDelay: 5000,
-      //   appendToast: true,
-      // });
+      fetch('https://api.reservoir.tools/tokens/refresh/v2', options)
+        .then(response => response.json())
+        .then(response => console.log(response))
+        .catch(err => console.error(err));
+      // console.log("results: " + JSON.stringify(results));
+
+      this.$bvToast.toast("Please retry after 5 minutes if required", {
+        title: 'Metadata Refresh Requested',
+        autoHideDelay: 5000,
+        appendToast: true,
+      });
 
       const t = this;
       setTimeout(function() {

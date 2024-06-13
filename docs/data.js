@@ -334,97 +334,100 @@ const dataModule = {
         });
       }
     },
-    addTokenMetadata(state, info) {
-      logInfo("dataModule", "mutations.addTokenMetadata info: " + JSON.stringify(info, null, 2));
-      const token = info.token;
-      const market = info.market;
-      if (!(token.chainId in state.tokenMetadata)) {
-        Vue.set(state.tokenMetadata, token.chainId, {});
+    addTokenMetadata(state, tokenData) {
+      logInfo("dataModule", "mutations.addTokenMetadata tokenData: " + JSON.stringify(tokenData, null, 2));
+      // const token = info.token;
+      // const market = info.market;
+      if (!(tokenData.chainId in state.tokenMetadata)) {
+        Vue.set(state.tokenMetadata, tokenData.chainId, {});
       }
-      const contract = ethers.utils.getAddress(token.contract);
-      if (!(contract in state.tokenMetadata[token.chainId])) {
-        Vue.set(state.tokenMetadata[token.chainId], contract, {});
+      const contract = ethers.utils.getAddress(tokenData.contract);
+      if (!(contract in state.tokenMetadata[tokenData.chainId])) {
+        Vue.set(state.tokenMetadata[tokenData.chainId], contract, {});
       }
-      if (!(token.tokenId in state.tokenMetadata[token.chainId][contract])) {
-        const createdRecord = token.attributes.filter(e => e.key == "Created Date");
-        const created = createdRecord.length == 1 && createdRecord[0].value || null;
-        let registration;
-        if (contract == ENS_ERC721_ADDRESS) {
-          const registrationRecord = token.attributes.filter(e => e.key == "Registration Date");
-          registration = registrationRecord.length == 1 && registrationRecord[0].value || null;
-        } else {
-          registration = created;
-        }
-        let expiry;
-        if (contract == ENS_ERC721_ADDRESS) {
-          const expiryRecord = token.attributes.filter(e => e.key == "Expiration Date");
-          expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
-        } else {
-          const expiryRecord = token.attributes.filter(e => e.key == "Namewrapper Expiry Date");
-          expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
-        }
-        const characterSetRecord = token.attributes.filter(e => e.key == "Character Set");
-        const characterSet = characterSetRecord.length == 1 && characterSetRecord[0].value || null;
-        const lengthRecord = token.attributes.filter(e => e.key == "Length");
-        const length = lengthRecord.length == 1 && lengthRecord[0].value && parseInt(lengthRecord[0].value) || null;
-        const segmentLengthRecord = token.attributes.filter(e => e.key == "Segment Length");
-        const segmentLength = segmentLengthRecord.length == 1 && segmentLengthRecord[0].value && parseInt(segmentLengthRecord[0].value) || null;
+      // if (!(token.tokenId in state.tokenMetadata[token.chainId][contract])) {
+        // const createdRecord = token.attributes.filter(e => e.key == "Created Date");
+        // const created = createdRecord.length == 1 && createdRecord[0].value || null;
+        // let registration;
+        // if (contract == ENS_ERC721_ADDRESS) {
+        //   const registrationRecord = token.attributes.filter(e => e.key == "Registration Date");
+        //   registration = registrationRecord.length == 1 && registrationRecord[0].value || null;
+        // } else {
+        //   registration = created;
+        // }
+        // let expiry;
+        // if (contract == ENS_ERC721_ADDRESS) {
+        //   const expiryRecord = token.attributes.filter(e => e.key == "Expiration Date");
+        //   expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
+        // } else {
+        //   const expiryRecord = token.attributes.filter(e => e.key == "Namewrapper Expiry Date");
+        //   expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
+        // }
+        // const characterSetRecord = token.attributes.filter(e => e.key == "Character Set");
+        // const characterSet = characterSetRecord.length == 1 && characterSetRecord[0].value || null;
+        // const lengthRecord = token.attributes.filter(e => e.key == "Length");
+        // const length = lengthRecord.length == 1 && lengthRecord[0].value && parseInt(lengthRecord[0].value) || null;
+        // const segmentLengthRecord = token.attributes.filter(e => e.key == "Segment Length");
+        // const segmentLength = segmentLengthRecord.length == 1 && segmentLengthRecord[0].value && parseInt(segmentLengthRecord[0].value) || null;
+        //
+        // const lastSaleTimestamp = token.lastSale && token.lastSale.timestamp || null;
+        // const lastSaleCurrency = token.lastSale && token.lastSale.price && token.lastSale.price.currency && token.lastSale.price.currency.symbol || null;
+        // const lastSaleAmount = token.lastSale && token.lastSale.price && token.lastSale.price.amount && token.lastSale.price.amount.native || null;
+        // const lastSaleAmountUSD = token.lastSale && token.lastSale.price && token.lastSale.price.amount && token.lastSale.price.amount.usd || null;
+        //
+        // const priceExpiry = market.floorAsk && market.floorAsk.validUntil && parseInt(market.floorAsk.validUntil) || null;
+        // const priceSource = market.floorAsk && market.floorAsk.source && market.floorAsk.source.domain || null;
+        // const priceCurrency = market.floorAsk && market.floorAsk.price && market.floorAsk.price.currency && market.floorAsk.price.currency.symbol || null;
+        // const priceAmount = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.native || null;
+        // const priceAmountUSD = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.usd || null;
+        //
+        // const topBidCurrency = market.topBid.price && market.topBid.price.currency && market.topBid.price.currency.symbol || null;
+        // const topBidAmount = market.topBid.price && market.topBid.price.amount && market.topBid.price.amount.native || null;
+        // const topBidAmountUSD = market.topBid.price && market.topBid.price.amount && market.topBid.price.amount.usd || null;
+        // const topBidNetAmount = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.native || null;
+        // const topBidNetAmountUSD = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.usd || null;
 
-        const lastSaleTimestamp = token.lastSale && token.lastSale.timestamp || null;
-        const lastSaleCurrency = token.lastSale && token.lastSale.price && token.lastSale.price.currency && token.lastSale.price.currency.symbol || null;
-        const lastSaleAmount = token.lastSale && token.lastSale.price && token.lastSale.price.amount && token.lastSale.price.amount.native || null;
-        const lastSaleAmountUSD = token.lastSale && token.lastSale.price && token.lastSale.price.amount && token.lastSale.price.amount.usd || null;
-
-        const priceExpiry = market.floorAsk && market.floorAsk.validUntil && parseInt(market.floorAsk.validUntil) || null;
-        const priceSource = market.floorAsk && market.floorAsk.source && market.floorAsk.source.domain || null;
-        const priceCurrency = market.floorAsk && market.floorAsk.price && market.floorAsk.price.currency && market.floorAsk.price.currency.symbol || null;
-        const priceAmount = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.native || null;
-        const priceAmountUSD = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.usd || null;
-
-        const topBidCurrency = market.topBid.price && market.topBid.price.currency && market.topBid.price.currency.symbol || null;
-        const topBidAmount = market.topBid.price && market.topBid.price.amount && market.topBid.price.amount.native || null;
-        const topBidAmountUSD = market.topBid.price && market.topBid.price.amount && market.topBid.price.amount.usd || null;
-        const topBidNetAmount = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.native || null;
-        const topBidNetAmountUSD = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.usd || null;
-
-        Vue.set(state.tokenMetadata[token.chainId][contract], token.tokenId, {
-          name: token.name,
-          description: token.description,
-          image: token.image,
-          created,
-          registration,
-          expiry,
-          lastSale: {
-            timestamp: lastSaleTimestamp,
-            currency: lastSaleCurrency,
-            amount: lastSaleAmount,
-            amountUSD: lastSaleAmountUSD,
-          },
-          price: {
-            source: priceSource,
-            expiry: priceExpiry,
-            currency: priceCurrency,
-            amount: priceAmount,
-            amountUSD: priceAmountUSD,
-          },
-          topBid: {
-            currency: topBidCurrency,
-            amount: topBidAmount,
-            amountUSD: topBidAmountUSD,
-            netAmount: topBidNetAmount,
-            netAmountUSD: topBidNetAmountUSD,
-          },
+        Vue.set(state.tokenMetadata[tokenData.chainId][tokenData.contract], tokenData.tokenId, {
+          name: tokenData.name,
+          description: tokenData.description,
+          image: tokenData.image,
+          created: tokenData.created,
+          registration: tokenData.registration,
+          expiry: tokenData.expiry,
+          lastSale: tokenData.lastSale,
+          price: tokenData.price,
+          topBid: tokenData.topBid,
+        //   lastSale: {
+        //     timestamp: lastSaleTimestamp,
+        //     currency: lastSaleCurrency,
+        //     amount: lastSaleAmount,
+        //     amountUSD: lastSaleAmountUSD,
+        //   },
+        //   price: {
+        //     source: priceSource,
+        //     expiry: priceExpiry,
+        //     currency: priceCurrency,
+        //     amount: priceAmount,
+        //     amountUSD: priceAmountUSD,
+        //   },
+        //   topBid: {
+        //     currency: topBidCurrency,
+        //     amount: topBidAmount,
+        //     amountUSD: topBidAmountUSD,
+        //     netAmount: topBidNetAmount,
+        //     netAmountUSD: topBidNetAmountUSD,
+        //   },
           attributes: [
-            { trait_type: "Character Set", value: characterSet },
-            { trait_type: "Length", value: length },
-            { trait_type: "Segment Length", value: segmentLength },
-            { trait_type: "Created", value: created },
-            { trait_type: "Registration", value: registration },
-            { trait_type: "Expiry", value: expiry },
+            { trait_type: "Character Set", value: tokenData.characterSet },
+            { trait_type: "Length", value: tokenData.length },
+            { trait_type: "Segment Length", value: tokenData.segmentLength },
+            { trait_type: "Created", value: tokenData.created },
+            { trait_type: "Registration", value: tokenData.registration },
+            { trait_type: "Expiry", value: tokenData.expiry },
           ],
         });
-      }
-      // console.log("state.tokenMetadata[chainId][contract][tokenId]: " + JSON.stringify(state.tokenMetadata[token.chainId][contract][token.tokenId], null, 2));
+      // }
+      console.log("state.tokenMetadata[chainId][contract][tokenId]: " + JSON.stringify(state.tokenMetadata[tokenData.chainId][tokenData.contract][tokenData.tokenId], null, 2));
     },
     addStealthTransfer(state, info) {
       // logInfo("dataModule", "mutations.addStealthTransfer: " + JSON.stringify(info, null, 2));
@@ -1668,6 +1671,75 @@ const dataModule = {
     },
 
     async syncTokenMetadata(context, parameter) {
+
+      function parseReservoirTokenData(info) {
+        const result = {};
+        const token = info.token;
+        const market = info.market;
+        result.chainId = token.chainId;
+        result.contract = ethers.utils.getAddress(token.contract);
+        result.tokenId = token.tokenId;
+        result.name = token.name;
+        result.description = token.description;
+        result.image = token.image;
+        const createdRecord = token.attributes.filter(e => e.key == "Created Date");
+        result.created = createdRecord.length == 1 && createdRecord[0].value && parseInt(createdRecord[0].value) || null;
+        if (result.contract == ENS_ERC721_ADDRESS) {
+          const registrationRecord = token.attributes.filter(e => e.key == "Registration Date");
+          result.registration = registrationRecord.length == 1 && registrationRecord[0].value && parseInt(registrationRecord[0].value) || null;
+        } else {
+          result.registration = result.created;
+        }
+        if (result.contract == ENS_ERC721_ADDRESS) {
+          const expiryRecord = token.attributes.filter(e => e.key == "Expiration Date");
+          result.expiry = expiryRecord.length == 1 && expiryRecord[0].value && parseInt(expiryRecord[0].value) || null;
+        } else {
+          const expiryRecord = token.attributes.filter(e => e.key == "Namewrapper Expiry Date");
+          result.expiry = expiryRecord.length == 1 && expiryRecord[0].value && parseInt(expiryRecord[0].value) || null;
+        }
+        const characterSetRecord = token.attributes.filter(e => e.key == "Character Set");
+        result.characterSet = characterSetRecord.length == 1 && characterSetRecord[0].value || null;
+        const lengthRecord = token.attributes.filter(e => e.key == "Length");
+        result.length = lengthRecord.length == 1 && lengthRecord[0].value && parseInt(lengthRecord[0].value) || null;
+        const segmentLengthRecord = token.attributes.filter(e => e.key == "Segment Length");
+        result.segmentLength = segmentLengthRecord.length == 1 && segmentLengthRecord[0].value && parseInt(segmentLengthRecord[0].value) || null;
+        const lastSaleTimestamp = token.lastSale && token.lastSale.timestamp || null;
+        const lastSaleCurrency = token.lastSale && token.lastSale.price && token.lastSale.price.currency && token.lastSale.price.currency.symbol || null;
+        const lastSaleAmount = token.lastSale && token.lastSale.price && token.lastSale.price.amount && token.lastSale.price.amount.native || null;
+        const lastSaleAmountUSD = token.lastSale && token.lastSale.price && token.lastSale.price.amount && token.lastSale.price.amount.usd || null;
+        result.lastSale = {
+          timestamp: lastSaleTimestamp,
+          currency: lastSaleCurrency,
+          amount: lastSaleAmount,
+          amountUSD: lastSaleAmountUSD,
+        };
+        const priceExpiry = market.floorAsk && market.floorAsk.validUntil && parseInt(market.floorAsk.validUntil) || null;
+        const priceSource = market.floorAsk && market.floorAsk.source && market.floorAsk.source.domain || null;
+        const priceCurrency = market.floorAsk && market.floorAsk.price && market.floorAsk.price.currency && market.floorAsk.price.currency.symbol || null;
+        const priceAmount = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.native || null;
+        const priceAmountUSD = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.usd || null;
+        result.price = {
+          source: priceSource,
+          expiry: priceExpiry,
+          currency: priceCurrency,
+          amount: priceAmount,
+          amountUSD: priceAmountUSD,
+        };
+        const topBidCurrency = market.topBid.price && market.topBid.price.currency && market.topBid.price.currency.symbol || null;
+        const topBidAmount = market.topBid.price && market.topBid.price.amount && market.topBid.price.amount.native || null;
+        const topBidAmountUSD = market.topBid.price && market.topBid.price.amount && market.topBid.price.amount.usd || null;
+        const topBidNetAmount = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.native || null;
+        const topBidNetAmountUSD = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.usd || null;
+        result.topBid = {
+          currency: topBidCurrency,
+          amount: topBidAmount,
+          amountUSD: topBidAmountUSD,
+          netAmount: topBidNetAmount,
+          netAmountUSD: topBidNetAmountUSD,
+        };
+        return result;
+      }
+
       logInfo("dataModule", "actions.syncTokenMetadata: " + JSON.stringify(parameter));
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
@@ -1696,8 +1768,8 @@ const dataModule = {
           processList.push({ contract, tokenId });
         }
       }
-      // processList = processList.slice(0, 1); // TODO
-      // console.log("processList: " + JSON.stringify(processList, null, 2));
+      // processList = processList.slice(1, 3); // TODO
+      console.log("processList: " + JSON.stringify(processList, null, 2));
       const BATCHSIZE = 50;
       const DELAYINMILLIS = 2000;
       let completed = 0;
@@ -1722,7 +1794,28 @@ const dataModule = {
           // console.log(JSON.stringify(data, null, 2));
           for (token of data.tokens) {
             // console.log(JSON.stringify(token, null, 2));
-            context.commit('addTokenMetadata', token);
+            const tokenData = parseReservoirTokenData(token);
+            if (/*tokenData.created == null ||*/ tokenData.expiry == null) {
+              const url = "https://metadata.ens.domains/mainnet/" + tokenData.contract + "/" + tokenData.tokenId;
+              const metadataFileContent = await fetch(url, {mode: 'cors'}).then(response => response.json());
+              const createdRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Created Date");
+              console.log("createdRecord: " + JSON.stringify(createdRecord));
+              if (createdRecord.length == 1 && createdRecord[0].value) {
+                tokenData.created = parseInt(createdRecord[0].value) / 1000;
+              }
+              const registrationRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Registration Date");
+              console.log("registrationRecord: " + JSON.stringify(registrationRecord));
+              if (registrationRecord.length == 1 && registrationRecord[0].value) {
+                tokenData.registration = parseInt(registrationRecord[0].value) / 1000;
+              }
+              const expiryRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Expiration Date");
+              console.log("expiryRecord: " + JSON.stringify(expiryRecord));
+              if (expiryRecord.length == 1 && expiryRecord[0].value) {
+                tokenData.expiry = parseInt(expiryRecord[0].value) / 1000;
+              }
+            }
+            console.log("tokenData: " + JSON.stringify(tokenData, null, 2));
+            context.commit('addTokenMetadata', tokenData);
             completed++;
           }
           context.commit('setSyncCompleted', completed);

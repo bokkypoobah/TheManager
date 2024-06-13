@@ -336,46 +336,55 @@ const dataModule = {
     },
     addTokenMetadata(state, info) {
       logInfo("dataModule", "mutations.addTokenMetadata info: " + JSON.stringify(info, null, 2));
-      if (!(info.chainId in state.tokenMetadata)) {
-        Vue.set(state.tokenMetadata, info.chainId, {});
+      const token = info.token;
+      const market = info.market;
+      if (!(token.chainId in state.tokenMetadata)) {
+        Vue.set(state.tokenMetadata, token.chainId, {});
       }
-      const contract = ethers.utils.getAddress(info.contract);
-      if (!(contract in state.tokenMetadata[info.chainId])) {
-        Vue.set(state.tokenMetadata[info.chainId], contract, {});
+      const contract = ethers.utils.getAddress(token.contract);
+      if (!(contract in state.tokenMetadata[token.chainId])) {
+        Vue.set(state.tokenMetadata[token.chainId], contract, {});
       }
-      if (!(info.tokenId in state.tokenMetadata[info.chainId][contract])) {
-
-        const createdRecord = info.attributes.filter(e => e.key == "Created Date");
+      if (!(token.tokenId in state.tokenMetadata[token.chainId][contract])) {
+        const createdRecord = token.attributes.filter(e => e.key == "Created Date");
         const created = createdRecord.length == 1 && createdRecord[0].value || null;
         let registration;
         if (contract == ENS_ERC721_ADDRESS) {
-          const registrationRecord = info.attributes.filter(e => e.key == "Registration Date");
+          const registrationRecord = token.attributes.filter(e => e.key == "Registration Date");
           registration = registrationRecord.length == 1 && registrationRecord[0].value || null;
         } else {
           registration = created;
         }
         let expiry;
         if (contract == ENS_ERC721_ADDRESS) {
-          const expiryRecord = info.attributes.filter(e => e.key == "Expiration Date");
+          const expiryRecord = token.attributes.filter(e => e.key == "Expiration Date");
           expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
         } else {
-          const expiryRecord = info.attributes.filter(e => e.key == "Namewrapper Expiry Date");
+          const expiryRecord = token.attributes.filter(e => e.key == "Namewrapper Expiry Date");
           expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
         }
-        const characterSetRecord = info.attributes.filter(e => e.key == "Character Set");
+        const characterSetRecord = token.attributes.filter(e => e.key == "Character Set");
         const characterSet = characterSetRecord.length == 1 && characterSetRecord[0].value || null;
-        const lengthRecord = info.attributes.filter(e => e.key == "Length");
+        const lengthRecord = token.attributes.filter(e => e.key == "Length");
         const length = lengthRecord.length == 1 && lengthRecord[0].value && parseInt(lengthRecord[0].value) || null;
-        const segmentLengthRecord = info.attributes.filter(e => e.key == "Segment Length");
+        const segmentLengthRecord = token.attributes.filter(e => e.key == "Segment Length");
         const segmentLength = segmentLengthRecord.length == 1 && segmentLengthRecord[0].value && parseInt(segmentLengthRecord[0].value) || null;
-        const lastSaleTimestamp = info.lastSale && info.lastSale.timestamp || null;
-        const lastSaleCurrency = info.lastSale && info.lastSale.price && info.lastSale.price.currency && info.lastSale.price.currency.symbol || null;
-        const lastSaleAmount = info.lastSale && info.lastSale.price && info.lastSale.price.amount && info.lastSale.price.amount.native || null;
-        const lastSaleAmountUSD = info.lastSale && info.lastSale.price && info.lastSale.price.amount && info.lastSale.price.amount.usd || null;
-        Vue.set(state.tokenMetadata[info.chainId][contract], info.tokenId, {
-          name: info.name,
-          description: info.description,
-          image: info.image,
+
+        const lastSaleTimestamp = token.lastSale && token.lastSale.timestamp || null;
+        const lastSaleCurrency = token.lastSale && token.lastSale.price && token.lastSale.price.currency && token.lastSale.price.currency.symbol || null;
+        const lastSaleAmount = token.lastSale && token.lastSale.price && token.lastSale.price.amount && token.lastSale.price.amount.native || null;
+        const lastSaleAmountUSD = token.lastSale && token.lastSale.price && token.lastSale.price.amount && token.lastSale.price.amount.usd || null;
+
+        const priceExpiry = market.floorAsk && market.floorAsk.validUntil && parseInt(market.floorAsk.validUntil) || null;
+        const priceSource = market.floorAsk && market.floorAsk.source && market.floorAsk.source.domain || null;
+        const priceCurrency = market.floorAsk && market.floorAsk.price && market.floorAsk.price.currency && market.floorAsk.price.currency.symbol || null;
+        const priceAmount = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.native || null;
+        const priceAmountUSD = market.floorAsk && market.floorAsk.price && market.floorAsk.price.amount && market.floorAsk.price.amount.usd || null;
+
+        Vue.set(state.tokenMetadata[token.chainId][contract], token.tokenId, {
+          name: token.name,
+          description: token.description,
+          image: token.image,
           created,
           registration,
           expiry,
@@ -384,6 +393,13 @@ const dataModule = {
             currency: lastSaleCurrency,
             amount: lastSaleAmount,
             amountUSD: lastSaleAmountUSD,
+          },
+          price: {
+            source: priceSource,
+            expiry: priceExpiry,
+            currency: priceCurrency,
+            amount: priceAmount,
+            amountUSD: priceAmountUSD,
           },
           attributes: [
             { trait_type: "Character Set", value: characterSet },
@@ -395,7 +411,7 @@ const dataModule = {
           ],
         });
       }
-      console.log("state.tokenMetadata: " + JSON.stringify(state.tokenMetadata, null, 2));
+      // console.log("state.tokenMetadata: " + JSON.stringify(state.tokenMetadata, null, 2));
     },
     addStealthTransfer(state, info) {
       // logInfo("dataModule", "mutations.addStealthTransfer: " + JSON.stringify(info, null, 2));
@@ -1648,13 +1664,13 @@ const dataModule = {
       for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
         if (contractData.type == "erc721" || contractData.type == "erc1155") {
           for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
+            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
               if (!(contract in tokensToProcess)) {
                 tokensToProcess[contract] = {};
               }
               tokensToProcess[contract][tokenId] = tokenData;
               totalTokensToProcess++;
-            }
+            // }
           }
         }
       }
@@ -1692,7 +1708,7 @@ const dataModule = {
           // console.log(JSON.stringify(data, null, 2));
           for (token of data.tokens) {
             // console.log(JSON.stringify(token, null, 2));
-            context.commit('addTokenMetadata', token.token);
+            context.commit('addTokenMetadata', token);
             completed++;
           }
           context.commit('setSyncCompleted', completed);

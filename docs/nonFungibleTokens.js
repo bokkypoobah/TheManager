@@ -59,9 +59,9 @@ const NonFungibleTokens = {
               </b-dropdown-item>
             </b-dropdown>
           </div>
-          <div class="mt-0 pr-1">
+          <!-- <div class="mt-0 pr-1">
             <b-button size="sm" :pressed.sync="settings.favouritesOnly" @click="saveSettings" variant="transparent" v-b-popover.hover.bottom="'Show favourited only'"><b-icon :icon="settings.favouritesOnly ? 'heart-fill' : 'heart'" font-scale="0.95" variant="danger"></b-icon></b-button>
-          </div>
+          </div> -->
           <div class="mt-0 flex-grow-1">
           </div>
           <!-- <div class="mt-0 pr-1">
@@ -148,7 +148,7 @@ const NonFungibleTokens = {
               <font size="-1">{{ data.item.collectionName }}</font>
             </b-link>
             <b-button size="sm" @click="toggleTokenJunk(data.item);" variant="transparent"><b-icon :icon="data.item.junk ? 'trash-fill' : 'trash'" font-scale="0.9" :variant="data.item.junk ? 'info' : 'secondary'"></b-icon></b-button>
-            <b-button size="sm" :disabled="data.item.junk" @click="toggleTokenContractFavourite(data.item);" variant="transparent"><b-icon :icon="data.item.favourite & !data.item.junk ? 'heart-fill' : 'heart'" font-scale="0.9" :variant="data.item.junk ? 'dark' : 'danger'"></b-icon></b-button>
+            <!-- <b-button size="sm" :disabled="data.item.junk" @click="toggleTokenContractFavourite(data.item);" variant="transparent"><b-icon :icon="data.item.favourite & !data.item.junk ? 'heart-fill' : 'heart'" font-scale="0.9" :variant="data.item.junk ? 'dark' : 'danger'"></b-icon></b-button> -->
           </template>
 
           <template #cell(expiry)="data">
@@ -358,6 +358,9 @@ const NonFungibleTokens = {
     tokenMetadata() {
       return store.getters['data/tokenMetadata'];
     },
+    tokenInfo() {
+      return store.getters['data/tokenInfo'];
+    },
     tokenContracts() {
       return store.getters['data/tokenContracts'];
     },
@@ -390,6 +393,8 @@ const NonFungibleTokens = {
       return result;
     },
     filteredItems() {
+      // console.log("filteredItems - tokenInfo: " + JSON.stringify(this.tokenInfo, null, 2));
+
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       let regex = null;
       if (this.settings.filter != null && this.settings.filter.length > 0) {
@@ -419,19 +424,21 @@ const NonFungibleTokens = {
             // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData, null, 2));
             const metadata = this.tokenMetadata[this.chainId] && this.tokenMetadata[this.chainId][contract] && this.tokenMetadata[this.chainId][contract][tokenId] || {};
             // console.log("  metadata: " + JSON.stringify(metadata, null, 2));
+            const info = this.tokenInfo[this.chainId] && this.tokenInfo[this.chainId][contract] && this.tokenInfo[this.chainId][contract][tokenId] || {};
+            // console.log("  info: " + JSON.stringify(info, null, 2));
             // const metadata = this.contractMetadata[this.chainId] &&
             //   this.contractMetadata[this.chainId][contract] &&
             //   this.contractMetadata[this.chainId][contract][tokenId] ||
             //   {};
 
             let include = true;
-            // if (this.settings.junkFilter) {
-            //   if (this.settings.junkFilter == 'junk' && !data.junk) {
-            //     include = false;
-            //   } else if (this.settings.junkFilter == 'excludejunk' && data.junk) {
-            //     include = false;
-            //   }
-            // }
+            if (this.settings.junkFilter) {
+              if (this.settings.junkFilter == 'junk' && !info.junk) {
+                include = false;
+              } else if (this.settings.junkFilter == 'excludejunk' && info.junk) {
+                include = false;
+              }
+            }
             // if (include && this.settings.favouritesOnly && (!data.favourite || data.junk)) {
             //   include = false;
             // }
@@ -470,7 +477,7 @@ const NonFungibleTokens = {
                 results.push({
                   contract,
                   type: data.type,
-                  junk: data.junk,
+                  junk: info && info.junk || false,
                   favourite: data.favourite,
                   collectionSymbol: contractMetadata.symbol,
                   collectionName: contractMetadata.name,

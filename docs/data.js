@@ -546,7 +546,7 @@ const dataModule = {
       if (Object.keys(context.state.addresses).length == 0) {
         const db0 = new Dexie(context.state.db.name);
         db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-        for (let type of ['addresses', 'timestamps', 'txs', 'contractMetadata', 'tokenMetadata', 'tokens', 'registry', 'stealthTransfers', 'tokenContracts', 'tokenMetadata']) {
+        for (let type of ['addresses', 'timestamps', 'txs', 'contractMetadata', 'tokenMetadata', 'tokenInfo', 'tokens', 'registry', 'stealthTransfers', 'tokenContracts', 'tokenMetadata']) {
           const data = await db0.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             // logInfo("dataModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object));
@@ -586,8 +586,7 @@ const dataModule = {
     async toggleTokenJunk(context, token) {
       logInfo("dataModule", "actions.toggleTokenJunk - token: " + JSON.stringify(token));
       await context.commit('toggleTokenJunk', token);
-      // TODO
-      // await context.dispatch('saveData', ['tokenContracts']);
+      await context.dispatch('saveData', ['tokenInfo']);
     },
     async addTokenMetadata(context, info) {
       logInfo("dataModule", "actions.addTokenMetadata - info: " + JSON.stringify(info, null, 2));

@@ -445,7 +445,7 @@ const NonFungibleTokens = {
             if (include && regex) {
               const name = metadata.name || null;
               const description = metadata.description || null;
-              if (!(regex.test(tokenId) || regex.test(collectionName) || regex.test(name) || regex.test(description))) {
+              if (!(/*regex.test(tokenId) || regex.test(collectionName) ||*/ regex.test(name) /*|| regex.test(description)*/)) {
                 include = false;
               }
             }
@@ -514,7 +514,7 @@ const NonFungibleTokens = {
       return results;
     },
     pagedFilteredSortedItems() {
-      // logInfo("NonFungibleTokens", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
+      logInfo("NonFungibleTokens", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
       return this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
     },
 

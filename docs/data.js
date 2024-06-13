@@ -136,7 +136,8 @@ const dataModule = {
     collection: {}, // chainId -> contract => { id, symbol, name, image, slug, creator, tokenCount }
     tokens: {}, // chainId -> contract -> tokenId => owner or balances
     contractMetadata: {}, // chainId -> contract => metadata
-    tokenMetadata: {}, // chainId -> tokenContractAddress -> tokenId => metadata
+    tokenMetadata: {}, // chainId -> contract -> tokenId => metadata
+    tokenInfo: {}, // chainId -> contract -> tokenId => info
     timestamps: {}, // chainId -> blockNumber => timestamp
     txs: {}, // txHash => tx & txReceipt
 
@@ -176,6 +177,7 @@ const dataModule = {
     tokens: state => state.tokens,
     contractMetadata: state => state.contractMetadata,
     tokenMetadata: state => state.tokenMetadata,
+    tokenInfo: state => state.tokenInfo,
     timestamps: state => state.timestamps,
     txs: state => state.txs,
 
@@ -213,10 +215,24 @@ const dataModule = {
       Vue.set(state.tokenContracts[chainId][tokenContract.address], 'favourite', !state.tokenContracts[chainId][tokenContract.address].favourite);
       logInfo("dataModule", "mutations.toggleTokenContractFavourite - tokenContract: " + JSON.stringify(state.tokenContracts[chainId][tokenContract.address]));
     },
-    toggleTokenContractJunk(state, tokenContract) {
+    toggleTokenJunk(state, token) {
       const chainId = store.getters['connection/chainId'];
-      Vue.set(state.tokenContracts[chainId][tokenContract.address], 'junk', !state.tokenContracts[chainId][tokenContract.address].junk);
-      logInfo("dataModule", "mutations.toggleTokenContractJunk - tokenContract: " + JSON.stringify(state.tokenContracts[chainId][tokenContract.address]));
+      logInfo("dataModule", "mutations.toggleTokenJunk - token: " + JSON.stringify(token, null, 2));
+      if (!(chainId in state.tokenInfo)) {
+        Vue.set(state.tokenInfo, chainId, {});
+      }
+      const contract = ethers.utils.getAddress(token.contract);
+      if (!(contract in state.tokenInfo[chainId])) {
+        Vue.set(state.tokenInfo[chainId], contract, {});
+      }
+      if (!(token.tokenId in state.tokenInfo[chainId][contract])) {
+        Vue.set(state.tokenInfo[chainId][contract], token.tokenId, {
+          junk: false,
+          tags: [],
+        });
+      }
+      Vue.set(state.tokenInfo[chainId][contract][token.tokenId], 'junk', !state.tokenInfo[chainId][contract][token.tokenId].junk);
+      logInfo("dataModule", "mutations.toggleTokenJunk - state.tokenInfo: " + JSON.stringify(state.tokenInfo, null, 2));
     },
 
     addNewAddress(state, newAccount) {
@@ -567,10 +583,11 @@ const dataModule = {
       await context.commit('toggleTokenContractFavourite', tokenContract);
       await context.dispatch('saveData', ['tokenContracts']);
     },
-    async toggleTokenContractJunk(context, tokenContract) {
-      logInfo("dataModule", "actions.toggleTokenContractJunk - tokenContract: " + JSON.stringify(tokenContract));
-      await context.commit('toggleTokenContractJunk', tokenContract);
-      await context.dispatch('saveData', ['tokenContracts']);
+    async toggleTokenJunk(context, token) {
+      logInfo("dataModule", "actions.toggleTokenJunk - token: " + JSON.stringify(token));
+      await context.commit('toggleTokenJunk', token);
+      // TODO
+      // await context.dispatch('saveData', ['tokenContracts']);
     },
     async addTokenMetadata(context, info) {
       logInfo("dataModule", "actions.addTokenMetadata - info: " + JSON.stringify(info, null, 2));

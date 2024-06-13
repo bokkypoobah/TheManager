@@ -147,7 +147,7 @@ const NonFungibleTokens = {
             <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerTokenPrefix + data.item.contract + '#code'" target="_blank">
               <font size="-1">{{ data.item.collectionName }}</font>
             </b-link>
-            <b-button size="sm" @click="toggleTokenContractJunk(data.item);" variant="transparent"><b-icon :icon="data.item.junk ? 'trash-fill' : 'trash'" font-scale="0.9" :variant="data.item.junk ? 'info' : 'secondary'"></b-icon></b-button>
+            <b-button size="sm" @click="toggleTokenJunk(data.item);" variant="transparent"><b-icon :icon="data.item.junk ? 'trash-fill' : 'trash'" font-scale="0.9" :variant="data.item.junk ? 'info' : 'secondary'"></b-icon></b-button>
             <b-button size="sm" :disabled="data.item.junk" @click="toggleTokenContractFavourite(data.item);" variant="transparent"><b-icon :icon="data.item.favourite & !data.item.junk ? 'heart-fill' : 'heart'" font-scale="0.9" :variant="data.item.junk ? 'dark' : 'danger'"></b-icon></b-button>
           </template>
 
@@ -544,12 +544,12 @@ const NonFungibleTokens = {
       }
     },
 
-    toggleTokenContractJunk(item) {
-      logInfo("NonFungibleTokens", ".methods.toggleTokenContractJunk - item: " + JSON.stringify(item, null, 2));
-      store.dispatch('data/toggleTokenContractJunk', item);
+    toggleTokenJunk(token) {
+      logInfo("NonFungibleTokens", "methods.toggleTokenJunk - token: " + JSON.stringify(token, null, 2));
+      store.dispatch('data/toggleTokenJunk', token);
     },
     toggleTokenContractFavourite(item) {
-      logInfo("NonFungibleTokens", ".methods.toggleTokenContractFavourite - item: " + JSON.stringify(item, null, 2));
+      logInfo("NonFungibleTokens", "methods.toggleTokenContractFavourite - item: " + JSON.stringify(item, null, 2));
       store.dispatch('data/toggleTokenContractFavourite', item);
     },
     copyToClipboard(str) {

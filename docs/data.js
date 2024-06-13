@@ -156,8 +156,8 @@ const dataModule = {
       name: "themanagerdata080a",
       version: 1,
       schemaDefinition: {
-        announcements: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,stealthAddress',
-        registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
+        // announcements: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,stealthAddress',
+        // registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
         tokenEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
         // tokenEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,[eventType+confirmations]',
         cache: '&objectName',
@@ -335,35 +335,67 @@ const dataModule = {
       }
     },
     addTokenMetadata(state, info) {
-      // logInfo("dataModule", "mutations.addTokenMetadata info: " + JSON.stringify(info, null, 2));
+      logInfo("dataModule", "mutations.addTokenMetadata info: " + JSON.stringify(info, null, 2));
       if (!(info.chainId in state.tokenMetadata)) {
         Vue.set(state.tokenMetadata, info.chainId, {});
       }
-      if (!(info.contract in state.tokenMetadata[info.chainId])) {
-        Vue.set(state.tokenMetadata[info.chainId], info.contract, {});
+      const contract = ethers.utils.getAddress(info.contract);
+      if (!(contract in state.tokenMetadata[info.chainId])) {
+        Vue.set(state.tokenMetadata[info.chainId], contract, {});
       }
-      if (!(info.tokenId in state.tokenMetadata[info.chainId][info.contract])) {
-        if (info.contract == ENS_ERC721_ADDRESS || info.contract == ENS_ERC1155_ADDRESS) {
-          logInfo("dataModule", "mutations.addTokenMetadata ENS info: " + JSON.stringify(info, null, 2));
-          Vue.set(state.tokenMetadata[info.chainId][info.contract], info.tokenId, {
-            created: info.created || null,
-            registration: info.registration || null,
-            expiry: info.expiry,
-            name: info.name,
-            description: info.description,
-            image: info.image,
-            attributes: info.attributes,
-          });
+      if (!(info.tokenId in state.tokenMetadata[info.chainId][contract])) {
+
+        const createdRecord = info.attributes.filter(e => e.key == "Created Date");
+        const created = createdRecord.length == 1 && createdRecord[0].value || null;
+        let registration;
+        if (contract == ENS_ERC721_ADDRESS) {
+          const registrationRecord = info.attributes.filter(e => e.key == "Registration Date");
+          registration = registrationRecord.length == 1 && registrationRecord[0].value || null;
         } else {
-          logInfo("dataModule", "mutations.addTokenMetadata Non-ENS info: " + JSON.stringify(info, null, 2));
-          Vue.set(state.tokenMetadata[info.chainId][info.contract], info.tokenId, {
-            name: info.name,
-            description: info.description,
-            image: info.image,
-            attributes: info.attributes,
-          });
+          registration = created;
         }
+        let expiry;
+        if (contract == ENS_ERC721_ADDRESS) {
+          const expiryRecord = info.attributes.filter(e => e.key == "Expiration Date");
+          expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
+        } else {
+          const expiryRecord = info.attributes.filter(e => e.key == "Namewrapper Expiry Date");
+          expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
+        }
+        const characterSetRecord = info.attributes.filter(e => e.key == "Character Set");
+        const characterSet = characterSetRecord.length == 1 && characterSetRecord[0].value || null;
+        const lengthRecord = info.attributes.filter(e => e.key == "Length");
+        const length = lengthRecord.length == 1 && lengthRecord[0].value && parseInt(lengthRecord[0].value) || null;
+        const segmentLengthRecord = info.attributes.filter(e => e.key == "Segment Length");
+        const segmentLength = segmentLengthRecord.length == 1 && segmentLengthRecord[0].value && parseInt(segmentLengthRecord[0].value) || null;
+        const lastSaleTimestamp = info.lastSale && info.lastSale.timestamp || null;
+        const lastSaleCurrency = info.lastSale && info.lastSale.price && info.lastSale.price.currency && info.lastSale.price.currency.symbol || null;
+        const lastSaleAmount = info.lastSale && info.lastSale.price && info.lastSale.price.amount && info.lastSale.price.amount.native || null;
+        const lastSaleAmountUSD = info.lastSale && info.lastSale.price && info.lastSale.price.amount && info.lastSale.price.amount.usd || null;
+        Vue.set(state.tokenMetadata[info.chainId][contract], info.tokenId, {
+          name: info.name,
+          description: info.description,
+          image: info.image,
+          created,
+          registration,
+          expiry,
+          lastSale: {
+            timestamp: lastSaleTimestamp,
+            currency: lastSaleCurrency,
+            amount: lastSaleAmount,
+            amountUSD: lastSaleAmountUSD,
+          },
+          attributes: [
+            { trait_type: "Character Set", value: characterSet },
+            { trait_type: "Length", value: length },
+            { trait_type: "Segment Length", value: segmentLength },
+            { trait_type: "Created", value: created },
+            { trait_type: "Registration", value: registration },
+            { trait_type: "Expiry", value: expiry },
+          ],
+        });
       }
+      console.log("state.tokenMetadata: " + JSON.stringify(state.tokenMetadata, null, 2));
     },
     addStealthTransfer(state, info) {
       // logInfo("dataModule", "mutations.addStealthTransfer: " + JSON.stringify(info, null, 2));
@@ -1634,13 +1666,16 @@ const dataModule = {
           processList.push({ contract, tokenId });
         }
       }
-      processList = processList.slice(0, 3); // TODO
+      // processList = processList.slice(0, 1); // TODO
       // console.log("processList: " + JSON.stringify(processList, null, 2));
-      const BATCHSIZE = 50;
+      const BATCHSIZE = 25;
       const DELAYINMILLIS = 2000;
+      let completed = 0;
+      context.commit('setSyncSection', { section: 'Token Contract Metadata', total: processList.length });
+      context.commit('setSyncCompleted', completed);
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
-        console.log("batch: " + JSON.stringify(batch, null, 2));
+        // console.log("batch: " + JSON.stringify(batch, null, 2));
         let continuation = null;
         do {
           let url = "https://api.reservoir.tools/tokens/v7?";
@@ -1650,19 +1685,18 @@ const dataModule = {
             separator = "&";
           }
           url = url + (continuation != null ? "&continuation=" + continuation : '');
-          url = url + "&limit=50&includeTopBid=true&includeAttributes=true&includeQuantity=true&includeLastSale=true";
+          url = url + "&limit=50&includeAttributes=true&includeLastSale=true";
           console.log(url);
           const data = await fetch(url).then(response => response.json());
-          // state.progress.completed = parseInt(state.progress.completed) + data.tokens.length;
-          // // continuation = data.continuation;
-          console.log(JSON.stringify(data, null, 2));
+          continuation = data.continuation;
+          // console.log(JSON.stringify(data, null, 2));
           for (token of data.tokens) {
-            console.log(JSON.stringify(token, null, 2));
-          //   prices[price.token.tokenId] = {
-          //     floorAskPrice: price.market && price.market.floorAsk && price.market.floorAsk.price && price.market.floorAsk.price.amount && price.market.floorAsk.price.amount.decimal || null,
-          //     source: price.market && price.market.floorAsk && price.market.floorAsk.source && price.market.floorAsk.source.name || null,
-          //   };
+            // console.log(JSON.stringify(token, null, 2));
+            context.commit('addTokenMetadata', token.token);
+            completed++;
           }
+          context.commit('setSyncCompleted', completed);
+          await context.dispatch('saveData', ['tokenMetadata']);
           await delay(DELAYINMILLIS);
         } while (continuation != null /*&& !state.halt && !state.sync.error */);
       }

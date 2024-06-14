@@ -1285,6 +1285,26 @@ const dataModule = {
       // ERC-721 925.eth renewal 0x684d272ec79f907011b451daf5bb6d90b54ac56cac2e20c669c617bee778fd3d and ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
       // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
       processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081'].includes(e.tokenId));
+      // processList = processList.filter(e => e.contract === "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85");
+
+      // ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
+      // processList = processList.filter(e => ['27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
+      // processList = processList.filter(e => e.contract === "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401");
+
+      const ZEROES = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+      const ethPart = ethers.utils.solidityKeccak256(["string"], ["eth"]);
+      console.log("ethPart: " + ethPart); // 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0
+      const firstPart = ethers.utils.solidityKeccak256(["bytes"], [ZEROES + ethPart.substring(2,)]);
+      console.log("firstPart: " + firstPart); // 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae
+      const ensPart = ethers.utils.solidityKeccak256(["string"], ["ens"]);
+      console.log("ensPart: " + ensPart); // 0x5cee339e13375638553bdf5a6e36ba80fb9f6a4f0783680884d92b558aa471da
+      const secondPart = ethers.utils.solidityKeccak256(["bytes"], [firstPart + ensPart.substring(2,)]);
+      console.log("secondPart: " + secondPart); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
+      // const thirdPart = ethers.utils.solidityKeccak256(["bytes"], [secondPart + firstPart.substring(2,)]);
+      return;
+
+
       console.log("processList: " + JSON.stringify(processList, null, 2));
 
       const BATCHSIZE = 50;

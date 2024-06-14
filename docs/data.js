@@ -1322,10 +1322,15 @@ const dataModule = {
       // console.log("decimalNameHash: " + decimalNameHash); // 27727362303445643037535452095569739813950020376856883309402147522300287323280
 
       // ERC-721 925.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
+      // ERC-1155 925.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:90617972706753856606077416428092812770327579333964424572858812298074332597719
       const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
       console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
       const decimalLabelHash = ethers.BigNumber.from(labelhash);
       console.log("decimalLabelHash: " + decimalLabelHash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
+      const namehash = ethers.utils.namehash('925.eth');
+      console.log("namehash: " + namehash); // 0xc857f4794464c8a531d378463f789ad3caea99e27510bd74cafe33b776fc0dd7
+      const decimalNameHash = ethers.BigNumber.from(namehash);
+      console.log("decimalNameHash: " + decimalNameHash); // 90617972706753856606077416428092812770327579333964424572858812298074332597719
 
 
       // So namehash of portraits.eth points to the ERC-1155 wrapper tokenId

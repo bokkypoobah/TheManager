@@ -693,54 +693,26 @@ const dataModule = {
       }
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options };
-      // if (options.stealthTransfers && chainId == 11155111 && !options.devThing) {
-      //   await context.dispatch('syncStealthTransfers', parameter);
-      // }
-      // if (options.stealthTransfers && chainId == 11155111 && !options.devThing) {
-      //   await context.dispatch('syncStealthTransfersData', parameter);
-      // }
-      // if (options.stealthTransfers && chainId == 11155111 && !options.devThing) {
-      //   await context.dispatch('identifyMyStealthTransfers', parameter);
-      // }
-      // if (options.stealthTransfers && chainId == 11155111 && !options.devThing) {
-      //   await context.dispatch('collateStealthTransfers', parameter);
-      // }
-
-      // if (options.stealthMetaAddressRegistry && chainId == 11155111 && !options.devThing) {
-      //   await context.dispatch('syncRegistrations', parameter);
-      // }
-      // if (options.stealthMetaAddressRegistry && chainId == 11155111 && !options.devThing) {
-      //   await context.dispatch('syncRegistrationsData', parameter);
-      // }
-      // if (options.stealthMetaAddressRegistry && chainId == 11155111 && !options.devThing) {
-      //   await context.dispatch('collateRegistrations', parameter);
-      // }
 
       if (options.transfers && !options.devThing) {
         await context.dispatch('syncTransferEvents', parameter);
       }
-
       if (options.transfers && !options.devThing) {
         await context.dispatch('collateTokens', parameter);
       }
-
       if (options.renewals && !options.devThing) {
         await context.dispatch('syncRenewalEvents', parameter);
       }
-
       if (options.timestamps && !options.devThing) {
         await context.dispatch('syncTokenEventTimestamps', parameter);
       }
-      // if (options.txData && !options.devThing) {
-      //   await context.dispatch('syncTokenEventTxData', parameter);
-      // }
       if (options.metadata && !options.devThing) {
         await context.dispatch('syncTokenMetadata', parameter);
       }
+
       // if (options.ens || options.devThing) {
       //   await context.dispatch('syncENS', parameter);
       // }
-
       // if (options.devThing) {
       //   console.log("Dev Thing");
       // }
@@ -750,520 +722,6 @@ const dataModule = {
       context.commit('setSyncHalt', false);
       context.commit('forceRefresh');
     },
-
-    // async syncStealthTransfers(context, parameter) {
-    //   logInfo("dataModule", "actions.syncStealthTransfers BEGIN: " + JSON.stringify(parameter));
-    //   const db = new Dexie(context.state.db.name);
-    //   db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //
-    //   // Announcement (index_topic_1 uint256 schemeId, index_topic_2 address stealthAddress, index_topic_3 address caller, bytes ephemeralPublicKey, bytes metadata)
-    //   // 0x5f0eab8057630ba7676c49b4f21a0231414e79474595be8e4c432fbf6bf0f4e7
-    //   const erc5564AnnouncerContract = new ethers.Contract(ERC5564ANNOUNCERADDRESS_SEPOLIA, ERC5564ANNOUNCERABI_SEPOLIA, provider);
-    //   let total = 0;
-    //   let t = this;
-    //   async function processLogs(fromBlock, toBlock, selectedContracts, selectedCallers, logs) {
-    //     total = parseInt(total) + logs.length;
-    //     context.commit('setSyncCompleted', total);
-    //     logInfo("dataModule", "actions.syncStealthTransfers.processLogs: " + fromBlock + " - " + toBlock + " " + logs.length + " " + total);
-    //     const records = [];
-    //     for (const log of logs) {
-    //       if (!log.removed) {
-    //         // console.log(JSON.stringify(log, null, 2));
-    //         const logData = erc5564AnnouncerContract.interface.parseLog(log);
-    //         const contract = log.address;
-    //         const caller = logData.args[2];
-    //         // if (selectedContracts.includes(contract) && selectedCallers.includes(caller)) {
-    //           // console.log("  Processing: " + JSON.stringify(log));
-    //           const transfers = [];
-    //           const metadata = logData.args[4];
-    //           let segment = 0;
-    //           let part;
-    //           do {
-    //             part = metadata.substring(4 + (segment * 112), 4 + (segment * 112) + 112);
-    //             if (part.length == 112) {
-    //               const functionSelector = "0x" + part.substring(0, 8);
-    //               const token = ethers.utils.getAddress("0x" + part.substring(8, 48));
-    //               const valueString = part.substring(48, 112)
-    //               const value = ethers.BigNumber.from("0x" + valueString).toString();
-    //               transfers.push({ functionSelector, token, value });
-    //             }
-    //             segment++;
-    //           } while (part.length == 112);
-    //           records.push( {
-    //             chainId: parameter.chainId,
-    //             blockNumber: parseInt(log.blockNumber),
-    //             logIndex: parseInt(log.logIndex),
-    //             txIndex: parseInt(log.transactionIndex),
-    //             txHash: log.transactionHash,
-    //             contract,
-    //             name: logData.name,
-    //             schemeId: parseInt(logData.args[0]),
-    //             stealthAddress: logData.args[1],
-    //             linkedTo: {
-    //               stealthMetaAddress: null,
-    //               address: null,
-    //             },
-    //             caller,
-    //             ephemeralPublicKey: logData.args[3],
-    //             metadata: logData.args[4],
-    //             transfers,
-    //             confirmations: parameter.blockNumber - log.blockNumber,
-    //             timestamp: null,
-    //             tx: null,
-    //           });
-    //         // }
-    //       }
-    //     }
-    //     // console.log("records: " + JSON.stringify(records, null, 2));
-    //     if (records.length) {
-    //       await db.announcements.bulkAdd(records).then(function(lastKey) {
-    //         console.log("syncStealthTransfers.bulkAdd lastKey: " + JSON.stringify(lastKey));
-    //       }).catch(Dexie.BulkError, function(e) {
-    //         console.log("syncStealthTransfers.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
-    //       });
-    //     }
-    //   }
-    //   async function getLogs(fromBlock, toBlock, selectedContracts, selectedCallers, processLogs) {
-    //     logInfo("dataModule", "actions.syncStealthTransfers.getLogs: " + fromBlock + " - " + toBlock);
-    //     try {
-    //       const filter = {
-    //         // TODO: address: null,
-    //         address: ERC5564ANNOUNCERADDRESS_SEPOLIA,
-    //         fromBlock,
-    //         toBlock,
-    //         topics: [
-    //           '0x5f0eab8057630ba7676c49b4f21a0231414e79474595be8e4c432fbf6bf0f4e7',
-    //           null,
-    //           null
-    //         ]
-    //       };
-    //       const eventLogs = await provider.getLogs(filter);
-    //       await processLogs(fromBlock, toBlock, selectedContracts, selectedCallers, eventLogs);
-    //     } catch (e) {
-    //       const mid = parseInt((fromBlock + toBlock) / 2);
-    //       await getLogs(fromBlock, mid, selectedContracts, selectedCallers, processLogs);
-    //       await getLogs(parseInt(mid) + 1, toBlock, selectedContracts, selectedCallers, processLogs);
-    //     }
-    //   }
-    //   logInfo("dataModule", "actions.syncStealthTransfers BEGIN");
-    //   context.commit('setSyncSection', { section: 'Stealth Transfers', total: null });
-    //   const selectedContracts = [];
-    //   const selectedCallers = [];
-    //   // for (const [chainId, chainData] of Object.entries(this.contracts)) {
-    //   //   for (const [contract, contractData] of Object.entries(chainData)) {
-    //   //     if (contractData.type == "announcer" && contractData.read) {
-    //   //       selectedContracts.push(contract);
-    //   //     }
-    //   //     if (contractData.type == "caller" && contractData.read) {
-    //   //       selectedCallers.push(contract);
-    //   //     }
-    //   //   }
-    //   // }
-    //   // console.log("selectedCallers: " + JSON.stringify(selectedCallers, null, 2));
-    //   // if (selectedContracts.length > 0) {
-    //     const deleteCall = await db.announcements.where("confirmations").below(parameter.confirmations).delete();
-    //     const latest = await db.announcements.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-    //     const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-    //     await getLogs(startBlock, parameter.blockNumber, selectedContracts, selectedCallers, processLogs);
-    //   // }
-    //   logInfo("dataModule", "actions.syncStealthTransfers END");
-    // },
-
-    // async syncStealthTransfersData(context, parameter) {
-    //   logInfo("dataModule", "actions.syncStealthTransfersData: " + JSON.stringify(parameter));
-    //   const db = new Dexie(context.state.db.name);
-    //   db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //   let total = 0;
-    //   let done = false;
-    //   do {
-    //     let data = await db.announcements.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(total).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-    //     logInfo("dataModule", "actions.syncStealthTransfersData - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-    //     total = parseInt(total) + data.length;
-    //     done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-    //   } while (!done);
-    //   logInfo("dataModule", "actions.syncStealthTransfersData - total: " + total);
-    //   context.commit('setSyncSection', { section: 'Stealth Transfer Data', total });
-    //   let rows = 0;
-    //   do {
-    //     let data = await db.announcements.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-    //     logInfo("dataModule", "actions.syncStealthTransfersData - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-    //     const records = [];
-    //     for (const item of data) {
-    //       if (item.timestamp == null) {
-    //         const block = await provider.getBlock(item.blockNumber);
-    //         item.timestamp = block.timestamp;
-    //         const tx = await provider.getTransaction(item.txHash);
-    //         const txReceipt = await provider.getTransactionReceipt(item.txHash);
-    //         item.tx = {
-    //           type: tx.type,
-    //           blockHash: tx.blockHash,
-    //           from: tx.from,
-    //           gasPrice: ethers.BigNumber.from(tx.gasPrice).toString(),
-    //           gasLimit: ethers.BigNumber.from(tx.gasLimit).toString(),
-    //           to: tx.to,
-    //           value: ethers.BigNumber.from(tx.value).toString(),
-    //           nonce: tx.nonce,
-    //           data: tx.to && tx.data || null, // Remove contract creation data to reduce memory footprint
-    //           chainId: tx.chainId,
-    //           contractAddress: txReceipt.contractAddress,
-    //           transactionIndex: txReceipt.transactionIndex,
-    //           gasUsed: ethers.BigNumber.from(txReceipt.gasUsed).toString(),
-    //           blockHash: txReceipt.blockHash,
-    //           logs: txReceipt.logs,
-    //           cumulativeGasUsed: ethers.BigNumber.from(txReceipt.cumulativeGasUsed).toString(),
-    //           effectiveGasPrice: ethers.BigNumber.from(txReceipt.effectiveGasPrice).toString(),
-    //           status: txReceipt.status,
-    //           type: txReceipt.type,
-    //         };
-    //         records.push(item);
-    //       }
-    //       rows++;
-    //       context.commit('setSyncCompleted', rows);
-    //     }
-    //     if (records.length > 0) {
-    //       await db.announcements.bulkPut(records).then(function() {
-    //       }).catch(function(error) {
-    //         console.log("syncStealthTransfersData.bulkPut error: " + error);
-    //       });
-    //     }
-    //     done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-    //   } while (!done);
-    //
-    //   logInfo("dataModule", "actions.syncStealthTransfersData END");
-    // },
-
-    // async identifyMyStealthTransfers(context, parameter) {
-    //
-    //   function checkStealthAddress(stealthAddress, ephemeralPublicKey, viewingPrivateKey, spendingPublicKey) {
-    //     const result = {};
-    //     console.log(moment().format("HH:mm:ss") + " processDataOld - checkStealthAddress - stealthAddress: " + stealthAddress + ", ephemeralPublicKey: " + ephemeralPublicKey + ", viewingPrivateKey: " + viewingPrivateKey + ", spendingPublicKey: " + spendingPublicKey);
-    //     console.log("    Check stealthAddress: " + stealthAddress + ", ephemeralPublicKey: " + ephemeralPublicKey + ", viewingPrivateKey: " + viewingPrivateKey + ", spendingPublicKey: " + spendingPublicKey);
-    //     result.sharedSecret = nobleCurves.secp256k1.getSharedSecret(viewingPrivateKey.substring(2), ephemeralPublicKey.substring(2), false);
-    //     result.hashedSharedSecret = ethers.utils.keccak256(result.sharedSecret.slice(1));
-    //     result.hashedSharedSecretPoint = nobleCurves.secp256k1.ProjectivePoint.fromPrivateKey(result.hashedSharedSecret.substring(2));
-    //     result.stealthPublicKey = nobleCurves.secp256k1.ProjectivePoint.fromHex(spendingPublicKey.substring(2)).add(result.hashedSharedSecretPoint);
-    //     result.stealthAddress = ethers.utils.computeAddress("0x" + result.stealthPublicKey.toHex(false));
-    //     result.match = result.stealthAddress == stealthAddress;
-    //     return result;
-    //   }
-    //
-    //   logInfo("dataModule", "actions.identifyMyStealthTransfers: " + JSON.stringify(parameter));
-    //   const db = new Dexie(context.state.db.name);
-    //   db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //
-    //   // const accounts = store.getters['data/accounts'];
-    //   const addresses = context.state.addresses;
-    //   logInfo("dataModule", "actions.identifyMyStealthTransfers addresses BEFORE: " + JSON.stringify(addresses, null, 2));
-    //   const checkAddresses = [];
-    //   for (const [address, addressData] of Object.entries(addresses)) {
-    //     if (addressData.type == "stealthMetaAddress" && addressData.mine && addressData.viewingPrivateKey) {
-    //       checkAddresses.push({ address, ...addressData });
-    //     }
-    //   }
-    //   logInfo("dataModule", "actions.identifyMyStealthTransfers - checkAddresses: " + JSON.stringify(checkAddresses.map(e => e.address)));
-    //
-    //   let rows = 0;
-    //   let done = false;
-    //   do {
-    //     let data = await db.announcements.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-    //     logInfo("dataModule", "actions.identifyMyStealthTransfers - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-    //     const writeRecords = [];
-    //     for (const item of data) {
-    //       const sender = item.tx && item.tx.from || null;
-    //       const senderData = sender && addresses[sender] || {};
-    //       console.log("sender: " + sender + " => " + JSON.stringify(senderData));
-    //       item.iSent = senderData.mine || false;
-    //       item.iReceived = false;
-    //       delete item.linkedTo;
-    //       const stealthAddress = item.stealthAddress;
-    //       // const stealthAddressData = this.addresses[stealthAddress];
-    //       const ephemeralPublicKey = item.ephemeralPublicKey;
-    //       for (const account of checkAddresses) {
-    //         const viewingPrivateKey = account.viewingPrivateKey;
-    //         const viewingPublicKey = account.viewingPublicKey;
-    //         const spendingPublicKey = account.spendingPublicKey;
-    //         try {
-    //           const status = checkStealthAddress(stealthAddress, ephemeralPublicKey, viewingPrivateKey, spendingPublicKey);
-    //           if (status && status.match) {
-    //             item.linkedTo = { stealthMetaAddress: account.address, address: account.linkedToAddress };
-    //             item.iReceived = true;
-    //             if (stealthAddress in addresses) {
-    //               if (addresses[stealthAddress].type != "stealthAddress") {
-    //                 context.commit('updateToStealthAddress', {
-    //                   stealthAddress,
-    //                   type: "stealthAddress",
-    //                   linkedTo: {
-    //                     stealthMetaAddress: account.address,
-    //                     address: account.linkedToAddress,
-    //                   },
-    //                   mine: true,
-    //                 });
-    //               }
-    //             } else {
-    //               context.commit('addNewStealthAddress', {
-    //                 stealthAddress,
-    //                 type: "stealthAddress",
-    //                 linkedTo: {
-    //                   stealthMetaAddress: account.address,
-    //                   address: account.linkedToAddress,
-    //                 },
-    //                 source: "announcer",
-    //                 mine: true,
-    //                 junk: false,
-    //                 favourite: false,
-    //                 name: null,
-    //                 notes: null,
-    //                 check: [],
-    //               });
-    //             }
-    //             break;
-    //           }
-    //         } catch (e) {
-    //           console.log("ERROR: " + e.message);
-    //         }
-    //       }
-    //       writeRecords.push(item);
-    //     }
-    //     if (writeRecords.length > 0) {
-    //       await db.announcements.bulkPut(writeRecords).then(function() {
-    //       }).catch(function(error) {
-    //         console.log("processData.bulkPut error: " + error);
-    //       });
-    //     }
-    //     rows = parseInt(rows) + data.length;
-    //     done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-    //   } while (!done);
-    //   logInfo("dataModule", "actions.identifyMyStealthTransfers addresses END: " + JSON.stringify(addresses, null, 2));
-    //   context.commit('setState', { name: 'addresses', data: addresses });
-    //   await context.dispatch('saveData', ['addresses']);
-    //
-    //   logInfo("dataModule", "actions.identifyMyStealthTransfers END");
-    // },
-
-    // async collateStealthTransfers(context, parameter) {
-    //   logInfo("dataModule", "actions.collateStealthTransfers: " + JSON.stringify(parameter));
-    //   const db = new Dexie(context.state.db.name);
-    //   db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //
-    //   let rows = 0;
-    //   let done = false;
-    //   do {
-    //     let data = await db.announcements.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-    //     logInfo("dataModule", "actions.collateStealthTransfers - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-    //     for (const item of data) {
-    //       if (item.schemeId == 0) {
-    //         context.commit('addStealthTransfer', item);
-    //       }
-    //     }
-    //     rows = parseInt(rows) + data.length;
-    //     done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-    //   } while (!done);
-    //   await context.dispatch('saveData', ['stealthTransfers']);
-    //   logInfo("dataModule", "actions.collateStealthTransfers END");
-    // },
-
-    // async syncRegistrations(context, parameter) {
-    //   logInfo("dataModule", "actions.syncRegistrations BEGIN: " + JSON.stringify(parameter));
-    //   const db = new Dexie(context.state.db.name);
-    //   db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //
-    //   // Note: Following is ERC-6538: Stealth Meta-Address Registry with registrant being bytes32 instead of bytes
-    //   // OLD StealthMetaAddressSet (index_topic_1 bytes32 registrant, index_topic_2 uint256 scheme, bytes stealthMetaAddress)
-    //   // OLD 0x0bb4b5456abb9a4e7e0624d821e95e2fcc8a761c9227b5d761ae0da4a3fda233
-    //   // StealthMetaAddressSet (index_topic_1 address registrant, index_topic_2 uint256 scheme, bytes stealthMetaAddress)
-    //   // 0x4e739a47dfa4fd3cfa92f8fe760cebe125565927e5c422cb28e7aa388a067af9
-    //   const erc5564RegistryContract = new ethers.Contract(ERC5564REGISTRYADDRESS_SEPOLIA, ERC5564REGISTRYABI_SEPOLIA, provider);
-    //   let total = 0;
-    //   let t = this;
-    //   async function processLogs(fromBlock, toBlock, selectedContracts, logs) {
-    //     total = parseInt(total) + logs.length;
-    //     context.commit('setSyncCompleted', total);
-    //     logInfo("dataModule", "actions.syncRegistrations.processLogs: " + fromBlock + " - " + toBlock + " " + logs.length + " " + total);
-    //     const records = [];
-    //     for (const log of logs) {
-    //       if (!log.removed) {
-    //         try {
-    //           const logData = erc5564RegistryContract.interface.parseLog(log);
-    //           // console.log("logData: " + JSON.stringify(logData, null, 2));
-    //           const contract = log.address;
-    //           // if (selectedContracts.includes(contract)) {
-    //             records.push( {
-    //               chainId: parameter.chainId,
-    //               blockNumber: parseInt(log.blockNumber),
-    //               logIndex: parseInt(log.logIndex),
-    //               txIndex: parseInt(log.transactionIndex),
-    //               txHash: log.transactionHash,
-    //               contract,
-    //               name: logData.name,
-    //               registrant: ethers.utils.getAddress(logData.args[0]),
-    //               schemeId: parseInt(logData.args[1]),
-    //               stealthMetaAddress: ethers.utils.toUtf8String(logData.args[2]),
-    //               mine: false,
-    //               confirmations: parameter.blockNumber - log.blockNumber,
-    //               timestamp: null,
-    //               tx: null,
-    //             });
-    //           // }
-    //         } catch (e) {
-    //           console.log("ERROR: " + e.message);
-    //         }
-    //       }
-    //     }
-    //     if (records.length) {
-    //       // console.log("syncRegistrations.bulkAdd: " + JSON.stringify(records));
-    //       await db.registrations.bulkAdd(records).then(function(lastKey) {
-    //         console.log("syncRegistrations.bulkAdd lastKey: " + JSON.stringify(lastKey));
-    //       }).catch(Dexie.BulkError, function(e) {
-    //         console.log("syncRegistrations.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
-    //       });
-    //     }
-    //   }
-    //   async function getLogs(fromBlock, toBlock, selectedContracts, processLogs) {
-    //     logInfo("dataModule", "actions.syncRegistrations.getLogs: " + fromBlock + " - " + toBlock);
-    //     try {
-    //       const filter = {
-    //         // TODO: address: null,
-    //         address: ERC5564REGISTRYADDRESS_SEPOLIA,
-    //         fromBlock,
-    //         toBlock,
-    //         topics: [
-    //           '0x4e739a47dfa4fd3cfa92f8fe760cebe125565927e5c422cb28e7aa388a067af9',
-    //           null,
-    //           null
-    //         ]
-    //       };
-    //       const eventLogs = await provider.getLogs(filter);
-    //       await processLogs(fromBlock, toBlock, selectedContracts, eventLogs);
-    //     } catch (e) {
-    //       const mid = parseInt((fromBlock + toBlock) / 2);
-    //       await getLogs(fromBlock, mid, selectedContracts, processLogs);
-    //       await getLogs(parseInt(mid) + 1, toBlock, selectedContracts, processLogs);
-    //     }
-    //   }
-    //   logInfo("dataModule", "actions.syncRegistrations BEGIN");
-    //   context.commit('setSyncSection', { section: 'Stealth Meta-Address Registry', total: null });
-    //   const selectedContracts = [];
-    //   // for (const [chainId, chainData] of Object.entries(this.contracts)) {
-    //   //   for (const [contract, contractData] of Object.entries(chainData)) {
-    //   //     if (contractData.type == "registry" && contractData.read) {
-    //   //       selectedContracts.push(contract);
-    //   //     }
-    //   //   }
-    //   // }
-    //   // if (selectedContracts.length > 0) {
-    //     const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
-    //     const latest = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-    //     const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-    //     await getLogs(startBlock, parameter.blockNumber, selectedContracts, processLogs);
-    //   // }
-    //   logInfo("dataModule", "actions.syncRegistrations END");
-    // },
-
-    // async syncRegistrationsData(context, parameter) {
-    //   logInfo("dataModule", "actions.syncRegistrationsData: " + JSON.stringify(parameter));
-    //   const db = new Dexie(context.state.db.name);
-    //   db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //   let total = 0;
-    //   let done = false;
-    //   do {
-    //     let data = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(total).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-    //     logInfo("dataModule", "actions.syncRegistrationsData - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-    //     total = parseInt(total) + data.length;
-    //     done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-    //     // done = true;
-    //   } while (!done);
-    //   logInfo("dataModule", "actions.syncRegistrationsData - total: " + total);
-    //   context.commit('setSyncSection', { section: 'Stealth Meta-Address Registry Data', total });
-    //   let rows = 0;
-    //   do {
-    //     let data = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-    //     logInfo("dataModule", "actions.syncRegistrationsData - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-    //     const records = [];
-    //     for (const item of data) {
-    //       // console.log(moment().format("HH:mm:ss") + " syncRegistrationsData: " + JSON.stringify(item));
-    //       if (item.timestamp == null) {
-    //         const block = await provider.getBlock(item.blockNumber);
-    //         item.timestamp = block.timestamp;
-    //         const tx = await provider.getTransaction(item.txHash);
-    //         const txReceipt = await provider.getTransactionReceipt(item.txHash);
-    //         item.tx = {
-    //           type: tx.type,
-    //           blockHash: tx.blockHash,
-    //           from: tx.from,
-    //           gasPrice: ethers.BigNumber.from(tx.gasPrice).toString(),
-    //           gasLimit: ethers.BigNumber.from(tx.gasLimit).toString(),
-    //           to: tx.to,
-    //           value: ethers.BigNumber.from(tx.value).toString(),
-    //           nonce: tx.nonce,
-    //           data: tx.to && tx.data || null, // Remove contract creation data to reduce memory footprint
-    //           chainId: tx.chainId,
-    //           contractAddress: txReceipt.contractAddress,
-    //           transactionIndex: txReceipt.transactionIndex,
-    //           gasUsed: ethers.BigNumber.from(txReceipt.gasUsed).toString(),
-    //           blockHash: txReceipt.blockHash,
-    //           logs: txReceipt.logs,
-    //           cumulativeGasUsed: ethers.BigNumber.from(txReceipt.cumulativeGasUsed).toString(),
-    //           effectiveGasPrice: ethers.BigNumber.from(txReceipt.effectiveGasPrice).toString(),
-    //           status: txReceipt.status,
-    //           type: txReceipt.type,
-    //         };
-    //         records.push(item);
-    //       }
-    //     }
-    //     if (records.length > 0) {
-    //       // console.log("records: " + JSON.stringify(records, null, 2));
-    //       await db.registrations.bulkPut(records).then(function() {
-    //       }).catch(function(error) {
-    //         console.log("syncRegistrationsData.bulkPut error: " + error);
-    //       });
-    //     }
-    //     rows = parseInt(rows) + data.length;
-    //     context.commit('setSyncCompleted', rows);
-    //     done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-    //   } while (!done);
-    //   logInfo("dataModule", "actions.syncRegistrationsData END");
-    // },
-
-    // async collateRegistrations(context, parameter) {
-    //   logInfo("dataModule", "actions.collateRegistrations: " + JSON.stringify(parameter));
-    //   const db = new Dexie(context.state.db.name);
-    //   db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //
-    //   const registry = context.state.registry;
-    //   if (!(parameter.chainId in registry)) {
-    //     registry[parameter.chainId] = {};
-    //   }
-    //   // console.log("registry BEFORE: " + JSON.stringify(registry, null, 2));
-    //   let rows = 0;
-    //   let done = false;
-    //   do {
-    //     let data = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-    //     logInfo("dataModule", "actions.collateRegistrations - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-    //     for (const item of data) {
-    //       if (item.schemeId == 0) {
-    //         // logInfo("dataModule", "actions.collateRegistrations - processing: " + JSON.stringify(item, null, 2));
-    //         const stealthMetaAddress = item.stealthMetaAddress.match(/^st:eth:0x[0-9a-fA-F]{132}$/) ? item.stealthMetaAddress : STEALTHMETAADDRESS0;
-    //         registry[parameter.chainId][item.registrant] = stealthMetaAddress;
-    //       }
-    //     }
-    //     rows = parseInt(rows) + data.length;
-    //     done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-    //     // done = true;
-    //   } while (!done);
-    //   // console.log("registry AFTER: " + JSON.stringify(registry, null, 2));
-    //   context.commit('setState', { name: 'registry', data: registry });
-    //
-    //   // console.log("context.state.registry: " + JSON.stringify(context.state.registry, null, 2));
-    //   await context.dispatch('saveData', ['registry']);
-    //   logInfo("dataModule", "actions.collateRegistrations END");
-    // },
 
     async syncTransferEvents(context, parameter) {
       logInfo("dataModule", "actions.syncTransferEvents: " + JSON.stringify(parameter));
@@ -1482,6 +940,113 @@ const dataModule = {
         }
       }
       logInfo("dataModule", "actions.syncTransferEvents END");
+    },
+
+    async collateTokens(context, parameter) {
+      logInfo("dataModule", "actions.collateTokens: " + JSON.stringify(parameter));
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      logInfo("dataModule", "actions.collateTokens BEGIN");
+      const selectedAddressesMap = {};
+      for (const [address, addressData] of Object.entries(context.state.addresses)) {
+        if (address.substring(0, 2) == "0x") {
+          selectedAddressesMap[address] = true;
+        }
+      }
+      console.log("selectedAddressesMap: " + Object.keys(selectedAddressesMap));
+      let rows = 0;
+      let done = false;
+      const tokens = {};
+      do {
+        let data = await db.tokenEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
+        logInfo("dataModule", "actions.collateTokens - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
+        for (const item of data) {
+          if (!(item.contract in tokens)) {
+            if (item.eventType == "erc20") {
+              tokens[item.contract] = {
+                type: item.eventType,
+                balances: {},
+              };
+            } else {
+              tokens[item.contract] = {
+                type: item.eventType,
+                tokenIds: {},
+              };
+            }
+          }
+          if (item.eventType == "erc20" && item.type == "Transfer") {
+            const balances = tokens[item.contract].balances || {};
+            if (item.from in selectedAddressesMap) {
+              if (!(item.from in balances)) {
+                balances[item.from] = "0";
+              }
+              balances[item.from] = ethers.BigNumber.from(balances[item.from]).sub(item.tokens).toString();
+            }
+            if (item.to in selectedAddressesMap) {
+              if (!(item.to in balances)) {
+                balances[item.to] = "0";
+              }
+              balances[item.to] = ethers.BigNumber.from(balances[item.to]).add(item.tokens).toString();
+            }
+            tokens[item.contract].balances = balances;
+          } else if (item.eventType == "erc721" && item.type == "Transfer") {
+            if (item.from in selectedAddressesMap || item.to in selectedAddressesMap) {
+              tokens[item.contract].tokenIds[item.tokenId] = item.to;
+            }
+          } else if (item.eventType == "erc1155" && item.type == "TransferSingle") {
+            if (item.from in selectedAddressesMap) {
+              if (!(item.tokenId in tokens[item.contract].tokenIds)) {
+                tokens[item.contract].tokenIds[item.tokenId] = {};
+              }
+              if (item.from in tokens[item.contract].tokenIds[item.tokenId]) {
+                tokens[item.contract].tokenIds[item.tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.from]).sub(item.value).toString();
+                if (tokens[item.contract].tokenIds[item.tokenId][item.from] == "0") {
+                  delete tokens[item.contract].tokenIds[item.tokenId][item.from];
+                }
+              }
+            }
+            if (item.to in selectedAddressesMap) {
+              if (!(item.tokenId in tokens[item.contract].tokenIds)) {
+                tokens[item.contract].tokenIds[item.tokenId] = {};
+              }
+              if (!(item.to in tokens[item.contract].tokenIds[item.tokenId])) {
+                tokens[item.contract].tokenIds[item.tokenId][item.to] = "0";
+              }
+              tokens[item.contract].tokenIds[item.tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.to]).add(item.value).toString();
+            }
+          } else if (item.eventType == "erc1155" && item.type == "TransferBatch") {
+            for (const [index, tokenId] of item.tokenIds.entries()) {
+              if (item.from in selectedAddressesMap) {
+                if (!(tokenId in tokens[item.contract].tokenIds)) {
+                  tokens[item.contract].tokenIds[tokenId] = {};
+                }
+                if (item.from in tokens[item.contract].tokenIds[tokenId]) {
+                  tokens[item.contract].tokenIds[tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.from]).sub(item.values[index]).toString();
+                  if (tokens[item.contract].tokenIds[tokenId][item.from] == "0") {
+                    delete tokens[item.contract].tokenIds[tokenId][item.from];
+                  }
+                }
+              }
+              if (item.to in selectedAddressesMap) {
+                if (!(tokenId in tokens[item.contract].tokenIds)) {
+                  tokens[item.contract].tokenIds[tokenId] = {};
+                }
+                if (!(item.to in tokens[item.contract].tokenIds[tokenId])) {
+                  tokens[item.contract].tokenIds[tokenId][item.to] = "0";
+                }
+                tokens[item.contract].tokenIds[tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.to]).add(item.values[index]).toString();
+              }
+            }
+          }
+        }
+        rows = parseInt(rows) + data.length;
+        done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
+      } while (!done);
+      console.log("tokens: " + JSON.stringify(tokens, null, 2));
+      context.commit('updateTokens', tokens);
+      await context.dispatch('saveData', ['tokens']);
+      logInfo("dataModule", "actions.collateTokens END");
     },
 
     async syncRenewalEvents(context, parameter) {
@@ -1807,113 +1372,6 @@ const dataModule = {
     //   await context.dispatch('saveData', ['txs']);
     //   logInfo("dataModule", "actions.syncTokenEventTxData END");
     // },
-
-    async collateTokens(context, parameter) {
-      logInfo("dataModule", "actions.collateTokens: " + JSON.stringify(parameter));
-      const db = new Dexie(context.state.db.name);
-      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      logInfo("dataModule", "actions.collateTokens BEGIN");
-      const selectedAddressesMap = {};
-      for (const [address, addressData] of Object.entries(context.state.addresses)) {
-        if (address.substring(0, 2) == "0x") {
-          selectedAddressesMap[address] = true;
-        }
-      }
-      console.log("selectedAddressesMap: " + Object.keys(selectedAddressesMap));
-      let rows = 0;
-      let done = false;
-      const tokens = {};
-      do {
-        let data = await db.tokenEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-        logInfo("dataModule", "actions.collateTokens - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
-        for (const item of data) {
-          if (!(item.contract in tokens)) {
-            if (item.eventType == "erc20") {
-              tokens[item.contract] = {
-                type: item.eventType,
-                balances: {},
-              };
-            } else {
-              tokens[item.contract] = {
-                type: item.eventType,
-                tokenIds: {},
-              };
-            }
-          }
-          if (item.eventType == "erc20" && item.type == "Transfer") {
-            const balances = tokens[item.contract].balances || {};
-            if (item.from in selectedAddressesMap) {
-              if (!(item.from in balances)) {
-                balances[item.from] = "0";
-              }
-              balances[item.from] = ethers.BigNumber.from(balances[item.from]).sub(item.tokens).toString();
-            }
-            if (item.to in selectedAddressesMap) {
-              if (!(item.to in balances)) {
-                balances[item.to] = "0";
-              }
-              balances[item.to] = ethers.BigNumber.from(balances[item.to]).add(item.tokens).toString();
-            }
-            tokens[item.contract].balances = balances;
-          } else if (item.eventType == "erc721" && item.type == "Transfer") {
-            if (item.from in selectedAddressesMap || item.to in selectedAddressesMap) {
-              tokens[item.contract].tokenIds[item.tokenId] = item.to;
-            }
-          } else if (item.eventType == "erc1155" && item.type == "TransferSingle") {
-            if (item.from in selectedAddressesMap) {
-              if (!(item.tokenId in tokens[item.contract].tokenIds)) {
-                tokens[item.contract].tokenIds[item.tokenId] = {};
-              }
-              if (item.from in tokens[item.contract].tokenIds[item.tokenId]) {
-                tokens[item.contract].tokenIds[item.tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.from]).sub(item.value).toString();
-                if (tokens[item.contract].tokenIds[item.tokenId][item.from] == "0") {
-                  delete tokens[item.contract].tokenIds[item.tokenId][item.from];
-                }
-              }
-            }
-            if (item.to in selectedAddressesMap) {
-              if (!(item.tokenId in tokens[item.contract].tokenIds)) {
-                tokens[item.contract].tokenIds[item.tokenId] = {};
-              }
-              if (!(item.to in tokens[item.contract].tokenIds[item.tokenId])) {
-                tokens[item.contract].tokenIds[item.tokenId][item.to] = "0";
-              }
-              tokens[item.contract].tokenIds[item.tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.to]).add(item.value).toString();
-            }
-          } else if (item.eventType == "erc1155" && item.type == "TransferBatch") {
-            for (const [index, tokenId] of item.tokenIds.entries()) {
-              if (item.from in selectedAddressesMap) {
-                if (!(tokenId in tokens[item.contract].tokenIds)) {
-                  tokens[item.contract].tokenIds[tokenId] = {};
-                }
-                if (item.from in tokens[item.contract].tokenIds[tokenId]) {
-                  tokens[item.contract].tokenIds[tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.from]).sub(item.values[index]).toString();
-                  if (tokens[item.contract].tokenIds[tokenId][item.from] == "0") {
-                    delete tokens[item.contract].tokenIds[tokenId][item.from];
-                  }
-                }
-              }
-              if (item.to in selectedAddressesMap) {
-                if (!(tokenId in tokens[item.contract].tokenIds)) {
-                  tokens[item.contract].tokenIds[tokenId] = {};
-                }
-                if (!(item.to in tokens[item.contract].tokenIds[tokenId])) {
-                  tokens[item.contract].tokenIds[tokenId][item.to] = "0";
-                }
-                tokens[item.contract].tokenIds[tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.to]).add(item.values[index]).toString();
-              }
-            }
-          }
-        }
-        rows = parseInt(rows) + data.length;
-        done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
-      } while (!done);
-      console.log("tokens: " + JSON.stringify(tokens, null, 2));
-      context.commit('updateTokens', tokens);
-      await context.dispatch('saveData', ['tokens']);
-      logInfo("dataModule", "actions.collateTokens END");
-    },
 
     async syncTokenMetadata(context, parameter) {
       logInfo("dataModule", "actions.syncTokenMetadata: " + JSON.stringify(parameter));

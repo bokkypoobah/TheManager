@@ -1244,10 +1244,18 @@ const dataModule = {
       const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
 
       // 925.eth ERC-721 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
+
+      // - ENS: Old ETH Registrar Controller 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires) 0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f
+      //   [ '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', namehash, null ],
+      // - ENS: ETH Registrar Controller 0x253553366Da8546fC250F225fe3d25d0C782303b NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 baseCost, uint256 premium, uint256 expires) 0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27
+      //   [ '0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27', namehash, null ],
+
       // - ENS Base Registrar Implementation 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 NameRenewed (index_topic_1 uint256 id, uint256 expires) Topic 0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6
       //   [ '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6', namehash, null ],
       // - ETH Registrar Controller 0x253553366Da8546fC250F225fe3d25d0C782303b NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires) 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
       //   [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', name, namehash, null ],
+      // x - ENS Base Registrar Implementation 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 NameRegistered (index_topic_1 uint256 id, index_topic_2 address owner, uint256 expires) 0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9
+      // x   [ '0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9', namehash, null ],
 
       // ERC-20 & ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
       // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', accountAs32Bytes, null ],
@@ -1395,6 +1403,18 @@ const dataModule = {
           let topics = null;
           if (section == 0) {
             topics = [[
+                '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
+              ],
+              hashes,
+              null,
+            ];
+            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+            console.log("logs: " + JSON.stringify(logs, null, 2));
+            // return;
+            await processLogs(fromBlock, toBlock, section, logs);
+
+          } else if (section == 1) {
+            topics = [[
                 '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6',
               ],
               hashes,
@@ -1405,7 +1425,7 @@ const dataModule = {
             return;
 
             // await processLogs(fromBlock, toBlock, section, logs);
-          } else if (section == 1) {
+          } else if (section == 2) {
             topics = [
               '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
               hashes,
@@ -1473,7 +1493,7 @@ const dataModule = {
           }
         }
       }
-      // processList = processList.slice(1, 10); // TODO
+      processList = processList.slice(0, 3); // TODO
       // ERC-721 925.eth renewal 0x684d272ec79f907011b451daf5bb6d90b54ac56cac2e20c669c617bee778fd3d and ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
       // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
       // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081'].includes(e.tokenId));
@@ -1521,6 +1541,19 @@ const dataModule = {
       // const decimalNameHash = ethers.BigNumber.from(namehash);
       // console.log("decimalNameHash: " + decimalNameHash); // 90617972706753856606077416428092812770327579333964424572858812298074332597719
 
+      // ERC-721 $mother.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:55031006666192158848045017008080447197965693849755532004656313918635033768881
+      // ERC-1155 $mother.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:37778769934711969306858083174867277506392124373311900965949141233376830547093
+      const labelhash = ethers.utils.solidityKeccak256(["string"], ["$mother"]);
+      console.log("labelhash: " + labelhash); // 0x79aa722c0c2fcde541f3a9a8057afe4e86133ea0dd0d28f1d337f3fd505033b1
+      const decimalLabelHash = ethers.BigNumber.from(labelhash);
+      console.log("decimalLabelHash: " + decimalLabelHash); // 55031006666192158848045017008080447197965693849755532004656313918635033768881
+      const namehash = ethers.utils.namehash('$mother.eth');
+      console.log("namehash: " + namehash); // 0x538606aa1287ef33e2454861d54dd58271c4f9f5e05f724ca6982fecdb3de495
+      const decimalNameHash = ethers.BigNumber.from(namehash);
+      console.log("decimalNameHash: " + decimalNameHash); // 37778769934711969306858083174867277506392124373311900965949141233376830547093
+
+      return;
+
       console.log("processList: " + JSON.stringify(processList, null, 2));
 
       const BATCHSIZE = 100;
@@ -1531,8 +1564,9 @@ const dataModule = {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
         // console.log("batch: " + JSON.stringify(batch, null, 2));
         const startBlock = 0;
-        // await getLogs(startBlock, parameter.blockNumber, 0, batch, processLogs);
-        await getLogs(startBlock, parameter.blockNumber, 1, batch, processLogs);
+        await getLogs(startBlock, parameter.blockNumber, 0, batch, processLogs);
+        // await getLogs(startBlock, parameter.blockNumber, 1, batch, processLogs);
+        // await getLogs(startBlock, parameter.blockNumber, 2, batch, processLogs);
       }
       return;
 

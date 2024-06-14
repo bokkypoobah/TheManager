@@ -281,7 +281,7 @@ const NonFungibleTokens = {
         favouritesOnly: false,
         currentPage: 1,
         pageSize: 10,
-        sortOption: 'registrantasc',
+        sortOption: 'expiryasc',
         version: 0,
       },
       transfer: {
@@ -292,10 +292,20 @@ const NonFungibleTokens = {
         selectedFaucet: null,
       },
       sortOptions: [
-        // { value: 'nameregistrantasc', text: '▲ Name, ▲ Registrant' },
-        // { value: 'nameregistrantdsc', text: '▼ Name, ▲ Registrant' },
-        { value: 'registrantasc', text: '▲ Registrant' },
-        { value: 'registrantdsc', text: '▼ Registrant' },
+        // { value: 'nameasc', text: '▲ Name' },
+        // { value: 'namedsc', text: '▼ Name' },
+        // { value: 'priceasc', text: '▲ Price' },
+        // { value: 'pricedsc', text: '▼ Price' },
+        { value: 'expiryasc', text: '▲ Expiry' },
+        { value: 'expirydsc', text: '▼ Expiry' },
+        // { value: 'registrationasc', text: '▲ Registration' },
+        // { value: 'registrationdsc', text: '▼ Registration' },
+        // { value: 'latesttransferdateasc', text: '▲ Latest Transfer Date' },
+        // { value: 'latesttransferdatedsc', text: '▼ Latest Transfer Date' },
+        // { value: 'creationdateasc', text: '▲ Creation Date' },
+        // { value: 'creationdatedsc', text: '▼ Creation Date' },
+        // { value: 'lengthname', text: '▲ Length, ▲ Name' },
+        // { value: 'random', text: 'Random' },
       ],
       // fields: [
       //   { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
@@ -502,15 +512,21 @@ const NonFungibleTokens = {
     },
     filteredSortedItems() {
       const results = this.filteredItems;
-      // if (this.settings.sortOption == 'registrantasc') {
-      //   results.sort((a, b) => {
-      //     return ('' + a.registrant).localeCompare(b.registrant);
-      //   });
-      // } else if (this.settings.sortOption == 'registrantdsc') {
-      //   results.sort((a, b) => {
-      //     return ('' + b.registrant).localeCompare(a.registrant);
-      //   });
-      // }
+      if (this.settings.sortOption == 'expiryasc') {
+        results.sort((a, b) => {
+          return a.expiry - b.expiry;
+        });
+        // results.sort((a, b) => {
+        //   return ('' + a.registrant).localeCompare(b.registrant);
+        // });
+      } else if (this.settings.sortOption == 'expirydsc') {
+        results.sort((a, b) => {
+          return a.expiry - b.expiry;
+        });
+        // results.sort((a, b) => {
+        //   return ('' + b.registrant).localeCompare(a.registrant);
+        // });
+      }
       return results;
     },
     pagedFilteredSortedItems() {
@@ -577,8 +593,8 @@ const NonFungibleTokens = {
       return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
     },
     saveSettings() {
-      logInfo("NonFungibleTokens", "methods.saveSettings - erc721sSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.erc721sSettings = JSON.stringify(this.settings);
+      logInfo("NonFungibleTokens", "methods.saveSettings - theManagerNonFungibleTokensSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.theManagerNonFungibleTokensSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {
       store.dispatch('syncOptions/viewSyncOptions');
@@ -687,8 +703,8 @@ const NonFungibleTokens = {
   mounted() {
     logDebug("NonFungibleTokens", "mounted() $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('erc721sSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.erc721sSettings);
+    if ('theManagerNonFungibleTokensSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.theManagerNonFungibleTokensSettings);
       if ('version' in tempSettings && tempSettings.version == 0) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;

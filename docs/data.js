@@ -1302,6 +1302,8 @@ const dataModule = {
       const secondPart = ethers.utils.solidityKeccak256(["bytes"], [firstPart + ensPart.substring(2,)]);
       console.log("secondPart: " + secondPart); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
       // const thirdPart = ethers.utils.solidityKeccak256(["bytes"], [secondPart + firstPart.substring(2,)]);
+      const namehash = ethers.utils.namehash('ens.eth');
+      console.log("namehash: " + namehash);
       return;
 
 

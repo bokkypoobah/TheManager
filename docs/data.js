@@ -1273,7 +1273,8 @@ const dataModule = {
         }
       }
       // processList = processList.slice(1, 3); // TODO
-      processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '106251965649386352385500151186218669392308042725869924451690108724334718682582'].includes(e.tokenId)); // ERC-721 925.eth and ERC-1155 onlyfanz.eth
+      // ERC-721 925.eth renewal 0x684d272ec79f907011b451daf5bb6d90b54ac56cac2e20c669c617bee778fd3d and ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
+      processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
       console.log("processList: " + JSON.stringify(processList, null, 2));
 
       context.commit('setSyncSection', { section: 'Renewal Events', total: null });

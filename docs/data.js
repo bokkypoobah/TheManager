@@ -1057,6 +1057,12 @@ const dataModule = {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
 
+      // 925.eth ERC-721 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
+      // - ENS Base Registrar Implementation 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 NameRenewed (index_topic_1 uint256 id, uint256 expires) Topic 0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6
+      //   [ '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6', namehash, null ],
+      // - ETH Registrar Controller 0x253553366Da8546fC250F225fe3d25d0C782303b NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires) 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
+      //   [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', name, namehash, null ],
+
       // ERC-20 & ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
       // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', accountAs32Bytes, null ],
       // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', null, accountAs32Bytes ],
@@ -1193,35 +1199,35 @@ const dataModule = {
           });
         }
       }
-      async function getLogs(fromBlock, toBlock, selectedHashes, processLogs) {
-        logInfo("dataModule", "actions.syncRenewalEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", selectedHashes: " + JSON.stringify(selectedHashes));
-
-        return;
+      async function getLogs(fromBlock, toBlock, section, selectedHashes, processLogs) {
+        logInfo("dataModule", "actions.syncRenewalEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section + ", selectedHashes: " + JSON.stringify(selectedHashes));
 
         try {
           let topics = null;
           if (section == 0) {
             topics = [[
-                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-                '0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c',
-                '0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65',
-                '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925',
-                '0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31',
+                '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6',
               ],
-              selectedAddresses,
-              null
+              '0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1', // selectedAddresses,
+              null,
             ];
             const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, section, logs);
+            console.log("logs: " + JSON.stringify(logs, null, 2));
+            return;
+
+            // await processLogs(fromBlock, toBlock, section, logs);
           } else if (section == 1) {
             topics = [[
-                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+                '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae'
               ],
+              '0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1', // selectedAddresses,
               null,
-              selectedAddresses
             ];
             const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, section, logs);
+            console.log("logs: " + JSON.stringify(logs, null, 2));
+            return;
+
+            // await processLogs(fromBlock, toBlock, section, logs);
           } else if (section == 2) {
             topics = [[
                 '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
@@ -1289,7 +1295,8 @@ const dataModule = {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
         console.log("batch: " + JSON.stringify(batch, null, 2));
         const startBlock = 0;
-        await getLogs(startBlock, parameter.blockNumber, batch, processLogs);
+        await getLogs(startBlock, parameter.blockNumber, 0, batch, processLogs);
+        await getLogs(startBlock, parameter.blockNumber, 1, batch, processLogs);
       }
       return;
 

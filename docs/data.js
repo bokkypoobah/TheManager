@@ -1193,8 +1193,11 @@ const dataModule = {
           });
         }
       }
-      async function getLogs(fromBlock, toBlock, section, selectedAddresses, processLogs) {
-        logInfo("dataModule", "actions.syncRenewalEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section);
+      async function getLogs(fromBlock, toBlock, selectedHashes, processLogs) {
+        logInfo("dataModule", "actions.syncRenewalEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", selectedHashes: " + JSON.stringify(selectedHashes));
+
+        return;
+
         try {
           let topics = null;
           if (section == 0) {
@@ -1274,29 +1277,38 @@ const dataModule = {
       }
       // processList = processList.slice(1, 3); // TODO
       // ERC-721 925.eth renewal 0x684d272ec79f907011b451daf5bb6d90b54ac56cac2e20c669c617bee778fd3d and ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
-      processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
+      // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
+      processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081'].includes(e.tokenId));
       console.log("processList: " + JSON.stringify(processList, null, 2));
 
-      context.commit('setSyncSection', { section: 'Renewal Events', total: null });
-
+      const BATCHSIZE = 50;
+      let completed = 0;
+      context.commit('setSyncSection', { section: 'Renewal Events', total: processList.length });
+      context.commit('setSyncCompleted', completed);
+      for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
+        const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
+        console.log("batch: " + JSON.stringify(batch, null, 2));
+        const startBlock = 0;
+        await getLogs(startBlock, parameter.blockNumber, batch, processLogs);
+      }
       return;
 
-      const selectedAddresses = [];
-      for (const [address, addressData] of Object.entries(context.state.addresses)) {
-        if (address.substring(0, 2) == "0x") {
-          selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
-        }
-      }
-      console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
-      if (selectedAddresses.length > 0) {
-        const deleteCall = await db.tokenEvents.where("confirmations").below(parameter.confirmations).delete();
-        const latest = await db.tokenEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-        // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-        const startBlock = 0;
-        for (let section = 0; section < 4; section++) {
-          await getLogs(startBlock, parameter.blockNumber, section, selectedAddresses, processLogs);
-        }
-      }
+      // const selectedAddresses = [];
+      // for (const [address, addressData] of Object.entries(context.state.addresses)) {
+      //   if (address.substring(0, 2) == "0x") {
+      //     selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
+      //   }
+      // }
+      // console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
+      // if (selectedAddresses.length > 0) {
+      //   const deleteCall = await db.tokenEvents.where("confirmations").below(parameter.confirmations).delete();
+      //   const latest = await db.tokenEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
+      //   // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
+      //   const startBlock = 0;
+      //   for (let section = 0; section < 4; section++) {
+      //     await getLogs(startBlock, parameter.blockNumber, section, selectedAddresses, processLogs);
+      //   }
+      // }
       logInfo("dataModule", "actions.syncRenewalEvents END");
     },
 

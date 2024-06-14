@@ -1686,7 +1686,7 @@ const dataModule = {
       context.commit('setSyncSection', { section: 'Renewal Events', total: null });
 
       return;
-      
+
       const selectedAddresses = [];
       for (const [address, addressData] of Object.entries(context.state.addresses)) {
         if (address.substring(0, 2) == "0x") {
@@ -1949,7 +1949,7 @@ const dataModule = {
       const BATCHSIZE = 50;
       const DELAYINMILLIS = 2000;
       let completed = 0;
-      context.commit('setSyncSection', { section: 'Token Contract Metadata', total: processList.length });
+      context.commit('setSyncSection', { section: 'Token Metadata', total: processList.length });
       context.commit('setSyncCompleted', completed);
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
@@ -1971,7 +1971,7 @@ const dataModule = {
           for (token of data.tokens) {
             // console.log(JSON.stringify(token, null, 2));
             const tokenData = parseReservoirTokenData(token);
-            if (/*tokenData.created == null ||*/ tokenData.expiry == null) {
+            if (/*tokenData.created == null ||*/ tokenData.expiry == null && false) {
               const url = "https://metadata.ens.domains/mainnet/" + tokenData.contract + "/" + tokenData.tokenId;
               const metadataFileContent = await fetch(url, {mode: 'cors'}).then(response => response.json());
               const createdRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Created Date");

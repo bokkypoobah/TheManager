@@ -1249,6 +1249,33 @@ const dataModule = {
       }
 
       logInfo("dataModule", "actions.syncRenewalEvents BEGIN");
+
+      const tokensToProcess = {};
+      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
+        if (contractData.type == "erc721" || contractData.type == "erc1155") {
+          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
+            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
+              if (!(contract in tokensToProcess)) {
+                tokensToProcess[contract] = {};
+              }
+              tokensToProcess[contract][tokenId] = tokenData;
+            // }
+          }
+        }
+      }
+      // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
+      let processList = [];
+      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
+        const contractType = context.state.tokens[parameter.chainId][contract].type;
+        for (const [tokenId, tokenData] of Object.entries(contractData)) {
+          // console.log(contract + ":" + tokenId);
+          processList.push({ contract, tokenId });
+        }
+      }
+      // processList = processList.slice(1, 3); // TODO
+      processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '106251965649386352385500151186218669392308042725869924451690108724334718682582'].includes(e.tokenId)); // ERC-721 925.eth and ERC-1155 onlyfanz.eth
+      console.log("processList: " + JSON.stringify(processList, null, 2));
+
       context.commit('setSyncSection', { section: 'Renewal Events', total: null });
 
       return;
@@ -1379,9 +1406,7 @@ const dataModule = {
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const contractsToProcess = {};
       const tokensToProcess = {};
-      let totalTokensToProcess = 0;
       for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
         if (contractData.type == "erc721" || contractData.type == "erc1155") {
           for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
@@ -1390,7 +1415,6 @@ const dataModule = {
                 tokensToProcess[contract] = {};
               }
               tokensToProcess[contract][tokenId] = tokenData;
-              totalTokensToProcess++;
             // }
           }
         }

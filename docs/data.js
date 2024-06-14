@@ -701,14 +701,14 @@ const dataModule = {
       if (options.transfers && !options.devThing) {
         await context.dispatch('collateTokens', parameter);
       }
-      if (options.renewals && !options.devThing) {
-        await context.dispatch('syncRenewalEvents', parameter);
-      }
       if (options.timestamps && !options.devThing) {
         await context.dispatch('syncTokenEventTimestamps', parameter);
       }
       if (options.metadata && !options.devThing) {
         await context.dispatch('syncTokenMetadata', parameter);
+      }
+      if (options.renewals && !options.devThing) {
+        await context.dispatch('syncRenewalEvents', parameter);
       }
 
       // if (options.ens || options.devThing) {
@@ -1050,329 +1050,6 @@ const dataModule = {
       logInfo("dataModule", "actions.collateTokens END");
     },
 
-    async syncRenewalEvents(context, parameter) {
-      logInfo("dataModule", "actions.syncRenewalEvents: " + JSON.stringify(parameter));
-      const db = new Dexie(context.state.db.name);
-      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
-
-      // 925.eth ERC-721 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
-      // - ENS Base Registrar Implementation 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 NameRenewed (index_topic_1 uint256 id, uint256 expires) Topic 0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6
-      //   [ '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6', namehash, null ],
-      // - ETH Registrar Controller 0x253553366Da8546fC250F225fe3d25d0C782303b NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires) 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
-      //   [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', name, namehash, null ],
-
-      // ERC-20 & ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
-      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', accountAs32Bytes, null ],
-      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', null, accountAs32Bytes ],
-
-      // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
-      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, accountAs32Bytes, null ],
-      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, null, accountAs32Bytes ],
-
-      // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
-      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, accountAs32Bytes, null ],
-      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, null, accountAs32Bytes ],
-
-      // ENS:ETH Registrar Controller NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
-      // [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', [tokenIds] ],
-
-      // WETH Deposit (index_topic_1 address dst, uint256 wad)
-      // 0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c
-      // WETH Withdrawal (index_topic_1 address src, uint256 wad)
-      // 0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65
-
-      // // ERC-20 Approval (index_topic_1 address owner, index_topic_2 address spender, uint256 value)
-      // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
-      // // ERC-721 Approval (index_topic_1 address owner, index_topic_2 address approved, index_topic_3 uint256 tokenId)
-      // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
-      // // ERC-721 ApprovalForAll (index_topic_1 address owner, index_topic_2 address operator, bool approved)
-      // // 0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31
-      let total = 0;
-      let t = this;
-      async function processLogs(fromBlock, toBlock, section, logs) {
-        total = parseInt(total) + logs.length;
-        context.commit('setSyncCompleted', total);
-        logInfo("dataModule", "actions.syncRenewalEvents.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section + ", logs.length: " + logs.length + ", total: " + total);
-        const records = [];
-        for (const log of logs) {
-          if (!log.removed) {
-            const contract = log.address;
-            let eventRecord = null;
-            if (log.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") {
-              let from = null;
-              let to = null;
-              let tokensOrTokenId = null;
-              let tokens = null;
-              let tokenId = null;
-              if (log.topics.length == 4) {
-                from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                to = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokensOrTokenId = ethers.BigNumber.from(log.topics[3]).toString();
-              } else if (log.topics.length == 3) {
-                from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                to = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokensOrTokenId = ethers.BigNumber.from(log.data).toString();
-              // TODO: Handle 2
-              } else if (log.topics.length == 1) {
-                from = ethers.utils.getAddress('0x' + log.data.substring(26, 66));
-                to = ethers.utils.getAddress('0x' + log.data.substring(90, 130));
-                tokensOrTokenId = ethers.BigNumber.from('0x' + log.data.substring(130, 193)).toString();
-              }
-              if (from) {
-                if (log.topics.length == 4) {
-                  eventRecord = { type: "Transfer", from, to, tokenId: tokensOrTokenId, eventType: "erc721" };
-                } else {
-                  eventRecord = { type: "Transfer", from, to, tokens: tokensOrTokenId, eventType: "erc20" };
-                }
-              }
-            } else if (log.topics[0] == "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c") {
-              const to = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-              tokens = ethers.BigNumber.from(log.data).toString();
-              eventRecord = { type: "Transfer", from: ADDRESS0, to, tokens, eventType: "erc20" };
-            } else if (log.topics[0] == "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65") {
-              const from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-              tokens = ethers.BigNumber.from(log.data).toString();
-              eventRecord = { type: "Transfer", from, to: ADDRESS0, tokens, eventType: "erc20" };
-            } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
-              if (log.topics.length == 4) {
-                const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                const approved = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokenId = ethers.BigNumber.from(log.topics[3]).toString();
-                eventRecord = { type: "Approval", owner, approved, tokenId, eventType: "erc721" };
-              } else {
-                const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                const spender = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokens = ethers.BigNumber.from(log.data).toString();
-                eventRecord = { type: "Approval", owner, spender, tokens, eventType: "erc20" };
-              }
-            } else if (log.topics[0] == "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31") {
-              const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-              const operator = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-              approved = ethers.BigNumber.from(log.data).toString();
-              eventRecord = { type: "ApprovalForAll", owner, operator, approved, eventType: "erc721" };
-            } else if (log.topics[0] == "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") {
-              // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
-              const logData = erc1155Interface.parseLog(log);
-              const [operator, from, to, id, value] = logData.args;
-              tokenId = ethers.BigNumber.from(id).toString();
-              eventRecord = { type: "TransferSingle", operator, from, to, tokenId, value: value.toString(), eventType: "erc1155" };
-            } else if (log.topics[0] == "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb") {
-              // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
-              const logData = erc1155Interface.parseLog(log);
-              const [operator, from, to, ids, values] = logData.args;
-              const tokenIds = ids.map(e => ethers.BigNumber.from(e).toString());
-              eventRecord = { type: "TransferBatch", operator, from, to, tokenIds, values: values.map(e => e.toString()), eventType: "erc1155" };
-            } else {
-              console.log("NOT HANDLED: " + JSON.stringify(log));
-            }
-            // TODO: Testing if (eventRecord && contract == "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9") {
-            // if (eventRecord &&
-            //     ((parameter.erc20 && eventRecord.eventType == "erc20") ||
-            //      (parameter.erc721 && eventRecord.eventType == "erc721") ||
-            //      (parameter.erc1155 && eventRecord.eventType == "erc1155"))) {
-            // const testAddresses = parameter.devThing ? new Set(["0xB32979486938AA9694BFC898f35DBED459F44424","0x286E531F363768Fed5E18b468f5B76a9FFc33af5"]) : null;
-            // if (eventRecord && (!testAddresses || testAddresses.has(contract)) && eventRecord.eventType == "erc1155") {
-            // if (eventRecord && contract == "0xB32979486938AA9694BFC898f35DBED459F44424") {
-            // if (eventRecord && (contract == "0xB32979486938AA9694BFC898f35DBED459F44424" || contract == "0x286E531F363768Fed5E18b468f5B76a9FFc33af5")) {
-
-            if (eventRecord && (contract == ENS_ERC721_ADDRESS || contract == ENS_ERC1155_ADDRESS)) {
-              records.push( {
-                chainId: parameter.chainId,
-                blockNumber: parseInt(log.blockNumber),
-                logIndex: parseInt(log.logIndex),
-                txIndex: parseInt(log.transactionIndex),
-                txHash: log.transactionHash,
-                contract,
-                ...eventRecord,
-                confirmations: parameter.blockNumber - log.blockNumber,
-              });
-            }
-          }
-        }
-        if (records.length) {
-          await db.tokenEvents.bulkAdd(records).then(function(lastKey) {
-            console.log("syncRenewalEvents.bulkAdd lastKey: " + JSON.stringify(lastKey));
-          }).catch(Dexie.BulkError, function(e) {
-            console.log("syncRenewalEvents.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
-          });
-        }
-      }
-      async function getLogs(fromBlock, toBlock, section, selectedHashes, processLogs) {
-        logInfo("dataModule", "actions.syncRenewalEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section + ", selectedHashes: " + JSON.stringify(selectedHashes));
-
-        try {
-          let topics = null;
-          if (section == 0) {
-            topics = [[
-                '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6',
-              ],
-              '0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1', // selectedAddresses,
-              null,
-            ];
-            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            console.log("logs: " + JSON.stringify(logs, null, 2));
-            return;
-
-            // await processLogs(fromBlock, toBlock, section, logs);
-          } else if (section == 1) {
-            topics = [[
-                '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae'
-              ],
-              '0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1', // selectedAddresses,
-              null,
-            ];
-            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            console.log("logs: " + JSON.stringify(logs, null, 2));
-            return;
-
-            // await processLogs(fromBlock, toBlock, section, logs);
-          } else if (section == 2) {
-            topics = [[
-                '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
-                '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb',
-              ],
-              null,
-              selectedAddresses
-            ];
-            logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, section, logs);
-          } else if (section == 3) {
-            topics = [ [
-                '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
-                '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb',
-              ],
-              null,
-              null,
-              selectedAddresses
-            ];
-            logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, section, logs);
-          }
-        } catch (e) {
-          const mid = parseInt((fromBlock + toBlock) / 2);
-          await getLogs(fromBlock, mid, section, selectedAddresses, processLogs);
-          await getLogs(parseInt(mid) + 1, toBlock, section, selectedAddresses, processLogs);
-        }
-      }
-
-      logInfo("dataModule", "actions.syncRenewalEvents BEGIN");
-
-      const tokensToProcess = {};
-      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
-        if (contractData.type == "erc721" || contractData.type == "erc1155") {
-          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
-              if (!(contract in tokensToProcess)) {
-                tokensToProcess[contract] = {};
-              }
-              tokensToProcess[contract][tokenId] = tokenData;
-            // }
-          }
-        }
-      }
-      // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
-      let processList = [];
-      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
-        const contractType = context.state.tokens[parameter.chainId][contract].type;
-        for (const [tokenId, tokenData] of Object.entries(contractData)) {
-          // console.log(contract + ":" + tokenId);
-          processList.push({ contract, tokenId });
-        }
-      }
-      // processList = processList.slice(1, 3); // TODO
-      // ERC-721 925.eth renewal 0x684d272ec79f907011b451daf5bb6d90b54ac56cac2e20c669c617bee778fd3d and ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
-      // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
-      processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081'].includes(e.tokenId));
-      // processList = processList.filter(e => e.contract === "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85");
-
-      // ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
-      // processList = processList.filter(e => ['27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
-      // processList = processList.filter(e => e.contract === "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401");
-
-      // const ZEROES = "0x0000000000000000000000000000000000000000000000000000000000000000";
-      // const ethPart = ethers.utils.solidityKeccak256(["string"], ["eth"]);
-      // console.log("ethPart: " + ethPart); // 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0
-      // const firstPart = ethers.utils.solidityKeccak256(["bytes"], [ZEROES + ethPart.substring(2,)]);
-      // console.log("firstPart: " + firstPart); // 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae
-      // const ensPart = ethers.utils.solidityKeccak256(["string"], ["ens"]);
-      // console.log("ensPart: " + ensPart); // 0x5cee339e13375638553bdf5a6e36ba80fb9f6a4f0783680884d92b558aa471da
-      // const secondPart = ethers.utils.solidityKeccak256(["bytes"], [firstPart + ensPart.substring(2,)]);
-      // console.log("secondPart: " + secondPart); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
-      // // const thirdPart = ethers.utils.solidityKeccak256(["bytes"], [secondPart + firstPart.substring(2,)]);
-      // const namehash = ethers.utils.namehash('ens.eth');
-      // console.log("namehash: " + namehash); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 35373739037748002394990259860942348737703776167876918520233297406984196933343
-
-
-      // https://docs.ethers.org/v4/api-utils.html#namehash
-      // https://docs.ens.domains/resolution/names
-
-
-
-      // ERC-721 portraits.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:44751912813930912337796007339729037742242848274525268603577754244108589799563
-      // const namehash = ethers.utils.solidityKeccak256(["string"], ["portraits"]);
-
-      // ERC-1155 portraits.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:27727362303445643037535452095569739813950020376856883309402147522300287323280
-      // const namehash = ethers.utils.namehash('portraits.eth');
-      // console.log("namehash: " + namehash); // 0x3d4d2183fb9835727050b65cba7fdffe10545fb323378f31e991b6b2c63b0c90
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 27727362303445643037535452095569739813950020376856883309402147522300287323280
-
-      // ERC-721 925.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
-      // ERC-1155 925.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:90617972706753856606077416428092812770327579333964424572858812298074332597719
-      const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
-      console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
-      const decimalLabelHash = ethers.BigNumber.from(labelhash);
-      console.log("decimalLabelHash: " + decimalLabelHash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
-      const namehash = ethers.utils.namehash('925.eth');
-      console.log("namehash: " + namehash); // 0xc857f4794464c8a531d378463f789ad3caea99e27510bd74cafe33b776fc0dd7
-      const decimalNameHash = ethers.BigNumber.from(namehash);
-      console.log("decimalNameHash: " + decimalNameHash); // 90617972706753856606077416428092812770327579333964424572858812298074332597719
-
-
-      // So namehash of portraits.eth points to the ERC-1155 wrapper tokenId
-
-
-      return;
-
-
-      console.log("processList: " + JSON.stringify(processList, null, 2));
-
-      const BATCHSIZE = 50;
-      let completed = 0;
-      context.commit('setSyncSection', { section: 'Renewal Events', total: processList.length });
-      context.commit('setSyncCompleted', completed);
-      for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
-        const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
-        console.log("batch: " + JSON.stringify(batch, null, 2));
-        const startBlock = 0;
-        await getLogs(startBlock, parameter.blockNumber, 0, batch, processLogs);
-        await getLogs(startBlock, parameter.blockNumber, 1, batch, processLogs);
-      }
-      return;
-
-      // const selectedAddresses = [];
-      // for (const [address, addressData] of Object.entries(context.state.addresses)) {
-      //   if (address.substring(0, 2) == "0x") {
-      //     selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
-      //   }
-      // }
-      // console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
-      // if (selectedAddresses.length > 0) {
-      //   const deleteCall = await db.tokenEvents.where("confirmations").below(parameter.confirmations).delete();
-      //   const latest = await db.tokenEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-      //   // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-      //   const startBlock = 0;
-      //   for (let section = 0; section < 4; section++) {
-      //     await getLogs(startBlock, parameter.blockNumber, section, selectedAddresses, processLogs);
-      //   }
-      // }
-      logInfo("dataModule", "actions.syncRenewalEvents END");
-    },
-
     async syncTokenEventTimestamps(context, parameter) {
       logInfo("dataModule", "actions.syncTokenEventTimestamps: " + JSON.stringify(parameter));
       const db = new Dexie(context.state.db.name);
@@ -1557,6 +1234,325 @@ const dataModule = {
         } while (continuation != null /*&& !state.halt && !state.sync.error */);
       }
 
+    },
+
+    async syncRenewalEvents(context, parameter) {
+      logInfo("dataModule", "actions.syncRenewalEvents: " + JSON.stringify(parameter));
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
+
+      // 925.eth ERC-721 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
+      // - ENS Base Registrar Implementation 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 NameRenewed (index_topic_1 uint256 id, uint256 expires) Topic 0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6
+      //   [ '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6', namehash, null ],
+      // - ETH Registrar Controller 0x253553366Da8546fC250F225fe3d25d0C782303b NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires) 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
+      //   [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', name, namehash, null ],
+
+      // ERC-20 & ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
+      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', accountAs32Bytes, null ],
+      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', null, accountAs32Bytes ],
+
+      // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
+      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, accountAs32Bytes, null ],
+      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, null, accountAs32Bytes ],
+
+      // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
+      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, accountAs32Bytes, null ],
+      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, null, accountAs32Bytes ],
+
+      // ENS:ETH Registrar Controller NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
+      // [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', [tokenIds] ],
+
+      // WETH Deposit (index_topic_1 address dst, uint256 wad)
+      // 0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c
+      // WETH Withdrawal (index_topic_1 address src, uint256 wad)
+      // 0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65
+
+      // // ERC-20 Approval (index_topic_1 address owner, index_topic_2 address spender, uint256 value)
+      // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
+      // // ERC-721 Approval (index_topic_1 address owner, index_topic_2 address approved, index_topic_3 uint256 tokenId)
+      // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
+      // // ERC-721 ApprovalForAll (index_topic_1 address owner, index_topic_2 address operator, bool approved)
+      // // 0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31
+      let total = 0;
+      let t = this;
+      async function processLogs(fromBlock, toBlock, section, logs) {
+        total = parseInt(total) + logs.length;
+        context.commit('setSyncCompleted', total);
+        logInfo("dataModule", "actions.syncRenewalEvents.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section + ", logs.length: " + logs.length + ", total: " + total);
+        const records = [];
+        for (const log of logs) {
+          if (!log.removed) {
+            const contract = log.address;
+            let eventRecord = null;
+            if (log.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") {
+              let from = null;
+              let to = null;
+              let tokensOrTokenId = null;
+              let tokens = null;
+              let tokenId = null;
+              if (log.topics.length == 4) {
+                from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+                to = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
+                tokensOrTokenId = ethers.BigNumber.from(log.topics[3]).toString();
+              } else if (log.topics.length == 3) {
+                from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+                to = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
+                tokensOrTokenId = ethers.BigNumber.from(log.data).toString();
+              // TODO: Handle 2
+              } else if (log.topics.length == 1) {
+                from = ethers.utils.getAddress('0x' + log.data.substring(26, 66));
+                to = ethers.utils.getAddress('0x' + log.data.substring(90, 130));
+                tokensOrTokenId = ethers.BigNumber.from('0x' + log.data.substring(130, 193)).toString();
+              }
+              if (from) {
+                if (log.topics.length == 4) {
+                  eventRecord = { type: "Transfer", from, to, tokenId: tokensOrTokenId, eventType: "erc721" };
+                } else {
+                  eventRecord = { type: "Transfer", from, to, tokens: tokensOrTokenId, eventType: "erc20" };
+                }
+              }
+            } else if (log.topics[0] == "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c") {
+              const to = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+              tokens = ethers.BigNumber.from(log.data).toString();
+              eventRecord = { type: "Transfer", from: ADDRESS0, to, tokens, eventType: "erc20" };
+            } else if (log.topics[0] == "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65") {
+              const from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+              tokens = ethers.BigNumber.from(log.data).toString();
+              eventRecord = { type: "Transfer", from, to: ADDRESS0, tokens, eventType: "erc20" };
+            } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
+              if (log.topics.length == 4) {
+                const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+                const approved = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
+                tokenId = ethers.BigNumber.from(log.topics[3]).toString();
+                eventRecord = { type: "Approval", owner, approved, tokenId, eventType: "erc721" };
+              } else {
+                const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+                const spender = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
+                tokens = ethers.BigNumber.from(log.data).toString();
+                eventRecord = { type: "Approval", owner, spender, tokens, eventType: "erc20" };
+              }
+            } else if (log.topics[0] == "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31") {
+              const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+              const operator = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
+              approved = ethers.BigNumber.from(log.data).toString();
+              eventRecord = { type: "ApprovalForAll", owner, operator, approved, eventType: "erc721" };
+            } else if (log.topics[0] == "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") {
+              // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
+              const logData = erc1155Interface.parseLog(log);
+              const [operator, from, to, id, value] = logData.args;
+              tokenId = ethers.BigNumber.from(id).toString();
+              eventRecord = { type: "TransferSingle", operator, from, to, tokenId, value: value.toString(), eventType: "erc1155" };
+            } else if (log.topics[0] == "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb") {
+              // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
+              const logData = erc1155Interface.parseLog(log);
+              const [operator, from, to, ids, values] = logData.args;
+              const tokenIds = ids.map(e => ethers.BigNumber.from(e).toString());
+              eventRecord = { type: "TransferBatch", operator, from, to, tokenIds, values: values.map(e => e.toString()), eventType: "erc1155" };
+            } else {
+              console.log("NOT HANDLED: " + JSON.stringify(log));
+            }
+            // TODO: Testing if (eventRecord && contract == "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9") {
+            // if (eventRecord &&
+            //     ((parameter.erc20 && eventRecord.eventType == "erc20") ||
+            //      (parameter.erc721 && eventRecord.eventType == "erc721") ||
+            //      (parameter.erc1155 && eventRecord.eventType == "erc1155"))) {
+            // const testAddresses = parameter.devThing ? new Set(["0xB32979486938AA9694BFC898f35DBED459F44424","0x286E531F363768Fed5E18b468f5B76a9FFc33af5"]) : null;
+            // if (eventRecord && (!testAddresses || testAddresses.has(contract)) && eventRecord.eventType == "erc1155") {
+            // if (eventRecord && contract == "0xB32979486938AA9694BFC898f35DBED459F44424") {
+            // if (eventRecord && (contract == "0xB32979486938AA9694BFC898f35DBED459F44424" || contract == "0x286E531F363768Fed5E18b468f5B76a9FFc33af5")) {
+
+            if (eventRecord && (contract == ENS_ERC721_ADDRESS || contract == ENS_ERC1155_ADDRESS)) {
+              records.push( {
+                chainId: parameter.chainId,
+                blockNumber: parseInt(log.blockNumber),
+                logIndex: parseInt(log.logIndex),
+                txIndex: parseInt(log.transactionIndex),
+                txHash: log.transactionHash,
+                contract,
+                ...eventRecord,
+                confirmations: parameter.blockNumber - log.blockNumber,
+              });
+            }
+          }
+        }
+        if (records.length) {
+          await db.tokenEvents.bulkAdd(records).then(function(lastKey) {
+            console.log("syncRenewalEvents.bulkAdd lastKey: " + JSON.stringify(lastKey));
+          }).catch(Dexie.BulkError, function(e) {
+            console.log("syncRenewalEvents.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
+          });
+        }
+      }
+      async function getLogs(fromBlock, toBlock, section, selectedRecords, processLogs) {
+        logInfo("dataModule", "actions.syncRenewalEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section + ", selectedRecords: " + JSON.stringify(selectedRecords));
+        const hashes = selectedRecords.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
+        // const hashes = selectedRecords.map(a => a.tokenId);
+        // console.log("hashes: " + JSON.stringify(hashes, null, 2));
+
+        try {
+          let topics = null;
+          if (section == 0) {
+            topics = [[
+                '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6',
+              ],
+              hashes,
+              null,
+            ];
+            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+            console.log("logs: " + JSON.stringify(logs, null, 2));
+            return;
+
+            // await processLogs(fromBlock, toBlock, section, logs);
+          } else if (section == 1) {
+            topics = [
+              '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+              hashes,
+              // null,
+            ];
+            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+            console.log("logs: " + JSON.stringify(logs, null, 2));
+            return;
+
+            // await processLogs(fromBlock, toBlock, section, logs);
+          // } else if (section == 2) {
+          //   topics = [[
+          //       '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
+          //       '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb',
+          //     ],
+          //     null,
+          //     selectedAddresses
+          //   ];
+          //   logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+          //   await processLogs(fromBlock, toBlock, section, logs);
+          // } else if (section == 3) {
+          //   topics = [ [
+          //       '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
+          //       '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb',
+          //     ],
+          //     null,
+          //     null,
+          //     selectedAddresses
+          //   ];
+          //   logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+          //   await processLogs(fromBlock, toBlock, section, logs);
+          }
+        } catch (e) {
+          const mid = parseInt((fromBlock + toBlock) / 2);
+          await getLogs(fromBlock, mid, section, selectedRecords, processLogs);
+          await getLogs(parseInt(mid) + 1, toBlock, section, selectedRecords, processLogs);
+        }
+      }
+
+      logInfo("dataModule", "actions.syncRenewalEvents BEGIN");
+
+      const tokensToProcess = {};
+      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
+        if (contractData.type == "erc721" || contractData.type == "erc1155") {
+          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
+            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
+              if (!(contract in tokensToProcess)) {
+                tokensToProcess[contract] = {};
+              }
+              tokensToProcess[contract][tokenId] = tokenData;
+            // }
+          }
+        }
+      }
+      // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
+      let processList = [];
+      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
+        const contractType = context.state.tokens[parameter.chainId][contract].type;
+        for (const [tokenId, tokenData] of Object.entries(contractData)) {
+          // console.log(contract + ":" + tokenId);
+          if (contract == ENS_ERC721_ADDRESS) {
+            processList.push({ contract, tokenId });
+          } else {
+            // TODO: contract == ENS_ERC1155_ADDRESS
+          }
+        }
+      }
+      // processList = processList.slice(1, 10); // TODO
+      // ERC-721 925.eth renewal 0x684d272ec79f907011b451daf5bb6d90b54ac56cac2e20c669c617bee778fd3d and ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
+      // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
+      // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081'].includes(e.tokenId));
+      // processList = processList.filter(e => e.contract === "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85");
+
+      // ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
+      // processList = processList.filter(e => ['27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
+      // processList = processList.filter(e => e.contract === "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401");
+
+      // const ZEROES = "0x0000000000000000000000000000000000000000000000000000000000000000";
+      // const ethPart = ethers.utils.solidityKeccak256(["string"], ["eth"]);
+      // console.log("ethPart: " + ethPart); // 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0
+      // const firstPart = ethers.utils.solidityKeccak256(["bytes"], [ZEROES + ethPart.substring(2,)]);
+      // console.log("firstPart: " + firstPart); // 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae
+      // const ensPart = ethers.utils.solidityKeccak256(["string"], ["ens"]);
+      // console.log("ensPart: " + ensPart); // 0x5cee339e13375638553bdf5a6e36ba80fb9f6a4f0783680884d92b558aa471da
+      // const secondPart = ethers.utils.solidityKeccak256(["bytes"], [firstPart + ensPart.substring(2,)]);
+      // console.log("secondPart: " + secondPart); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
+      // // const thirdPart = ethers.utils.solidityKeccak256(["bytes"], [secondPart + firstPart.substring(2,)]);
+      // const namehash = ethers.utils.namehash('ens.eth');
+      // console.log("namehash: " + namehash); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
+      // const decimalNameHash = ethers.BigNumber.from(namehash);
+      // console.log("decimalNameHash: " + decimalNameHash); // 35373739037748002394990259860942348737703776167876918520233297406984196933343
+
+      // https://docs.ethers.org/v4/api-utils.html#namehash
+      // https://docs.ens.domains/resolution/names
+
+      // ERC-721 portraits.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:44751912813930912337796007339729037742242848274525268603577754244108589799563
+      // const namehash = ethers.utils.solidityKeccak256(["string"], ["portraits"]);
+
+      // ERC-1155 portraits.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:27727362303445643037535452095569739813950020376856883309402147522300287323280
+      // const namehash = ethers.utils.namehash('portraits.eth');
+      // console.log("namehash: " + namehash); // 0x3d4d2183fb9835727050b65cba7fdffe10545fb323378f31e991b6b2c63b0c90
+      // const decimalNameHash = ethers.BigNumber.from(namehash);
+      // console.log("decimalNameHash: " + decimalNameHash); // 27727362303445643037535452095569739813950020376856883309402147522300287323280
+
+      // ERC-721 925.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
+      // ERC-1155 925.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:90617972706753856606077416428092812770327579333964424572858812298074332597719
+      // const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
+      // console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
+      // const decimalLabelHash = ethers.BigNumber.from(labelhash);
+      // console.log("decimalLabelHash: " + decimalLabelHash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
+      // const namehash = ethers.utils.namehash('925.eth');
+      // console.log("namehash: " + namehash); // 0xc857f4794464c8a531d378463f789ad3caea99e27510bd74cafe33b776fc0dd7
+      // const decimalNameHash = ethers.BigNumber.from(namehash);
+      // console.log("decimalNameHash: " + decimalNameHash); // 90617972706753856606077416428092812770327579333964424572858812298074332597719
+
+      console.log("processList: " + JSON.stringify(processList, null, 2));
+
+      const BATCHSIZE = 100;
+      let completed = 0;
+      context.commit('setSyncSection', { section: 'Renewal Events', total: processList.length });
+      context.commit('setSyncCompleted', completed);
+      for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
+        const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
+        // console.log("batch: " + JSON.stringify(batch, null, 2));
+        const startBlock = 0;
+        // await getLogs(startBlock, parameter.blockNumber, 0, batch, processLogs);
+        await getLogs(startBlock, parameter.blockNumber, 1, batch, processLogs);
+      }
+      return;
+
+      // const selectedAddresses = [];
+      // for (const [address, addressData] of Object.entries(context.state.addresses)) {
+      //   if (address.substring(0, 2) == "0x") {
+      //     selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
+      //   }
+      // }
+      // console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
+      // if (selectedAddresses.length > 0) {
+      //   const deleteCall = await db.tokenEvents.where("confirmations").below(parameter.confirmations).delete();
+      //   const latest = await db.tokenEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
+      //   // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
+      //   const startBlock = 0;
+      //   for (let section = 0; section < 4; section++) {
+      //     await getLogs(startBlock, parameter.blockNumber, section, selectedAddresses, processLogs);
+      //   }
+      // }
+      logInfo("dataModule", "actions.syncRenewalEvents END");
     },
 
     async syncTokenMetadataOld(context, parameter) {

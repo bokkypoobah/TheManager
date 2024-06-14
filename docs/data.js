@@ -668,6 +668,7 @@ const dataModule = {
     //     await context.commit('setState', { name: 'txs', data: info.txs });
     //   }
     // },
+
     async syncIt(context, options) {
       logInfo("dataModule", "actions.syncIt - options: " + JSON.stringify(options, null, 2));
       // const db = new Dexie(context.state.db.name);

@@ -1291,19 +1291,46 @@ const dataModule = {
       // processList = processList.filter(e => ['27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
       // processList = processList.filter(e => e.contract === "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401");
 
-      const ZEROES = "0x0000000000000000000000000000000000000000000000000000000000000000";
+      // const ZEROES = "0x0000000000000000000000000000000000000000000000000000000000000000";
+      // const ethPart = ethers.utils.solidityKeccak256(["string"], ["eth"]);
+      // console.log("ethPart: " + ethPart); // 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0
+      // const firstPart = ethers.utils.solidityKeccak256(["bytes"], [ZEROES + ethPart.substring(2,)]);
+      // console.log("firstPart: " + firstPart); // 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae
+      // const ensPart = ethers.utils.solidityKeccak256(["string"], ["ens"]);
+      // console.log("ensPart: " + ensPart); // 0x5cee339e13375638553bdf5a6e36ba80fb9f6a4f0783680884d92b558aa471da
+      // const secondPart = ethers.utils.solidityKeccak256(["bytes"], [firstPart + ensPart.substring(2,)]);
+      // console.log("secondPart: " + secondPart); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
+      // // const thirdPart = ethers.utils.solidityKeccak256(["bytes"], [secondPart + firstPart.substring(2,)]);
+      // const namehash = ethers.utils.namehash('ens.eth');
+      // console.log("namehash: " + namehash); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
+      // const decimalNameHash = ethers.BigNumber.from(namehash);
+      // console.log("decimalNameHash: " + decimalNameHash); // 35373739037748002394990259860942348737703776167876918520233297406984196933343
 
-      const ethPart = ethers.utils.solidityKeccak256(["string"], ["eth"]);
-      console.log("ethPart: " + ethPart); // 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0
-      const firstPart = ethers.utils.solidityKeccak256(["bytes"], [ZEROES + ethPart.substring(2,)]);
-      console.log("firstPart: " + firstPart); // 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae
-      const ensPart = ethers.utils.solidityKeccak256(["string"], ["ens"]);
-      console.log("ensPart: " + ensPart); // 0x5cee339e13375638553bdf5a6e36ba80fb9f6a4f0783680884d92b558aa471da
-      const secondPart = ethers.utils.solidityKeccak256(["bytes"], [firstPart + ensPart.substring(2,)]);
-      console.log("secondPart: " + secondPart); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
-      // const thirdPart = ethers.utils.solidityKeccak256(["bytes"], [secondPart + firstPart.substring(2,)]);
-      const namehash = ethers.utils.namehash('ens.eth');
-      console.log("namehash: " + namehash);
+
+      // https://docs.ethers.org/v4/api-utils.html#namehash
+      // https://docs.ens.domains/resolution/names
+
+
+
+      // ERC-721 portraits.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:44751912813930912337796007339729037742242848274525268603577754244108589799563
+      // const namehash = ethers.utils.solidityKeccak256(["string"], ["portraits"]);
+
+      // ERC-1155 portraits.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:27727362303445643037535452095569739813950020376856883309402147522300287323280
+      // const namehash = ethers.utils.namehash('portraits.eth');
+      // console.log("namehash: " + namehash); // 0x3d4d2183fb9835727050b65cba7fdffe10545fb323378f31e991b6b2c63b0c90
+      // const decimalNameHash = ethers.BigNumber.from(namehash);
+      // console.log("decimalNameHash: " + decimalNameHash); // 27727362303445643037535452095569739813950020376856883309402147522300287323280
+
+      // ERC-721 925.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
+      const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
+      console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
+      const decimalLabelHash = ethers.BigNumber.from(labelhash);
+      console.log("decimalLabelHash: " + decimalLabelHash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
+
+
+      // So namehash of portraits.eth points to the ERC-1155 wrapper tokenId
+
+
       return;
 
 

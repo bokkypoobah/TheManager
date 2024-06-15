@@ -1804,6 +1804,9 @@ const dataModule = {
               nameString = nameString.replace(/\u0000/, '').replace(/\u0003/, '.').replace(/\t/, '').replace(/\u0007/, '').replace("\b", '.');
 
               console.log("nameString: " + nameString);
+              const parts = nameString.split(".");
+              console.log("parts: " + JSON.stringify(parts));
+
               const namehash = ethers.utils.namehash(nameString);
               console.log("namehash: " + namehash);
               const decimalNameHash = ethers.BigNumber.from(namehash);

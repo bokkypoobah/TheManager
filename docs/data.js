@@ -1800,30 +1800,33 @@ const dataModule = {
               const logData = nameWrapperInterface.parseLog(log);
               // console.log(JSON.stringify(logData, null, 2));
               const [node, name, owner, fuses, expiry] = logData.args;
-              let nameString = ethers.utils.toUtf8String(name);
-              nameString = nameString.replace("\u0003", '.').replace(/\u0000/, '').replace(/\u0006/, '').replace(/\u0007/, '').replace(/\u000b/, '').replace(/\t/, '').replace(/\n/, '').replace(/\r/, '').replace("\b", '.');
-              // console.log("nameString: " + nameString);
-              const parts = nameString.split(".");
-              // console.log("parts: " + JSON.stringify(parts));
+              let parts = decodeNameWrapperBytes(name);
+              // console.log("parts: " + parts);
+              let nameString = parts.join(".");
+              // nameString = nameString.replace("\u0003", '.').replace(/\u0000/, '').replace(/\u0006/, '').replace(/\u0007/, '').replace(/\u000b/, '').replace(/\t/, '').replace(/\n/, '').replace(/\r/, '').replace("\b", '.');
+              // // console.log("nameString: " + nameString);
+              // const parts = nameString.split(".");
+              // // console.log("parts: " + JSON.stringify(parts));
               let label = null;
               let labelhash = null;
               let labelhashDecimals = null;
               if (parts.length >= 2 && parts[parts.length - 1] == "eth") {
                 label = parts[parts.length - 2];
-                console.log("label: " + label);
+                // console.log("label: " + label);
                 labelhash = ethers.utils.solidityKeccak256(["string"], [label]);
-                console.log("labelhash: " + labelhash);
+                // console.log("labelhash: " + labelhash);
                 labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
-                console.log("labelhashDecimals: " + labelhashDecimals);
+                // console.log("labelhashDecimals: " + labelhashDecimals);
               }
               const namehashDecimals = ethers.BigNumber.from(node).toString();
+              const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
 
               // const namehash = ethers.utils.namehash(nameString);
               // console.log("namehash: " + namehash);
               // const decimalNameHash = ethers.BigNumber.from(namehash);
               // console.log("decimalNameHash: " + decimalNameHash);
 
-              eventRecord = { type: "NameWrapped", namehash: node, namehashDecimals, name: nameString, nameBytes: name, label, labelhash, labelhashDecimals, owner, fuses, expiry: parseInt(expiry) /*, expiryString: moment.unix(expiry).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameWrapped", namehash: node, namehashDecimals, name: nameString, nameBytes: name, label, labelhash, labelhashDecimals, subdomain, owner, fuses, expiry: parseInt(expiry) /*, expiryString: moment.unix(expiry).format("MMM DD YYYY")*/ };
               console.log(JSON.stringify(eventRecord, null, 2));
 
             } else {

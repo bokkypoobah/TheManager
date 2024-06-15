@@ -483,6 +483,20 @@ function parseReservoirTokenData(info) {
   return result;
 }
 
+// scientific.collections.eth
+//           1         2         3         4         5
+// 012345678901234567890123456789012345678901234567890123456789
+// 0x0a736369656e74696669630b636f6c6c656374696f6e730365746800
+//
+//   0a                                                                 10
+//     736369656e7469666963                                             scientific
+//                         0b                                           11
+//                           636f6c6c656374696f6e73                     collections
+//                                                 03                   3
+//                                                   657468             eth
+//                                                         00           0
+const results = decodeNameWrapperBytes("0x0a736369656e74696669630b636f6c6c656374696f6e730365746800");
+console.log("results: " + JSON.stringify(results)); // results: ["scientific","collections","eth"]
 function decodeNameWrapperBytes(b) {
   let start = 4;
   let len = ethers.BigNumber.from("0x" + b.substring(2, 4));
@@ -498,18 +512,3 @@ function decodeNameWrapperBytes(b) {
   }
   return parts;
 }
-
-// scientific.collections.eth
-//           1         2         3         4         5
-// 012345678901234567890123456789012345678901234567890123456789
-// 0x0a736369656e74696669630b636f6c6c656374696f6e730365746800
-//
-//   0a
-//     736369656e7469666963
-//                         0b
-//                           636f6c6c656374696f6e73
-//                                                 03
-//                                                   65746800
-
-const results = decodeNameWrapperBytes("0x0a736369656e74696669630b636f6c6c656374696f6e730365746800");
-console.log("results: " + JSON.stringify(results));

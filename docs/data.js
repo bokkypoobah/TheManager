@@ -1636,8 +1636,14 @@ const dataModule = {
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       // const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
+      const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
       const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
       const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
+
+      // ERC-1155 portraits.eth 27727362303445643037535452095569739813950020376856883309402147522300287323280
+      // ERC-1155 yourmum.lovesyou.eth 57229065116737680790555199455465332171886850449809000367294662727325932836690
+      // - ENS: Name Wrapper 0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401 NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry) 0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340
+      //   [ '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', namehash, null ],
 
       // 925.eth ERC-721 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
 
@@ -1789,6 +1795,20 @@ const dataModule = {
               eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires)/*, expiryString: moment.unix(expires).format("MMM DD YYYY")*/ };
               console.log(JSON.stringify(eventRecord, null, 2));
 
+            } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
+              // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
+              const logData = nameWrapperInterface.parseLog(log);
+              // console.log(JSON.stringify(logData, null, 2));
+              const [node, name, owner, fuses, expiry] = logData.args;
+              // try {
+              //   const test = ethers.utils.toUtf8String(name);
+              //   console.log(test);
+              // } catch (e) {
+              //   console.log(e);
+              // }
+              eventRecord = { type: "NameWrapped", node, name: ethers.utils.toUtf8String(name), owner, fuses, expiry: parseInt(expiry), expiryString: moment.unix(expiry).format("MMM DD YYYY") };
+              console.log(JSON.stringify(eventRecord, null, 2));
+
             } else {
               console.log("NOT HANDLED: " + JSON.stringify(log));
             }
@@ -1835,8 +1855,9 @@ const dataModule = {
           let topics = null;
           if (section == 0) {
             topics = [[
-                '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
-                '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+                '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
+                // '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
+                // '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
                 // Need `node` '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
                 // Need `node` '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2',
               ],
@@ -1990,8 +2011,6 @@ const dataModule = {
       // return;
 
       console.log("processList: " + JSON.stringify(processList, null, 2));
-
-      return;
 
       const BATCHSIZE = 100;
       let completed = 0;

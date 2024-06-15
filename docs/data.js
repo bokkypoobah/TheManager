@@ -1800,13 +1800,17 @@ const dataModule = {
               const logData = nameWrapperInterface.parseLog(log);
               // console.log(JSON.stringify(logData, null, 2));
               const [node, name, owner, fuses, expiry] = logData.args;
-              // try {
-              //   const test = ethers.utils.toUtf8String(name);
-              //   console.log(test);
-              // } catch (e) {
-              //   console.log(e);
-              // }
-              eventRecord = { type: "NameWrapped", node, name: ethers.utils.toUtf8String(name), owner, fuses, expiry: parseInt(expiry), expiryString: moment.unix(expiry).format("MMM DD YYYY") };
+              let nameString = ethers.utils.toUtf8String(name);
+              nameString = nameString.replace(/\u0000/, '').replace(/\u0003/, '.').replace(/\t/, '').replace(/\u0007/, '').replace("\b", '.');
+
+              console.log("nameString: " + nameString);
+              const namehash = ethers.utils.namehash(nameString);
+              console.log("namehash: " + namehash);
+              const decimalNameHash = ethers.BigNumber.from(namehash);
+              console.log("decimalNameHash: " + decimalNameHash);
+
+
+              eventRecord = { type: "NameWrapped", node, name: nameString, owner, fuses, expiry: parseInt(expiry), expiryString: moment.unix(expiry).format("MMM DD YYYY") };
               console.log(JSON.stringify(eventRecord, null, 2));
 
             } else {

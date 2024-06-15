@@ -489,23 +489,36 @@ function decodeNameWrapperBytes(b) {
   let start = 4;
   let len = ethers.BigNumber.from("0x" + b.substring(2, 4));
   const parts = [];
-  // while (len > 0) {
+  while (len > 0) {
     console.log("len: " + len + "; start=" + start);
     const str = b.substring(start, start + len * 2);
     console.log("str: " + str);
+    let strUtf8 = ethers.utils.toUtf8String("0x" + str);
+    console.log("strUtf8: " + strUtf8);
+    parts.push(strUtf8);
 
-    // len = ethers.BigNumber.from("0x" + b.substring((start + len * 2), (start + len * 2) + 2));
-    // start = (start + len * 2);
-    // console.log("len: " + len + "; start=" + start);
-  // }
+    const s = b.substring(start + len * 2, start + len * 2 + 2);
+    console.log("s: " + s);
+    const newStart = start + len * 2 + 2;
+    len = ethers.BigNumber.from("0x" + b.substring(start + len * 2, start + len * 2 + 2));
+    start = newStart;
+    console.log("len: " + len + "; start=" + start);
+  }
 
   return parts;
 }
 
 // scientific.collections.eth
-// 0x0a736369656e74696669630b636f6c6c656374696f6e730365746800
 //           1         2         3         4         5
 // 012345678901234567890123456789012345678901234567890123456789
+// 0x0a736369656e74696669630b636f6c6c656374696f6e730365746800
+//
+//   0a
+//     736369656e7469666963
+//                         0b
+//                           636f6c6c656374696f6e73
+//                                                 03
+//                                                   65746800
 
 const results = decodeNameWrapperBytes("0x0a736369656e74696669630b636f6c6c656374696f6e730365746800");
-console.log("results: " + JSON.stringify(results, null, 2));
+console.log("results: " + JSON.stringify(results));

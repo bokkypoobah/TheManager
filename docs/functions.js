@@ -482,3 +482,30 @@ function parseReservoirTokenData(info) {
   };
   return result;
 }
+
+function decodeNameWrapperBytes(b) {
+  console.log("b:" + b);
+
+  let start = 4;
+  let len = ethers.BigNumber.from("0x" + b.substring(2, 4));
+  const parts = [];
+  // while (len > 0) {
+    console.log("len: " + len + "; start=" + start);
+    const str = b.substring(start, start + len * 2);
+    console.log("str: " + str);
+
+    // len = ethers.BigNumber.from("0x" + b.substring((start + len * 2), (start + len * 2) + 2));
+    // start = (start + len * 2);
+    // console.log("len: " + len + "; start=" + start);
+  // }
+
+  return parts;
+}
+
+// scientific.collections.eth
+// 0x0a736369656e74696669630b636f6c6c656374696f6e730365746800
+//           1         2         3         4         5
+// 012345678901234567890123456789012345678901234567890123456789
+
+const results = decodeNameWrapperBytes("0x0a736369656e74696669630b636f6c6c656374696f6e730365746800");
+console.log("results: " + JSON.stringify(results, null, 2));

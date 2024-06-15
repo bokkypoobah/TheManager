@@ -6,7 +6,7 @@ const SyncOptions = {
 
         <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.transfers" @input="saveSettings" v-b-popover.hover="'ENS ERC-721 and ERC-1155 Transfer Events'" class="ml-2 mt-1">ENS Transfer Events</b-form-checkbox>
         <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.ensEvents" @input="saveSettings" v-b-popover.hover="'ENS ERC-721 Events'" class="ml-2 mt-1">ENS Events</b-form-checkbox>
-        <b-form-checkbox size="sm" switch :disabled="settings.devThing || true" v-model="settings.wrappedENSEvents" @input="saveSettings" v-b-popover.hover="'Wrapped ENS ERC-1155 Events'" class="ml-2 mt-1">Wrapped ENS Events</b-form-checkbox>
+        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.wrappedENSEvents" @input="saveSettings" v-b-popover.hover="'Wrapped ENS ERC-1155 Events'" class="ml-2 mt-1">Wrapped ENS Events</b-form-checkbox>
 
         <!-- <b-form-checkbox size="sm" switch :disabled="settings.devThing || chainId != 11155111" v-model="settings.stealthTransfers" @input="saveSettings" v-b-popover.hover="'ERC-5564: Stealth Addresses announcements'" class="ml-2 mt-1">Stealth Transfers</b-form-checkbox>
         <b-form-checkbox size="sm" switch :disabled="settings.devThing || chainId != 11155111" v-model="settings.stealthMetaAddressRegistry" @input="saveSettings" v-b-popover.hover="'ERC-6538: Stealth Meta-Address Registry entries'" class="ml-2 mt-1">Stealth Meta-Address Registry</b-form-checkbox>

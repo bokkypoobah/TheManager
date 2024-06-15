@@ -1249,6 +1249,16 @@ const dataModule = {
 
       // - ENS: Old ETH Registrar Controller 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires) 0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f
       //   [ '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', namehash, null ],
+      // - ENS: Old ETH Registrar Controller 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5 NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires) 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
+      //   [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', namehash, null ],
+
+
+      // Need `node` - ENS: Public Resolver 2 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41 AddressChanged (index_topic_1 bytes32 node, uint256 coinType, bytes newAddress) 0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752
+      //   [ '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752', namehash, null ],
+      // Need `node` - ENS: Public Resolver 2 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41 AddrChanged (index_topic_1 bytes32 node, address a) 0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2
+      //   [ '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2', namehash, null ],
+
+
 
       // - ENS: ETH Registrar Controller 0x253553366Da8546fC250F225fe3d25d0C782303b NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 baseCost, uint256 premium, uint256 expires) 0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27
       //   [ '0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27', namehash, null ],
@@ -1416,6 +1426,9 @@ const dataModule = {
           if (section == 0) {
             topics = [[
                 '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
+                '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+                // Need `node` '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
+                // Need `node` '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2',
               ],
               hashes,
               null,

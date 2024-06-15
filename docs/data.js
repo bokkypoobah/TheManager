@@ -1244,6 +1244,7 @@ const dataModule = {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
       const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
+      const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
 
       // 925.eth ERC-721 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
 
@@ -1377,6 +1378,22 @@ const dataModule = {
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
               eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
+              console.log(JSON.stringify(eventRecord, null, 2));
+
+            } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
+              // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
+              const logData = oldETHRegistarControllerInterface.parseLog(log);
+              // console.log(JSON.stringify(logData, null, 2));
+              const [name, label, cost, expires] = logData.args;
+              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
+              console.log(JSON.stringify(eventRecord, null, 2));
+
+            } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
+              // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
+              const logData = ethRegistarControllerInterface.parseLog(log);
+              // console.log(JSON.stringify(logData, null, 2));
+              const [name, label, cost, expires] = logData.args;
+              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
               console.log(JSON.stringify(eventRecord, null, 2));
 
             } else {

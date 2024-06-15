@@ -484,27 +484,18 @@ function parseReservoirTokenData(info) {
 }
 
 function decodeNameWrapperBytes(b) {
-  console.log("b:" + b);
-
   let start = 4;
   let len = ethers.BigNumber.from("0x" + b.substring(2, 4));
   const parts = [];
   while (len > 0) {
-    console.log("len: " + len + "; start=" + start);
     const str = b.substring(start, start + len * 2);
-    console.log("str: " + str);
     let strUtf8 = ethers.utils.toUtf8String("0x" + str);
-    console.log("strUtf8: " + strUtf8);
     parts.push(strUtf8);
-
     const s = b.substring(start + len * 2, start + len * 2 + 2);
-    console.log("s: " + s);
     const newStart = start + len * 2 + 2;
     len = ethers.BigNumber.from("0x" + b.substring(start + len * 2, start + len * 2 + 2));
     start = newStart;
-    console.log("len: " + len + "; start=" + start);
   }
-
   return parts;
 }
 

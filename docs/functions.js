@@ -427,13 +427,13 @@ function parseReservoirTokenData(info) {
   result.image = token.image;
   const createdRecord = token.attributes.filter(e => e.key == "Created Date");
   result.created = createdRecord.length == 1 && createdRecord[0].value && parseInt(createdRecord[0].value) || null;
-  if (result.contract == ENS_ERC721_ADDRESS) {
+  if (result.contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS) {
     const registrationRecord = token.attributes.filter(e => e.key == "Registration Date");
     result.registration = registrationRecord.length == 1 && registrationRecord[0].value && parseInt(registrationRecord[0].value) || null;
   } else {
     result.registration = result.created;
   }
-  if (result.contract == ENS_ERC721_ADDRESS) {
+  if (result.contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS) {
     const expiryRecord = token.attributes.filter(e => e.key == "Expiration Date");
     result.expiry = expiryRecord.length == 1 && expiryRecord[0].value && parseInt(expiryRecord[0].value) || null;
   } else {

@@ -5,7 +5,8 @@ const SyncOptions = {
         <template #modal-title>Sync Data</template>
 
         <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.transfers" @input="saveSettings" v-b-popover.hover="'ENS ERC-721 and ERC-1155 Transfer Events'" class="ml-2 mt-1">ENS Transfer Events</b-form-checkbox>
-        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.renewals" @input="saveSettings" v-b-popover.hover="'ENS ERC-721 and ERC-1155 Renewal Events'" class="ml-2 mt-1">ENS Renewal Events</b-form-checkbox>
+        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.ensEvents" @input="saveSettings" v-b-popover.hover="'ENS ERC-721 Events'" class="ml-2 mt-1">ENS Events</b-form-checkbox>
+        <b-form-checkbox size="sm" switch :disabled="settings.devThing || true" v-model="settings.wrappedENSEvents" @input="saveSettings" v-b-popover.hover="'Wrapped ENS ERC-1155 Events'" class="ml-2 mt-1">Wrapped ENS Events</b-form-checkbox>
 
         <!-- <b-form-checkbox size="sm" switch :disabled="settings.devThing || chainId != 11155111" v-model="settings.stealthTransfers" @input="saveSettings" v-b-popover.hover="'ERC-5564: Stealth Addresses announcements'" class="ml-2 mt-1">Stealth Transfers</b-form-checkbox>
         <b-form-checkbox size="sm" switch :disabled="settings.devThing || chainId != 11155111" v-model="settings.stealthMetaAddressRegistry" @input="saveSettings" v-b-popover.hover="'ERC-6538: Stealth Meta-Address Registry entries'" class="ml-2 mt-1">Stealth Meta-Address Registry</b-form-checkbox>
@@ -31,7 +32,8 @@ const SyncOptions = {
     return {
       settings: {
         transfers: true,
-        renewals: true,
+        ensEvents: true,
+        wrappedENSEvents: true,
         // stealthTransfers: true,
         // stealthMetaAddressRegistry: true,
         // ethers: true,
@@ -84,7 +86,8 @@ const SyncOptions = {
         // exchangeRates: this.settings.exchangeRates,
         // // incrementalSync: this.settings.incrementalSync,
         transfers: this.settings.transfers,
-        renewals: this.settings.renewals,
+        ensEvents: this.settings.ensEvents,
+        wrappedENSEvents: this.settings.wrappedENSEvents,
         timestamps: this.settings.timestamps,
         metadata: this.settings.metadata,
         // txData: this.settings.txData,

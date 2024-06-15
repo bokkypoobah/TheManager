@@ -346,7 +346,7 @@ const ViewToken = {
       //   // });
       //   // const address = ethers.utils.getAddress(tokenData.contract);
       //   // let expiry = undefined;
-      //   // if (address == ENS_ERC721_ADDRESS) {
+      //   // if (address == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS) {
       //   //   const expiryRecord = attributes.filter(e => e.trait_type == "Expiration Date");
       //   //   console.log("expiryRecord: " + JSON.stringify(expiryRecord, null, 2));
       //   //   expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;

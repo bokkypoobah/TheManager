@@ -2145,8 +2145,8 @@ const dataModule = {
                 events: [],
               };
               metadata[item.chainId][contract][tokenId].events.push(item);
+              console.log("NOT Found NameRenewed - after: " + JSON.stringify(metadata[item.chainId][contract][tokenId], null, 2));
             }
-            // console.log("NOT Found NameRenewed - after: " + JSON.stringify(metadata[item.chainId][contract][tokenId], null, 2));
           } else if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type)) {
             //
           } else if (["ApprovalForAll"].includes(item.type)) {

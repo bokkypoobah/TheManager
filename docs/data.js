@@ -2039,7 +2039,7 @@ const dataModule = {
             if (!(item.contract in metadata[item.chainId])) {
               metadata[item.chainId][item.contract] = {};
             }
-            console.log("NameRegistered: " + JSON.stringify(item, null, 2));
+            // console.log("NameRegistered: " + JSON.stringify(item, null, 2));
             const labelhash = ethers.utils.solidityKeccak256(["string"], [item.name]);
             const tokenId = ethers.BigNumber.from(labelhash);
             if (!(tokenId in metadata[item.chainId][item.contract])) {
@@ -2067,7 +2067,22 @@ const dataModule = {
             if (!(item.contract in metadata[item.chainId])) {
               metadata[item.chainId][item.contract] = {};
             }
-            // console.log("NameWrapped: " + JSON.stringify(item, null, 2));
+            console.log("NameWrapped: " + JSON.stringify(item, null, 2));
+            const tokenId = item.namehashDecimals;
+            if (!(tokenId in metadata[item.chainId][item.contract])) {
+              metadata[item.chainId][item.contract][tokenId] = {
+                name: item.name,
+                created: item.blockNumber,
+                registered: item.blockNumber,
+                expiry: item.expiry,
+                events: [],
+              };
+            } else {
+              metadata[item.chainId][item.contract][tokenId].registered = item.blockNumber;
+              metadata[item.chainId][item.contract][tokenId].expiry = item.expiry;
+            }
+            metadata[item.chainId][item.contract][tokenId].events.push(item);
+
             // console.log(item.contract + " " + item.type + " " + item.name + " " + item.txHash);
             // console.log("  https://opensea.io/assets/ethereum/0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401/" + item.namehashDecimals);
             //

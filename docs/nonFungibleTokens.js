@@ -109,10 +109,13 @@ const NonFungibleTokens = {
             <div>
               <ul>
                 <li>
-                  Check you are correctly connected to the Sepolia testnet
+                  Connect to the Ethereum mainnet
                 </li>
                 <li>
-                  Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-cloud-download shift-v="+1" font-scale="1.2"></b-icon-cloud-download></b-button> above to sync this app to the blockchain
+                  Enter your addresses in the Addresses menu
+                </li>
+                <li>
+                  Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-arrow-repeat shift-v="+1" font-scale="1.2"></b-icon-arrow-repeat></b-button> above to retrieve your ENS names from the blockchain
                 </li>
               </ul>
             </div>

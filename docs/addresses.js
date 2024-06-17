@@ -189,7 +189,13 @@ const Addresses = {
             <div v-if="totalAddresses == 0">
               <ul>
                 <li>
+                  Connect to the Ethereum mainnet
+                </li>
+                <li>
                   Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button> above to add a new address
+                </li>
+                <li>
+                  Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-arrow-repeat shift-v="+1" font-scale="1.2"></b-icon-arrow-repeat></b-button> above to retrieve your ENS names from the blockchain
                 </li>
               </ul>
             </div>

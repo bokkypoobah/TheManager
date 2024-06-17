@@ -2024,13 +2024,20 @@ const dataModule = {
       console.log("selectedAddressesMap: " + Object.keys(selectedAddressesMap));
       let rows = 0;
       let done = false;
-      const tokens = {};
+      const metadata = {};
       do {
         let data = await db.events.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         logInfo("dataModule", "actions.collateMetadata - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
+
+          if (item.type == "NameRegistered" || item.type == "NameWrapped") {
+            // console.log(JSON.stringify(item, null,  2));
+            console.log(item.contract + " " + item.name + " " + item.txHash);
+          }
+
+
+
           // if (!(["Transfer", "TransferSingle", "TransferBatch"].includes(item.type))) {
-            console.log(JSON.stringify(item, null,  2));
           // }
           // if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type) && !(item.contract in tokens)) {
           //   if (item.eventType == "erc20") {
@@ -2113,9 +2120,9 @@ const dataModule = {
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
-      // console.log("tokens: " + JSON.stringify(tokens, null, 2));
-      // context.commit('updateTokens', tokens);
-      // await context.dispatch('saveData', ['tokens']);
+      console.log("metadata: " + JSON.stringify(metadata, null, 2));
+      context.commit('updateTokens', metadata);
+      await context.dispatch('saveData', ['metadata']);
       logInfo("dataModule", "actions.collateMetadata END");
     },
 

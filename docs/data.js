@@ -1514,8 +1514,8 @@ const dataModule = {
       // ERC-1155 925.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:90617972706753856606077416428092812770327579333964424572858812298074332597719
       // const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
       // console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
-      // const decimalLabelHash = ethers.BigNumber.from(labelhash);
-      // console.log("decimalLabelHash: " + decimalLabelHash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
+      // const decimalLabelhash = ethers.BigNumber.from(labelhash);
+      // console.log("decimalLabelhash: " + decimalLabelhash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
       // const namehash = ethers.utils.namehash('925.eth');
       // console.log("namehash: " + namehash); // 0xc857f4794464c8a531d378463f789ad3caea99e27510bd74cafe33b776fc0dd7
       // const decimalNameHash = ethers.BigNumber.from(namehash);
@@ -1525,8 +1525,8 @@ const dataModule = {
       // ERC-1155 $mother.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:37778769934711969306858083174867277506392124373311900965949141233376830547093
       // const labelhash = ethers.utils.solidityKeccak256(["string"], ["$mother"]);
       // console.log("labelhash: " + labelhash); // 0x79aa722c0c2fcde541f3a9a8057afe4e86133ea0dd0d28f1d337f3fd505033b1
-      // const decimalLabelHash = ethers.BigNumber.from(labelhash);
-      // console.log("decimalLabelHash: " + decimalLabelHash); // 55031006666192158848045017008080447197965693849755532004656313918635033768881
+      // const decimalLabelhash = ethers.BigNumber.from(labelhash);
+      // console.log("decimalLabelhash: " + decimalLabelhash); // 55031006666192158848045017008080447197965693849755532004656313918635033768881
       // const namehash = ethers.utils.namehash('$mother.eth');
       // console.log("namehash: " + namehash); // 0x538606aa1287ef33e2454861d54dd58271c4f9f5e05f724ca6982fecdb3de495
       // const decimalNameHash = ethers.BigNumber.from(namehash);
@@ -1949,8 +1949,8 @@ const dataModule = {
       // ERC-1155 925.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:90617972706753856606077416428092812770327579333964424572858812298074332597719
       // const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
       // console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
-      // const decimalLabelHash = ethers.BigNumber.from(labelhash);
-      // console.log("decimalLabelHash: " + decimalLabelHash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
+      // const decimalLabelhash = ethers.BigNumber.from(labelhash);
+      // console.log("decimalLabelhash: " + decimalLabelhash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
       // const namehash = ethers.utils.namehash('925.eth');
       // console.log("namehash: " + namehash); // 0xc857f4794464c8a531d378463f789ad3caea99e27510bd74cafe33b776fc0dd7
       // const decimalNameHash = ethers.BigNumber.from(namehash);
@@ -1960,8 +1960,8 @@ const dataModule = {
       // ERC-1155 $mother.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:37778769934711969306858083174867277506392124373311900965949141233376830547093
       // const labelhash = ethers.utils.solidityKeccak256(["string"], ["$mother"]);
       // console.log("labelhash: " + labelhash); // 0x79aa722c0c2fcde541f3a9a8057afe4e86133ea0dd0d28f1d337f3fd505033b1
-      // const decimalLabelHash = ethers.BigNumber.from(labelhash);
-      // console.log("decimalLabelHash: " + decimalLabelHash); // 55031006666192158848045017008080447197965693849755532004656313918635033768881
+      // const decimalLabelhash = ethers.BigNumber.from(labelhash);
+      // console.log("decimalLabelhash: " + decimalLabelhash); // 55031006666192158848045017008080447197965693849755532004656313918635033768881
       // const namehash = ethers.utils.namehash('$mother.eth');
       // console.log("namehash: " + namehash); // 0x538606aa1287ef33e2454861d54dd58271c4f9f5e05f724ca6982fecdb3de495
       // const decimalNameHash = ethers.BigNumber.from(namehash);
@@ -2030,9 +2030,40 @@ const dataModule = {
         logInfo("dataModule", "actions.collateMetadata - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
 
-          if (item.type == "NameRegistered" || item.type == "NameWrapped") {
-            // console.log(JSON.stringify(item, null,  2));
-            console.log(item.contract + " " + item.name + " " + item.txHash);
+          if (item.type == "NameRegistered" && item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
+            // console.log(item.contract + " " + item.name + " " + item.txHash);
+
+            if (!(item.chainId in metadata)) {
+              metadata[item.chainId] = {};
+            }
+            if (!(item.contract in metadata[item.chainId])) {
+              metadata[item.chainId][item.contract] = {};
+            }
+            // const tokenId =
+            // console.log("NameRegistered: " + JSON.stringify(item, null, 2));
+            const name = item.name;
+            const labelhash = ethers.utils.solidityKeccak256(["string"], [item.name]);
+            const decimalLabelhash = ethers.BigNumber.from(labelhash);
+            // if (labelhash != item.label) {
+              // console.log("  " + labelhash + " vs " + item.label + " " + decimalLabelhash);
+              // console.log("  https://opensea.io/assets/ethereum/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/" + decimalLabelhash);
+            // }
+
+          } else if (item.type == "NameWrapped" && item.contract == ENS_NAMEWRAPPER_ADDRESS) {
+            if (!(item.chainId in metadata)) {
+              metadata[item.chainId] = {};
+            }
+            if (!(item.contract in metadata[item.chainId])) {
+              metadata[item.chainId][item.contract] = {};
+            }
+            console.log("NameWrapped: " + JSON.stringify(item, null, 2));
+            // console.log(item.contract + " " + item.type + " " + item.name + " " + item.txHash);
+            console.log("  https://opensea.io/assets/ethereum/0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401/" + item.namehashDecimals);
+            //
+          } else if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type)) {
+            //
+          } else {
+            // console.log("Unhandled: " + item.type); // JSON.stringify(item, null,  2));
           }
 
 

@@ -132,7 +132,7 @@ const NonFungibleTokens = {
             <!-- <b-avatar v-if="data.item.image" button rounded fluid size="7rem" :src="data.item.image"> -->
               <!-- <template v-if="selectedTraits[layer] && selectedTraits[layer][trait.value]" #badge><b-icon icon="check"></b-icon></template> -->
             <!-- </b-avatar> -->
-            <b-img v-if="data.item.image" button rounded fluid size="7rem" :src="data.item.image">
+            <b-img button rounded fluid size="7rem" :src="'https://metadata.ens.domains/mainnet/' + data.item.contract + '/' + data.item.tokenId + '/image'">
             </b-img>
           </template>
 
@@ -365,6 +365,9 @@ const NonFungibleTokens = {
     tokens() {
       return store.getters['data/tokens'];
     },
+    metadata() {
+      return store.getters['data/metadata'];
+    },
     contractMetadata() {
       return store.getters['data/contractMetadata'];
     },
@@ -427,15 +430,15 @@ const NonFungibleTokens = {
       // console.log("selectedAddressesMap: " + Object.keys(selectedAddressesMap));
 
       for (const [contract, data] of Object.entries(this.tokens[this.chainId] || {})) {
-        const contractMetadata = this.contractMetadata[this.chainId] && this.contractMetadata[this.chainId][contract] || {};
+        // const contractMetadata = this.contractMetadata[this.chainId] && this.contractMetadata[this.chainId][contract] || {};
         // console.log(contract + " => " + JSON.stringify(contractMetadata, null, 2));
         // console.log("  metadata: " + JSON.stringify(metadata, null, 2));
         if (data.type == "erc721" || data.type == "erc1155") {
           console.log(contract + " => " + JSON.stringify(data, null, 2));
-          const collectionName = contractMetadata.name;
+          // const collectionName = contractMetadata.name;
           for (const [tokenId, tokenData] of Object.entries(data.tokenIds)) {
             // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData, null, 2));
-            const metadata = this.tokenMetadata[this.chainId] && this.tokenMetadata[this.chainId][contract] && this.tokenMetadata[this.chainId][contract][tokenId] || {};
+            const metadata = this.metadata[this.chainId] && this.metadata[this.chainId][contract] && this.metadata[this.chainId][contract][tokenId] || {};
             // console.log("  metadata: " + JSON.stringify(metadata, null, 2));
             const info = this.tokenInfo[this.chainId] && this.tokenInfo[this.chainId][contract] && this.tokenInfo[this.chainId][contract][tokenId] || {};
             // console.log("  info: " + JSON.stringify(info, null, 2));
@@ -492,8 +495,8 @@ const NonFungibleTokens = {
                   type: data.type,
                   junk: info && info.junk || false,
                   favourite: data.favourite,
-                  collectionSymbol: contractMetadata.symbol,
-                  collectionName: contractMetadata.name,
+                  collectionSymbol: null, // "contractMetadata.symbol", // TODO: Delete
+                  collectionName: null, // "contractMetadata.name", // TODO: Delete
                   totalSupply: data.totalSupply,
                   tokenId,
                   owners,
@@ -502,7 +505,7 @@ const NonFungibleTokens = {
                   expiry: metadata.expiry || undefined,
                   attributes: metadata.attributes || null,
                   // imageSource: metadata.imageSource || null,
-                  image,
+                  // image,
                   // blockNumber: tokenData.blockNumber,
                   // logIndex: tokenData.logIndex,
                 });

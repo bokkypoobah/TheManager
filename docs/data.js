@@ -2088,8 +2088,10 @@ const dataModule = {
             //
           } else if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type)) {
             //
+          } else if (["ApprovalForAll"].includes(item.type)) {
+            //
           } else {
-            // console.log("Unhandled: " + item.type); // JSON.stringify(item, null,  2));
+            console.log("Unhandled: " + item.type + " " + JSON.stringify(item, null,  2));
           }
 
 
@@ -2177,7 +2179,7 @@ const dataModule = {
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
-      console.log("metadata: " + JSON.stringify(metadata, null, 2));
+      // console.log("metadata: " + JSON.stringify(metadata, null, 2));
       context.commit('updateTokens', metadata);
       await context.dispatch('saveData', ['metadata']);
       logInfo("dataModule", "actions.collateMetadata END");

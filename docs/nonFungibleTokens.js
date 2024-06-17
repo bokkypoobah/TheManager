@@ -431,7 +431,7 @@ const NonFungibleTokens = {
         // console.log(contract + " => " + JSON.stringify(contractMetadata, null, 2));
         // console.log("  metadata: " + JSON.stringify(metadata, null, 2));
         if (data.type == "erc721" || data.type == "erc1155") {
-          // console.log(contract + " => " + JSON.stringify(data, null, 2));
+          console.log(contract + " => " + JSON.stringify(data, null, 2));
           const collectionName = contractMetadata.name;
           for (const [tokenId, tokenData] of Object.entries(data.tokenIds)) {
             // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData, null, 2));

@@ -135,6 +135,7 @@ const dataModule = {
 
     collection: {}, // chainId -> contract => { id, symbol, name, image, slug, creator, tokenCount }
     tokens: {}, // chainId -> contract -> tokenId => owner or balances
+    metadata: {}, // chainId -> contract -> tokenId => owner or balances
     contractMetadata: {}, // chainId -> contract => metadata
     tokenMetadata: {}, // chainId -> contract -> tokenId => metadata
     tokenInfo: {}, // chainId -> contract -> tokenId => info
@@ -176,6 +177,7 @@ const dataModule = {
 
     collection: state => state.collection,
     tokens: state => state.tokens,
+    metadata: state => state.metadata,
     contractMetadata: state => state.contractMetadata,
     tokenMetadata: state => state.tokenMetadata,
     tokenInfo: state => state.tokenInfo,
@@ -547,7 +549,7 @@ const dataModule = {
       if (Object.keys(context.state.addresses).length == 0) {
         const db0 = new Dexie(context.state.db.name);
         db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-        for (let type of ['addresses', 'timestamps', 'txs', 'contractMetadata', 'tokenMetadata', 'tokenInfo', 'tokens', 'registry', 'stealthTransfers', 'tokenContracts', 'tokenMetadata']) {
+        for (let type of ['addresses', 'timestamps', 'txs', 'contractMetadata', 'tokenMetadata', 'tokenInfo', 'metadata', 'tokens', 'registry', 'stealthTransfers', 'tokenContracts', 'tokenMetadata']) {
           const data = await db0.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             // logInfo("dataModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object));
@@ -2241,7 +2243,7 @@ const dataModule = {
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
       console.log("metadata: " + JSON.stringify(metadata, null, 2));
-      context.commit('updateTokens', metadata);
+      context.commit('setState', { name: "metadata", data: metadata });
       await context.dispatch('saveData', ['metadata']);
       logInfo("dataModule", "actions.collateMetadata END");
     },

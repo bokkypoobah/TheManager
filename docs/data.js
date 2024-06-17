@@ -2030,47 +2030,53 @@ const dataModule = {
         logInfo("dataModule", "actions.collateMetadata - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
 
+          // missinternet.eth registration txHash 0x91e65a4dd4b3a7ab4055488a152381761d2a1f8fe0aa00765d3912b6b541f3a4
+          // if (item.txHash == "0x91e65a4dd4b3a7ab4055488a152381761d2a1f8fe0aa00765d3912b6b541f3a4") {
+          //   console.log("---> " + JSON.stringify(item, null, 2));
+          // }
+
           if (item.type == "NameRegistered" && item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
             // console.log(item.contract + " " + item.name + " " + item.txHash);
-
+            const contract = ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
             if (!(item.chainId in metadata)) {
               metadata[item.chainId] = {};
             }
-            if (!(item.contract in metadata[item.chainId])) {
-              metadata[item.chainId][item.contract] = {};
+            if (!(contract in metadata[item.chainId])) {
+              metadata[item.chainId][contract] = {};
             }
             // console.log("NameRegistered: " + JSON.stringify(item, null, 2));
             const labelhash = ethers.utils.solidityKeccak256(["string"], [item.name]);
             const tokenId = ethers.BigNumber.from(labelhash);
-            if (!(tokenId in metadata[item.chainId][item.contract])) {
-              metadata[item.chainId][item.contract][tokenId] = {
+            if (!(tokenId in metadata[item.chainId][contract])) {
+              metadata[item.chainId][contract][tokenId] = {
                 name: item.name + ".eth",
                 created: item.blockNumber,
                 registered: item.blockNumber,
                 expiry: item.expires,
                 events: [],
               };
+              // console.log("NameRegistered: " + item.name + " => " + contract + "/" + tokenId);
             } else {
-              metadata[item.chainId][item.contract][tokenId].registered = item.blockNumber;
-              metadata[item.chainId][item.contract][tokenId].expiry = item.expires;
+              metadata[item.chainId][contract][tokenId].registered = item.blockNumber;
+              metadata[item.chainId][contract][tokenId].expiry = item.expires;
             }
-            metadata[item.chainId][item.contract][tokenId].events.push(item);
-            // if (labelhash != item.label) {
-              // console.log("  " + labelhash + " vs " + item.label + " " + decimalLabelhash);
-              // console.log("  https://opensea.io/assets/ethereum/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/" + decimalLabelhash);
-            // }
+            metadata[item.chainId][contract][tokenId].events.push(item);
 
           } else if (item.type == "NameWrapped" && item.contract == ENS_NAMEWRAPPER_ADDRESS) {
+            // console.log("NameWrapped: " + JSON.stringify(item, null, 2));
+            // console.log("NameWrapped: " + item.name);
             if (!(item.chainId in metadata)) {
               metadata[item.chainId] = {};
             }
             if (!(item.contract in metadata[item.chainId])) {
               metadata[item.chainId][item.contract] = {};
             }
-            // console.log("NameWrapped: " + JSON.stringify(item, null, 2));
-            const tokenId = ethers.BigNumber.from(item.namehash).toString();
-            if (!(tokenId in metadata[item.chainId][item.contract])) {
-              metadata[item.chainId][item.contract][tokenId] = {
+            if (!(ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS in metadata[item.chainId])) {
+              metadata[item.chainId][ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS] = {};
+            }
+            const wrappedTokenId = ethers.BigNumber.from(item.namehash).toString();
+            if (!(wrappedTokenId in metadata[item.chainId][item.contract])) {
+              metadata[item.chainId][item.contract][wrappedTokenId] = {
                 name: item.name,
                 created: item.blockNumber,
                 registered: item.blockNumber,
@@ -2078,16 +2084,54 @@ const dataModule = {
                 events: [],
               };
             } else {
-              metadata[item.chainId][item.contract][tokenId].registered = item.blockNumber;
-              metadata[item.chainId][item.contract][tokenId].expiry = item.expiry;
+              metadata[item.chainId][item.contract][wrappedTokenId].registered = item.blockNumber;
+              metadata[item.chainId][item.contract][wrappedTokenId].expiry = item.expiry;
             }
-            metadata[item.chainId][item.contract][tokenId].events.push(item);
+            metadata[item.chainId][item.contract][wrappedTokenId].events.push(item);
+
+            if (item.subdomain == null) {
+              const tokenId = ethers.BigNumber.from(item.labelhash).toString();
+              if (!(wrappedTokenId in metadata[item.chainId][ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS])) {
+                metadata[item.chainId][ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS][tokenId] = {
+                  name: item.name,
+                  created: item.blockNumber,
+                  registered: item.blockNumber,
+                  expiry: item.expiry,
+                  events: [],
+                };
+              } else {
+                metadata[item.chainId][ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS][tokenId].registered = item.blockNumber;
+                metadata[item.chainId][ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS][tokenId].expiry = item.expiry;
+              }
+              metadata[item.chainId][ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS][tokenId].events.push(item);
+            }
 
             // console.log(item.contract + " " + item.type + " " + item.name + " " + item.txHash);
             // console.log("  https://opensea.io/assets/ethereum/0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401/" + item.namehashDecimals);
             //
           } else if (item.type == "NameRenewed" && (item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS || item.contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS)) {
             // TODO
+            // console.log("NameRenewed: " + JSON.stringify(item, null, 2));
+            const contract = ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
+            const tokenId = ethers.BigNumber.from(item.label);
+
+
+            // const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
+            // console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
+            // const decimalLabelhash = ethers.BigNumber.from(labelhash);
+            // console.log("decimalLabelhash: " + decimalLabelhash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
+
+            if (metadata[item.chainId] && metadata[item.chainId][contract] && (tokenId in metadata[item.chainId][contract])) {
+              // console.log("Found NameRenewed: " + JSON.stringify(item, null, 2));
+              // console.log("  https://opensea.io/assets/ethereum/" + ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS + "/" + tokenId);
+
+              metadata[item.chainId][contract][tokenId].registered = item.blockNumber;
+              metadata[item.chainId][contract][tokenId].expiry = item.expires;
+              metadata[item.chainId][contract][tokenId].events.push(item);
+
+            } else {
+              console.log("NOT Found NameRenewed: " + JSON.stringify(item, null, 2));
+            }
           } else if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type)) {
             //
           } else if (["ApprovalForAll"].includes(item.type)) {
@@ -2181,7 +2225,7 @@ const dataModule = {
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
-      // console.log("metadata: " + JSON.stringify(metadata, null, 2));
+      console.log("metadata: " + JSON.stringify(metadata, null, 2));
       context.commit('updateTokens', metadata);
       await context.dispatch('saveData', ['metadata']);
       logInfo("dataModule", "actions.collateMetadata END");

@@ -2030,8 +2030,8 @@ const dataModule = {
         logInfo("dataModule", "actions.collateMetadata - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
 
-          // missinternet.eth registration txHash 0x91e65a4dd4b3a7ab4055488a152381761d2a1f8fe0aa00765d3912b6b541f3a4
-          // if (item.txHash == "0x91e65a4dd4b3a7ab4055488a152381761d2a1f8fe0aa00765d3912b6b541f3a4") {
+          // youresocool.eth registration txHash 0x81c71d2a0521abfb8c0c1f8f706fb3f18de028b0f47dd5619aec9ce4b6b3ba59
+          // if (item.txHash == "0x81c71d2a0521abfb8c0c1f8f706fb3f18de028b0f47dd5619aec9ce4b6b3ba59") {
           //   console.log("---> " + JSON.stringify(item, null, 2));
           // }
 
@@ -2112,9 +2112,9 @@ const dataModule = {
           } else if (item.type == "NameRenewed" && (item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS || item.contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS)) {
             // TODO
             // console.log("NameRenewed: " + JSON.stringify(item, null, 2));
+            // const contract = item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS ? ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS : item.contract;
             const contract = ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
             const tokenId = ethers.BigNumber.from(item.label);
-
 
             // const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
             // console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
@@ -2131,7 +2131,22 @@ const dataModule = {
 
             } else {
               console.log("NOT Found NameRenewed: " + JSON.stringify(item, null, 2));
+              if (!(item.chainId in metadata)) {
+                metadata[item.chainId] = {};
+              }
+              if (!(contract in metadata[item.chainId])) {
+                metadata[item.chainId][contract] = {};
+              }
+              metadata[item.chainId][contract][tokenId] = {
+                name: item.name + ".eth",
+                created: null,
+                registered: null,
+                expiry: item.expires,
+                events: [],
+              };
+              metadata[item.chainId][contract][tokenId].events.push(item);
             }
+            // console.log("NOT Found NameRenewed - after: " + JSON.stringify(metadata[item.chainId][contract][tokenId], null, 2));
           } else if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type)) {
             //
           } else if (["ApprovalForAll"].includes(item.type)) {

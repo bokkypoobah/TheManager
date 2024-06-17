@@ -2039,11 +2039,22 @@ const dataModule = {
             if (!(item.contract in metadata[item.chainId])) {
               metadata[item.chainId][item.contract] = {};
             }
-            // const tokenId =
-            // console.log("NameRegistered: " + JSON.stringify(item, null, 2));
-            const name = item.name;
+            console.log("NameRegistered: " + JSON.stringify(item, null, 2));
             const labelhash = ethers.utils.solidityKeccak256(["string"], [item.name]);
-            const decimalLabelhash = ethers.BigNumber.from(labelhash);
+            const tokenId = ethers.BigNumber.from(labelhash);
+            if (!(tokenId in metadata[item.chainId][item.contract])) {
+              metadata[item.chainId][item.contract][tokenId] = {
+                name: item.name + ".eth",
+                created: item.blockNumber,
+                registered: item.blockNumber,
+                expiry: item.expires,
+                events: [],
+              };
+            } else {
+              metadata[item.chainId][item.contract][tokenId].registered = item.blockNumber;
+              metadata[item.chainId][item.contract][tokenId].expiry = item.expires;
+            }
+            metadata[item.chainId][item.contract][tokenId].events.push(item);
             // if (labelhash != item.label) {
               // console.log("  " + labelhash + " vs " + item.label + " " + decimalLabelhash);
               // console.log("  https://opensea.io/assets/ethereum/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/" + decimalLabelhash);
@@ -2056,9 +2067,9 @@ const dataModule = {
             if (!(item.contract in metadata[item.chainId])) {
               metadata[item.chainId][item.contract] = {};
             }
-            console.log("NameWrapped: " + JSON.stringify(item, null, 2));
+            // console.log("NameWrapped: " + JSON.stringify(item, null, 2));
             // console.log(item.contract + " " + item.type + " " + item.name + " " + item.txHash);
-            console.log("  https://opensea.io/assets/ethereum/0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401/" + item.namehashDecimals);
+            // console.log("  https://opensea.io/assets/ethereum/0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401/" + item.namehashDecimals);
             //
           } else if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type)) {
             //

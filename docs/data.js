@@ -1764,7 +1764,7 @@ const dataModule = {
               // const decimalNameHash = ethers.BigNumber.from(namehash);
               // console.log("decimalNameHash: " + decimalNameHash);
 
-              eventRecord = { type: "NameWrapped", namehash: node, namehashDecimals, name: nameString, nameBytes: name, label, labelhash, labelhashDecimals, subdomain, owner, fuses, expiry: parseInt(expiry) /*, expiryString: moment.unix(expiry).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameWrapped", namehash: node, /*namehashDecimals,*/ name: nameString, nameBytes: name, label, labelhash, /* labelhashDecimals,*/ subdomain, owner, fuses, expiry: parseInt(expiry) /*, expiryString: moment.unix(expiry).format("MMM DD YYYY")*/ };
               console.log(JSON.stringify(eventRecord, null, 2));
 
             } else {
@@ -2068,7 +2068,7 @@ const dataModule = {
               metadata[item.chainId][item.contract] = {};
             }
             console.log("NameWrapped: " + JSON.stringify(item, null, 2));
-            const tokenId = item.namehashDecimals;
+            const tokenId = ethers.BigNumber.from(item.namehash).toString();
             if (!(tokenId in metadata[item.chainId][item.contract])) {
               metadata[item.chainId][item.contract][tokenId] = {
                 name: item.name,

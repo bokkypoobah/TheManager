@@ -1963,6 +1963,11 @@ const dataModule = {
       // console.log("namehash: " + namehash); // 0x538606aa1287ef33e2454861d54dd58271c4f9f5e05f724ca6982fecdb3de495
       // const decimalNameHash = ethers.BigNumber.from(namehash);
       // console.log("decimalNameHash: " + decimalNameHash); // 37778769934711969306858083174867277506392124373311900965949141233376830547093
+
+      // const labelhash = ethers.utils.solidityKeccak256(["string"], ["best"]);
+      // console.log("labelhash: " + labelhash); // 0x79aa722c0c2fcde541f3a9a8057afe4e86133ea0dd0d28f1d337f3fd505033b1
+      // const namehash = ethers.utils.namehash('collections.eth');
+      // console.log("namehash: " + namehash); // 0x538606aa1287ef33e2454861d54dd58271c4f9f5e05f724ca6982fecdb3de495
       // return;
 
       console.log("processList: " + JSON.stringify(processList, null, 2));

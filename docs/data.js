@@ -2086,6 +2086,8 @@ const dataModule = {
             // console.log(item.contract + " " + item.type + " " + item.name + " " + item.txHash);
             // console.log("  https://opensea.io/assets/ethereum/0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401/" + item.namehashDecimals);
             //
+          } else if (item.type == "NameRenewed" && (item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS || item.contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS)) {
+            // TODO
           } else if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type)) {
             //
           } else if (["ApprovalForAll"].includes(item.type)) {

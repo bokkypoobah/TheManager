@@ -434,6 +434,32 @@ const NonFungibleTokens = {
           regex = new RegExp(/thequickbrowndogjumpsoverthelazyfox/, 'i');
         }
       }
+
+      let dateFrom = null;
+      let dateTo = null;
+      if (this.settings.dateOption) {
+        if (this.settings.dateOption == "active") {
+          dateFrom = moment().subtract(90, 'days').unix();
+        } else if (this.settings.dateOption == "grace") {
+          dateFrom = moment().subtract(90, 'days').unix();
+          dateTo = moment().unix();
+        } else if (this.settings.dateOption == "expired") {
+          dateTo = moment().unix();
+        } else if (this.settings.dateOption == "expiry1m") {
+          dateFrom = moment().subtract(90, 'days').unix();
+          dateTo = moment().add(1, 'months').unix();
+        } else if (this.settings.dateOption == "expiry3m") {
+          dateFrom = moment().subtract(90, 'days').unix();
+          dateTo = moment().add(3, 'months').unix();
+        } else if (this.settings.dateOption == "expiry1y") {
+          dateFrom = moment().subtract(90, 'days').unix();
+          dateTo = moment().add(1, 'years').unix();
+        }
+      }
+      if (dateFrom) {
+        console.log("filteredItems - dateFrom: " + dateFrom + " " + moment(dateFrom).format());
+      }
+
       const selectedAddressesMap = {};
       for (const [address, addressData] of Object.entries(this.addresses)) {
         if (address.substring(0, 2) == "0x") {
@@ -471,6 +497,16 @@ const NonFungibleTokens = {
             // if (include && this.settings.favouritesOnly && (!data.favourite || data.junk)) {
             //   include = false;
             // }
+            if (include && dateFrom) {
+              if (metadata.expiry < dateFrom) {
+                include = false;
+              }
+            }
+            if (include && dateTo) {
+              if (metadata.expiry > dateTo) {
+                include = false;
+              }
+            }
             if (include && regex) {
               const name = metadata.name || null;
               const description = metadata.description || null;

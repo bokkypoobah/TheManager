@@ -16,8 +16,8 @@ const SyncOptions = {
         <!-- <b-form-checkbox size="sm" switch :disabled="chainId != 1" v-model="settings.ens" @input="saveSettings" class="ml-2 mt-1">ENS Names on ETH Mainnet</b-form-checkbox>
         <b-form-checkbox v-if="false" size="sm" switch :disabled="true" v-model="settings.exchangeRates" @input="saveSettings" class="ml-2 mt-1">TODO: Exchange Rates</b-form-checkbox> -->
 
+        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.prices" @input="saveSettings" v-b-popover.hover="'Listing and offer prices'" class="ml-2 mt-1">Prices</b-form-checkbox>
         <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.timestamps" @input="saveSettings" v-b-popover.hover="'Timestamps'" class="ml-2 mt-1">Timestamps</b-form-checkbox>
-        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.metadata" @input="saveSettings" v-b-popover.hover="'ENS ERC-721 and ERC-1155 Non-Fungible Token metadata'" class="ml-2 mt-1">Token Metadata</b-form-checkbox>
         <!-- <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.txData" @input="saveSettings" v-b-popover.hover="'Transaction Data'" class="ml-2 mt-1">Transaction Data</b-form-checkbox> -->
         <!-- <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.incrementalSync" @input="saveSettings" v-b-popover.hover="'Incremental sync or resync all events'" class="ml-2 mt-1">Incremental Sync</b-form-checkbox> -->
         <b-form-checkbox size="sm" switch v-model="settings.devThing" @input="saveSettings" v-b-popover.hover="'Do Some Dev Thing'" class="ml-2 mt-1">Dev Thing</b-form-checkbox>
@@ -38,14 +38,14 @@ const SyncOptions = {
         // stealthMetaAddressRegistry: true,
         // ethers: true,
         // tokens: true,
-        metadata: true,
         // ens: true,
         // exchangeRates: true,
         // incrementalSync: true,
+        prices: true,
         timestamps: true,
         // txData: true,
         devThing: false,
-        version: 0,
+        version: 1,
       },
     }
   },
@@ -88,8 +88,8 @@ const SyncOptions = {
         transfers: this.settings.transfers,
         ensEvents: this.settings.ensEvents,
         wrappedENSEvents: this.settings.wrappedENSEvents,
+        prices: this.settings.prices,
         timestamps: this.settings.timestamps,
-        metadata: this.settings.metadata,
         // txData: this.settings.txData,
         devThing: this.settings.devThing,
       });
@@ -100,7 +100,7 @@ const SyncOptions = {
     logDebug("SyncOptions", "mounted() $route: " + JSON.stringify(this.$route.params));
     if ('theManagerSyncOptionsSettings' in localStorage) {
       const tempSettings = JSON.parse(localStorage.theManagerSyncOptionsSettings);
-      if ('version' in tempSettings && tempSettings.version == 0) {
+      if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
       }
     }

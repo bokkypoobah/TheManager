@@ -707,18 +707,18 @@ const dataModule = {
       if (options.timestamps && !options.devThing) {
         await context.dispatch('syncTokenEventTimestamps', parameter);
       }
-      if (options.metadata && !options.devThing) {
-        await context.dispatch('syncTokenMetadata', parameter);
-      }
       if (options.ensEvents && !options.devThing) {
         await context.dispatch('syncENSEvents', parameter);
       }
       if (options.wrappedENSEvents && !options.devThing) {
         await context.dispatch('syncWrappedENSEvents', parameter);
       }
-      // if ((options.ensEvents || options.wrappedENSEvents) && !options.devThing) {
+      if ((options.ensEvents || options.wrappedENSEvents) && !options.devThing) {
         await context.dispatch('collateMetadata', parameter);
-      // }
+      }
+      if (options.prices && !options.devThing) {
+        await context.dispatch('syncPrices', parameter);
+      }
 
       // if (options.ens || options.devThing) {
       //   await context.dispatch('syncENS', parameter);
@@ -1161,90 +1161,6 @@ const dataModule = {
     //   logInfo("dataModule", "actions.syncTokenEventTxData END");
     // },
 
-    async syncTokenMetadata(context, parameter) {
-      logInfo("dataModule", "actions.syncTokenMetadata: " + JSON.stringify(parameter));
-      const db = new Dexie(context.state.db.name);
-      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const tokensToProcess = {};
-      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
-        if (contractData.type == "erc721" || contractData.type == "erc1155") {
-          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
-              if (!(contract in tokensToProcess)) {
-                tokensToProcess[contract] = {};
-              }
-              tokensToProcess[contract][tokenId] = tokenData;
-            // }
-          }
-        }
-      }
-      // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
-      let processList = [];
-      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
-        const contractType = context.state.tokens[parameter.chainId][contract].type;
-        for (const [tokenId, tokenData] of Object.entries(contractData)) {
-          processList.push({ contract, tokenId });
-        }
-      }
-      // processList = processList.slice(1, 3); // TODO
-      console.log("processList: " + JSON.stringify(processList, null, 2));
-      const BATCHSIZE = 50;
-      const DELAYINMILLIS = 2000;
-      let completed = 0;
-      context.commit('setSyncSection', { section: 'Token Metadata', total: processList.length });
-      context.commit('setSyncCompleted', completed);
-      for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
-        const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
-        // console.log("batch: " + JSON.stringify(batch, null, 2));
-        let continuation = null;
-        do {
-          let url = "https://api.reservoir.tools/tokens/v7?";
-          let separator = "";
-          for (let j = 0; j < batch.length; j++) {
-            url = url + separator + "tokens=" + batch[j].contract + "%3A" + batch[j].tokenId;
-            separator = "&";
-          }
-          url = url + (continuation != null ? "&continuation=" + continuation : '');
-          url = url + "&limit=100&includeAttributes=true&includeLastSale=true&includeTopBid=true";
-          console.log(url);
-          const data = await fetch(url).then(response => response.json());
-          continuation = data.continuation;
-          // console.log(JSON.stringify(data, null, 2));
-          for (token of data.tokens) {
-            // console.log(JSON.stringify(token, null, 2));
-            const tokenData = parseReservoirTokenData(token);
-            if (/*tokenData.created == null ||*/ tokenData.expiry == null && false) {
-              const url = "https://metadata.ens.domains/mainnet/" + tokenData.contract + "/" + tokenData.tokenId;
-              const metadataFileContent = await fetch(url, {mode: 'cors'}).then(response => response.json());
-              const createdRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Created Date");
-              console.log("createdRecord: " + JSON.stringify(createdRecord));
-              if (createdRecord.length == 1 && createdRecord[0].value) {
-                tokenData.created = parseInt(createdRecord[0].value) / 1000;
-              }
-              const registrationRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Registration Date");
-              console.log("registrationRecord: " + JSON.stringify(registrationRecord));
-              if (registrationRecord.length == 1 && registrationRecord[0].value) {
-                tokenData.registration = parseInt(registrationRecord[0].value) / 1000;
-              }
-              const expiryRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Expiration Date");
-              console.log("expiryRecord: " + JSON.stringify(expiryRecord));
-              if (expiryRecord.length == 1 && expiryRecord[0].value) {
-                tokenData.expiry = parseInt(expiryRecord[0].value) / 1000;
-              }
-            }
-            console.log("tokenData: " + JSON.stringify(tokenData, null, 2));
-            context.commit('addTokenMetadata', tokenData);
-            completed++;
-          }
-          context.commit('setSyncCompleted', completed);
-          await context.dispatch('saveData', ['tokenMetadata']);
-          await delay(DELAYINMILLIS);
-        } while (continuation != null /*&& !state.halt && !state.sync.error */);
-      }
-
-    },
-
     async syncENSEvents(context, parameter) {
       logInfo("dataModule", "actions.syncENSEvents: " + JSON.stringify(parameter));
       const db = new Dexie(context.state.db.name);
@@ -1539,7 +1455,7 @@ const dataModule = {
 
       const BATCHSIZE = 100;
       let completed = 0;
-      context.commit('setSyncSection', { section: 'ENS Events', total: processList.length });
+      context.commit('setSyncSection', { section: 'ENS Events', total: null });
       context.commit('setSyncCompleted', completed);
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
@@ -1979,7 +1895,7 @@ const dataModule = {
 
       const BATCHSIZE = 100;
       let completed = 0;
-      context.commit('setSyncSection', { section: 'Wrapped ENS Events', total: processList.length });
+      context.commit('setSyncSection', { section: 'Wrapped ENS Events', total: null });
       context.commit('setSyncCompleted', completed);
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
@@ -2246,6 +2162,90 @@ const dataModule = {
       context.commit('setState', { name: "metadata", data: metadata });
       await context.dispatch('saveData', ['metadata']);
       logInfo("dataModule", "actions.collateMetadata END");
+    },
+
+    async syncPrices(context, parameter) {
+      logInfo("dataModule", "actions.syncPrices: " + JSON.stringify(parameter));
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const tokensToProcess = {};
+      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
+        if (contractData.type == "erc721" || contractData.type == "erc1155") {
+          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
+            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
+              if (!(contract in tokensToProcess)) {
+                tokensToProcess[contract] = {};
+              }
+              tokensToProcess[contract][tokenId] = tokenData;
+            // }
+          }
+        }
+      }
+      // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
+      let processList = [];
+      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
+        const contractType = context.state.tokens[parameter.chainId][contract].type;
+        for (const [tokenId, tokenData] of Object.entries(contractData)) {
+          processList.push({ contract, tokenId });
+        }
+      }
+      // processList = processList.slice(1, 3); // TODO
+      console.log("processList: " + JSON.stringify(processList, null, 2));
+      const BATCHSIZE = 50;
+      const DELAYINMILLIS = 2000;
+      let completed = 0;
+      context.commit('setSyncSection', { section: 'Token Metadata', total: processList.length });
+      context.commit('setSyncCompleted', completed);
+      for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
+        const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
+        // console.log("batch: " + JSON.stringify(batch, null, 2));
+        let continuation = null;
+        do {
+          let url = "https://api.reservoir.tools/tokens/v7?";
+          let separator = "";
+          for (let j = 0; j < batch.length; j++) {
+            url = url + separator + "tokens=" + batch[j].contract + "%3A" + batch[j].tokenId;
+            separator = "&";
+          }
+          url = url + (continuation != null ? "&continuation=" + continuation : '');
+          url = url + "&limit=100&includeAttributes=true&includeLastSale=true&includeTopBid=true";
+          console.log(url);
+          const data = await fetch(url).then(response => response.json());
+          continuation = data.continuation;
+          // console.log(JSON.stringify(data, null, 2));
+          for (token of data.tokens) {
+            // console.log(JSON.stringify(token, null, 2));
+            const tokenData = parseReservoirTokenData(token);
+            if (/*tokenData.created == null ||*/ tokenData.expiry == null && false) {
+              const url = "https://metadata.ens.domains/mainnet/" + tokenData.contract + "/" + tokenData.tokenId;
+              const metadataFileContent = await fetch(url, {mode: 'cors'}).then(response => response.json());
+              const createdRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Created Date");
+              console.log("createdRecord: " + JSON.stringify(createdRecord));
+              if (createdRecord.length == 1 && createdRecord[0].value) {
+                tokenData.created = parseInt(createdRecord[0].value) / 1000;
+              }
+              const registrationRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Registration Date");
+              console.log("registrationRecord: " + JSON.stringify(registrationRecord));
+              if (registrationRecord.length == 1 && registrationRecord[0].value) {
+                tokenData.registration = parseInt(registrationRecord[0].value) / 1000;
+              }
+              const expiryRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Expiration Date");
+              console.log("expiryRecord: " + JSON.stringify(expiryRecord));
+              if (expiryRecord.length == 1 && expiryRecord[0].value) {
+                tokenData.expiry = parseInt(expiryRecord[0].value) / 1000;
+              }
+            }
+            console.log("tokenData: " + JSON.stringify(tokenData, null, 2));
+            context.commit('addTokenMetadata', tokenData);
+            completed++;
+          }
+          context.commit('setSyncCompleted', completed);
+          await context.dispatch('saveData', ['tokenMetadata']);
+          await delay(DELAYINMILLIS);
+        } while (continuation != null /*&& !state.halt && !state.sync.error */);
+      }
+
     },
 
     async syncTokenMetadataOld(context, parameter) {

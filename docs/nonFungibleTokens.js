@@ -17,6 +17,9 @@ const NonFungibleTokens = {
             <b-form-input type="text" size="sm" v-model.trim="settings.filter" @change="saveSettings" debounce="600" v-b-popover.hover.top="'Regex filter by name'" placeholder="🔍 name regex"></b-form-input>
           </div>
           <div class="mt-0 pr-1">
+            <b-form-select size="sm" v-model="settings.dateOption" @change="saveSettings" :options="dateOptions"></b-form-select>
+          </div>
+          <div class="mt-0 pr-1">
             <b-dropdown size="sm" variant="link" v-b-popover.hover="'Junk filter'">
               <template #button-content>
                 <span v-if="settings.junkFilter == 'excludejunk'">
@@ -280,12 +283,13 @@ const NonFungibleTokens = {
       reschedule: true,
       settings: {
         filter: null,
+        dateOption: 'active',
         junkFilter: null,
         favouritesOnly: false,
         currentPage: 1,
         pageSize: 10,
         sortOption: 'expiryasc',
-        version: 0,
+        version: 1,
       },
       transfer: {
         item: null,
@@ -294,6 +298,15 @@ const NonFungibleTokens = {
       modalFaucet: {
         selectedFaucet: null,
       },
+      dateOptions: [
+        { value: null, text: 'All' },
+        { value: 'active', text: 'Active' },
+        { value: 'grace', text: 'Grace Period' },
+        { value: 'expired', text: 'Expired' },
+        { value: 'expiry1m', text: 'Expiry <= 1m' },
+        { value: 'expiry3m', text: 'Expiry <= 3m' },
+        { value: 'expiry1y', text: 'Expiry <= 1y' },
+      ],
       sortOptions: [
         // { value: 'nameasc', text: '▲ Name' },
         // { value: 'namedsc', text: '▼ Name' },
@@ -711,7 +724,7 @@ const NonFungibleTokens = {
     store.dispatch('data/restoreState');
     if ('theManagerNonFungibleTokensSettings' in localStorage) {
       const tempSettings = JSON.parse(localStorage.theManagerNonFungibleTokensSettings);
-      if ('version' in tempSettings && tempSettings.version == 0) {
+      if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
       }

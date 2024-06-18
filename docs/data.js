@@ -1454,9 +1454,8 @@ const dataModule = {
       console.log("processList: " + JSON.stringify(processList, null, 2));
 
       const BATCHSIZE = 100;
-      let completed = 0;
       context.commit('setSyncSection', { section: 'ENS Events', total: null });
-      context.commit('setSyncCompleted', completed);
+      context.commit('setSyncCompleted', 0);
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
         // console.log("batch: " + JSON.stringify(batch, null, 2));
@@ -1894,9 +1893,8 @@ const dataModule = {
       console.log("processList: " + JSON.stringify(processList, null, 2));
 
       const BATCHSIZE = 100;
-      let completed = 0;
       context.commit('setSyncSection', { section: 'Wrapped ENS Events', total: null });
-      context.commit('setSyncCompleted', completed);
+      context.commit('setSyncCompleted', 0);
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
         // console.log("batch: " + JSON.stringify(batch, null, 2));

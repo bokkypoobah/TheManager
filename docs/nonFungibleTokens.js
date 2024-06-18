@@ -535,16 +535,10 @@ const NonFungibleTokens = {
         results.sort((a, b) => {
           return a.expiry - b.expiry;
         });
-        // results.sort((a, b) => {
-        //   return ('' + a.registrant).localeCompare(b.registrant);
-        // });
       } else if (this.settings.sortOption == 'expirydsc') {
         results.sort((a, b) => {
-          return a.expiry - b.expiry;
+          return b.expiry - a.expiry;
         });
-        // results.sort((a, b) => {
-        //   return ('' + b.registrant).localeCompare(a.registrant);
-        // });
       }
       return results;
     },

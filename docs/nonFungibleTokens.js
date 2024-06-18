@@ -14,7 +14,7 @@ const NonFungibleTokens = {
 
         <div class="d-flex flex-wrap m-0 p-0">
           <div class="mt-0 pr-1" style="width: 200px;">
-            <b-form-input type="text" size="sm" v-model.trim="settings.filter" @change="saveSettings" debounce="600" v-b-popover.hover.top="'Regex filter by address, symbol or name'" placeholder="🔍 addr/symb/name regex"></b-form-input>
+            <b-form-input type="text" size="sm" v-model.trim="settings.filter" @change="saveSettings" debounce="600" v-b-popover.hover.top="'Regex filter by name'" placeholder="🔍 name regex"></b-form-input>
           </div>
           <div class="mt-0 pr-1">
             <b-dropdown size="sm" variant="link" v-b-popover.hover="'Junk filter'">

@@ -114,8 +114,8 @@ const ViewToken = {
     contractMetadata() {
       return store.getters['data/contractMetadata'];
     },
-    tokenMetadata() {
-      return store.getters['data/tokenMetadata'];
+    prices() {
+      return store.getters['data/prices'];
     },
     collectionSymbol() {
       return this.contract && this.contractMetadata[this.chainId] && this.contractMetadata[this.chainId][this.contract] && this.contractMetadata[this.chainId][this.contract].symbol || null;
@@ -124,7 +124,7 @@ const ViewToken = {
       return this.contract && this.contractMetadata[this.chainId] && this.contractMetadata[this.chainId][this.contract] && this.contractMetadata[this.chainId][this.contract].name || null;
     },
     metadata() {
-      return this.contract && this.tokenId && this.tokenMetadata[this.chainId] && this.tokenMetadata[this.chainId][this.contract] && this.tokenMetadata[this.chainId][this.contract][this.tokenId] || {};
+      return this.contract && this.tokenId && this.prices[this.chainId] && this.prices[this.chainId][this.contract] && this.prices[this.chainId][this.contract][this.tokenId] || {};
     },
     name() {
       return this.metadata && this.metadata.name || null;

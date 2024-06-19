@@ -137,7 +137,7 @@ const dataModule = {
     tokens: {}, // chainId -> contract -> tokenId => owner or balances
     metadata: {}, // chainId -> contract -> tokenId => owner or balances
     contractMetadata: {}, // chainId -> contract => metadata
-    tokenMetadata: {}, // chainId -> contract -> tokenId => metadata
+    prices: {}, // chainId -> contract -> tokenId => metadata
     tokenInfo: {}, // chainId -> contract -> tokenId => info
     timestamps: {}, // chainId -> blockNumber => timestamp
     txs: {}, // txHash => tx & txReceipt
@@ -179,7 +179,7 @@ const dataModule = {
     tokens: state => state.tokens,
     metadata: state => state.metadata,
     contractMetadata: state => state.contractMetadata,
-    tokenMetadata: state => state.tokenMetadata,
+    prices: state => state.prices,
     tokenInfo: state => state.tokenInfo,
     timestamps: state => state.timestamps,
     txs: state => state.txs,
@@ -357,14 +357,14 @@ const dataModule = {
       logInfo("dataModule", "mutations.addTokenMetadata tokenData: " + JSON.stringify(tokenData, null, 2));
       // const token = info.token;
       // const market = info.market;
-      if (!(tokenData.chainId in state.tokenMetadata)) {
-        Vue.set(state.tokenMetadata, tokenData.chainId, {});
+      if (!(tokenData.chainId in state.prices)) {
+        Vue.set(state.prices, tokenData.chainId, {});
       }
       const contract = ethers.utils.getAddress(tokenData.contract);
-      if (!(contract in state.tokenMetadata[tokenData.chainId])) {
-        Vue.set(state.tokenMetadata[tokenData.chainId], contract, {});
+      if (!(contract in state.prices[tokenData.chainId])) {
+        Vue.set(state.prices[tokenData.chainId], contract, {});
       }
-      // if (!(token.tokenId in state.tokenMetadata[token.chainId][contract])) {
+      // if (!(token.tokenId in state.prices[token.chainId][contract])) {
         // const createdRecord = token.attributes.filter(e => e.key == "Created Date");
         // const created = createdRecord.length == 1 && createdRecord[0].value || null;
         // let registration;
@@ -406,7 +406,7 @@ const dataModule = {
         // const topBidNetAmount = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.native || null;
         // const topBidNetAmountUSD = market.topBid.price && market.topBid.price.netAmount && market.topBid.price.netAmount.usd || null;
 
-        Vue.set(state.tokenMetadata[tokenData.chainId][tokenData.contract], tokenData.tokenId, {
+        Vue.set(state.prices[tokenData.chainId][tokenData.contract], tokenData.tokenId, {
           name: tokenData.name,
           description: tokenData.description,
           image: tokenData.image,
@@ -446,7 +446,7 @@ const dataModule = {
           ],
         });
       // }
-      console.log("state.tokenMetadata[chainId][contract][tokenId]: " + JSON.stringify(state.tokenMetadata[tokenData.chainId][tokenData.contract][tokenData.tokenId], null, 2));
+      console.log("state.prices[chainId][contract][tokenId]: " + JSON.stringify(state.prices[tokenData.chainId][tokenData.contract][tokenData.tokenId], null, 2));
     },
     addStealthTransfer(state, info) {
       // logInfo("dataModule", "mutations.addStealthTransfer: " + JSON.stringify(info, null, 2));
@@ -549,7 +549,7 @@ const dataModule = {
       if (Object.keys(context.state.addresses).length == 0) {
         const db0 = new Dexie(context.state.db.name);
         db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-        for (let type of ['addresses', 'timestamps', 'txs', 'contractMetadata', 'tokenMetadata', 'tokenInfo', 'metadata', 'tokens', 'registry', 'stealthTransfers', 'tokenContracts', 'tokenMetadata']) {
+        for (let type of ['addresses', 'timestamps', 'prices', 'tokenInfo', 'metadata', 'tokens']) {
           const data = await db0.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             // logInfo("dataModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object));
@@ -594,7 +594,7 @@ const dataModule = {
     async addTokenMetadata(context, info) {
       logInfo("dataModule", "actions.addTokenMetadata - info: " + JSON.stringify(info, null, 2));
       context.commit('addTokenMetadata', info);
-      await context.dispatch('saveData', ['tokenMetadata']);
+      await context.dispatch('saveData', ['prices']);
     },
 
     async deleteAddress(context, account) {
@@ -626,7 +626,7 @@ const dataModule = {
           context.commit('addTokenMetadata', tokenData);
         }
       }
-      await context.dispatch('saveData', ['tokenMetadata']);
+      await context.dispatch('saveData', ['prices']);
     },
     async setSyncHalt(context, halt) {
       context.commit('setSyncHalt', halt);
@@ -1372,7 +1372,7 @@ const dataModule = {
       for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
         if (contractData.type == "erc721" || contractData.type == "erc1155") {
           for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
+            // if (!context.state.prices[parameter.chainId] || !context.state.prices[parameter.chainId][contract] || !context.state.prices[parameter.chainId][contract][tokenId]) {
               if (!(contract in tokensToProcess)) {
                 tokensToProcess[contract] = {};
               }
@@ -1802,7 +1802,7 @@ const dataModule = {
       for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
         if (contractData.type == "erc721" || contractData.type == "erc1155") {
           for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
+            // if (!context.state.prices[parameter.chainId] || !context.state.prices[parameter.chainId][contract] || !context.state.prices[parameter.chainId][contract][tokenId]) {
               if (!(contract in tokensToProcess)) {
                 tokensToProcess[contract] = {};
               }
@@ -2171,7 +2171,7 @@ const dataModule = {
       for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
         if (contractData.type == "erc721" || contractData.type == "erc1155") {
           for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            // if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
+            // if (!context.state.prices[parameter.chainId] || !context.state.prices[parameter.chainId][contract] || !context.state.prices[parameter.chainId][contract][tokenId]) {
               if (!(contract in tokensToProcess)) {
                 tokensToProcess[contract] = {};
               }
@@ -2239,7 +2239,7 @@ const dataModule = {
             completed++;
           }
           context.commit('setSyncCompleted', completed);
-          await context.dispatch('saveData', ['tokenMetadata']);
+          await context.dispatch('saveData', ['prices']);
           await delay(DELAYINMILLIS);
         } while (continuation != null /*&& !state.halt && !state.sync.error */);
       }
@@ -2264,7 +2264,7 @@ const dataModule = {
         }
         if (contractData.type == "erc721" || contractData.type == "erc1155") {
           for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            if (!context.state.tokenMetadata[parameter.chainId] || !context.state.tokenMetadata[parameter.chainId][contract] || !context.state.tokenMetadata[parameter.chainId][contract][tokenId]) {
+            if (!context.state.prices[parameter.chainId] || !context.state.prices[parameter.chainId][contract] || !context.state.prices[parameter.chainId][contract][tokenId]) {
               if (!(contract in tokensToProcess)) {
                 tokensToProcess[contract] = {};
               }
@@ -2511,7 +2511,7 @@ const dataModule = {
           }
           completed++;
           if ((completed % 10) == 0) {
-            await context.dispatch('saveData', ['tokenMetadata']);
+            await context.dispatch('saveData', ['prices']);
           }
           if (context.state.sync.halt) {
             break;
@@ -2521,7 +2521,7 @@ const dataModule = {
           break;
         }
       }
-      await context.dispatch('saveData', ['tokenMetadata']);
+      await context.dispatch('saveData', ['prices']);
       logInfo("dataModule", "actions.syncTokenMetadataOld END");
     },
 

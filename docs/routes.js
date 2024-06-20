@@ -11,9 +11,9 @@ const routes = [{
   //   component: Account,
   //   name: 'Account',
   }, {
-    path: '/nonFungibleTokens',
-    component: NonFungibleTokens,
-    name: 'NonFungibleTokens',
+    path: '/names',
+    component: Names,
+    name: 'Names',
   // }, {
   //   path: '/fungibleTokens',
   //   component: FungibleTokens,

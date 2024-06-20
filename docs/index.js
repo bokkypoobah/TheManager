@@ -58,7 +58,7 @@ const store = new Vuex.Store({
   modules: {
     connection: connectionModule,
     welcome: welcomeModule,
-    nonFungibleTokens: nonFungibleTokensModule,
+    names: namesModule,
     newAddress: newAddressModule,
     syncOptions: syncOptionsModule,
     viewAddress: viewAddressModule,

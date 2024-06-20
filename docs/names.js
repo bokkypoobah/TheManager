@@ -1,4 +1,4 @@
-const NonFungibleTokens = {
+const Names = {
   template: `
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
@@ -582,18 +582,18 @@ const NonFungibleTokens = {
       return results;
     },
     pagedFilteredSortedItems() {
-      // logInfo("NonFungibleTokens", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
+      // logInfo("Names", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
       return this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
     },
 
   },
   methods: {
     toggleTokenJunk(token) {
-      logInfo("NonFungibleTokens", "methods.toggleTokenJunk - token: " + JSON.stringify(token, null, 2));
+      logInfo("Names", "methods.toggleTokenJunk - token: " + JSON.stringify(token, null, 2));
       store.dispatch('data/toggleTokenJunk', token);
     },
     toggleTokenContractFavourite(item) {
-      logInfo("NonFungibleTokens", "methods.toggleTokenContractFavourite - item: " + JSON.stringify(item, null, 2));
+      logInfo("Names", "methods.toggleTokenContractFavourite - item: " + JSON.stringify(item, null, 2));
       store.dispatch('data/toggleTokenContractFavourite', item);
     },
     copyToClipboard(str) {
@@ -614,8 +614,8 @@ const NonFungibleTokens = {
       return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
     },
     saveSettings() {
-      logInfo("NonFungibleTokens", "methods.saveSettings - onlyfensNonFungibleTokensSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.onlyfensNonFungibleTokensSettings = JSON.stringify(this.settings);
+      logInfo("Names", "methods.saveSettings - onlyfensNamesSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.onlyfensNamesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {
       store.dispatch('syncOptions/viewSyncOptions');
@@ -654,7 +654,7 @@ const NonFungibleTokens = {
       return null;
     },
     rowSelected(item) {
-      logInfo("NonFungibleTokens", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
+      logInfo("Names", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
         store.dispatch('viewToken/viewToken', { contract: item[0].contract, tokenId: item[0].tokenId });
         this.$refs.tokenContractsTable.clearSelected();
@@ -707,7 +707,7 @@ const NonFungibleTokens = {
     },
 
     async timeoutCallback() {
-      logDebug("NonFungibleTokens", "timeoutCallback() count: " + this.count);
+      logDebug("Names", "timeoutCallback() count: " + this.count);
 
       this.count++;
       var t = this;
@@ -719,20 +719,20 @@ const NonFungibleTokens = {
     },
   },
   beforeDestroy() {
-    logDebug("NonFungibleTokens", "beforeDestroy()");
+    logDebug("Names", "beforeDestroy()");
   },
   mounted() {
-    logDebug("NonFungibleTokens", "mounted() $route: " + JSON.stringify(this.$route.params));
+    logDebug("Names", "mounted() $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('onlyfensNonFungibleTokensSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.onlyfensNonFungibleTokensSettings);
+    if ('onlyfensNamesSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.onlyfensNamesSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
       }
     }
     this.reschedule = true;
-    logDebug("NonFungibleTokens", "Calling timeoutCallback()");
+    logDebug("Names", "Calling timeoutCallback()");
     this.timeoutCallback();
   },
   destroyed() {
@@ -740,7 +740,7 @@ const NonFungibleTokens = {
   },
 };
 
-const nonFungibleTokensModule = {
+const namesModule = {
   namespaced: true,
   state: {
     params: null,
@@ -753,16 +753,16 @@ const nonFungibleTokensModule = {
   },
   mutations: {
     deQueue(state) {
-      logDebug("nonFungibleTokensModule", "deQueue(" + JSON.stringify(state.executionQueue) + ")");
+      logDebug("namesModule", "deQueue(" + JSON.stringify(state.executionQueue) + ")");
       state.executionQueue.shift();
     },
     updateParams(state, params) {
       state.params = params;
-      logDebug("nonFungibleTokensModule", "updateParams('" + params + "')")
+      logDebug("namesModule", "updateParams('" + params + "')")
     },
     updateExecuting(state, executing) {
       state.executing = executing;
-      logDebug("nonFungibleTokensModule", "updateExecuting(" + executing + ")")
+      logDebug("namesModule", "updateExecuting(" + executing + ")")
     },
   },
   actions: {

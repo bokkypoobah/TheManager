@@ -142,7 +142,11 @@ const NonFungibleTokens = {
           <template #cell(info)="data">
             <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].nftTokenPrefix + data.item.contract + '/' + data.item.tokenId" target="_blank">
               <span v-if="data.item.name">
-                <font size="-1">{{ data.item.name }}</font>
+                <font size="-1">
+                  <b-badge :variant="data.item.status">
+                    {{ data.item.name }}
+                  </b-badge>
+                </font>
               </span>
               <span v-else>
                 <font size="-1">{{ '#' + (data.item.tokenId.length > 20 ? (data.item.tokenId.substring(0, 10) + '...' + data.item.tokenId.slice(-8)) : data.item.tokenId) }}</font>
@@ -158,7 +162,11 @@ const NonFungibleTokens = {
           </template>
 
           <template #cell(expiry)="data">
-            <font size="-1">{{ formatTimestamp(data.item.expiry) }}</font>
+            <font size="-1">
+              <b-badge :variant="data.item.status">
+                {{ formatTimestamp(data.item.expiry) }}
+              </b-badge>
+            </font>
           </template>
 
           <template #cell(owners)="data">
@@ -547,6 +555,20 @@ const NonFungibleTokens = {
                 }
               }
               if (owners.length > 0) {
+                let status = "danger";
+                if (metadata.expiry) {
+                  if (metadata.expiry < moment().unix()) {
+                    status = "danger";
+                  } else if (metadata.expiry < expiry3m) {
+                    status = "warning";
+                  } else if (metadata.expiry < expiry1y) {
+                    status = "primary";
+                  } else {
+                    status = "success";
+                  }
+                }
+                // console.log(metadata.name + " " + moment.unix(metadata.expiry).format() + " " + status);
+
                 results.push({
                   contract,
                   type: data.type,
@@ -561,6 +583,7 @@ const NonFungibleTokens = {
                   description: metadata.description || null,
                   expiry: metadata.expiry || undefined,
                   attributes: metadata.attributes || null,
+                  status,
                   // imageSource: metadata.imageSource || null,
                   // image,
                   // blockNumber: tokenData.blockNumber,

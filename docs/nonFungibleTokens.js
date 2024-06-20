@@ -306,6 +306,7 @@ const NonFungibleTokens = {
         { value: 'expiry1m', text: 'Expiry <= 1m' },
         { value: 'expiry3m', text: 'Expiry <= 3m' },
         { value: 'expiry1y', text: 'Expiry <= 1y' },
+        { value: 'expiry1yp', text: 'Expiry > 1y' },
       ],
       sortOptions: [
         // { value: 'nameasc', text: '▲ Name' },
@@ -435,25 +436,32 @@ const NonFungibleTokens = {
         }
       }
 
+      const graceFrom = moment().subtract(90, 'days').unix();
+      const expiry1m = moment().add(1, 'months').unix();
+      const expiry3m = moment().add(3, 'months').unix();
+      const expiry1y = moment().add(1, 'years').unix();
+
       let dateFrom = null;
       let dateTo = null;
       if (this.settings.dateOption) {
         if (this.settings.dateOption == "active") {
-          dateFrom = moment().subtract(90, 'days').unix();
+          dateFrom = graceFrom;
         } else if (this.settings.dateOption == "grace") {
-          dateFrom = moment().subtract(90, 'days').unix();
+          dateFrom = graceFrom;
           dateTo = moment().unix();
         } else if (this.settings.dateOption == "expired") {
           dateTo = moment().unix();
         } else if (this.settings.dateOption == "expiry1m") {
-          dateFrom = moment().subtract(90, 'days').unix();
-          dateTo = moment().add(1, 'months').unix();
+          dateFrom = graceFrom;
+          dateTo = expiry1m;
         } else if (this.settings.dateOption == "expiry3m") {
-          dateFrom = moment().subtract(90, 'days').unix();
-          dateTo = moment().add(3, 'months').unix();
+          dateFrom = graceFrom;
+          dateTo = expiry3m;
         } else if (this.settings.dateOption == "expiry1y") {
-          dateFrom = moment().subtract(90, 'days').unix();
-          dateTo = moment().add(1, 'years').unix();
+          dateFrom = graceFrom;
+          dateTo = expiry1y;
+        } else if (this.settings.dateOption == "expiry1yp") {
+          dateFrom = expiry1y;
         }
       }
       if (dateFrom) {

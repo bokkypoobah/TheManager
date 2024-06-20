@@ -27,15 +27,6 @@ const NewAddress = {
     }
   },
   computed: {
-    powerOn() {
-      return store.getters['connection/powerOn'];
-    },
-    coinbase() {
-      return store.getters['connection/coinbase'];
-    },
-    chainId() {
-      return store.getters['connection/chainId'];
-    },
     address: {
       get: function () {
         return store.getters['newAddress/address'];

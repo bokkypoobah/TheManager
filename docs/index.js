@@ -10,7 +10,6 @@ Vue.component('new-address', NewAddress);
 Vue.component('new-transfer', NewTransfer);
 Vue.component('sync-options', SyncOptions);
 Vue.component('view-address', ViewAddress);
-Vue.component('view-stealthmetaddress', ViewStealthMetaAddress);
 Vue.component('view-token', ViewToken);
 // Vue.component('flat-pickr', VueFlatpickr);
 
@@ -61,23 +60,16 @@ const store = new Vuex.Store({
     connection: connectionModule,
     welcome: welcomeModule,
     registry: registryModule,
-    stealthTransfers: stealthTransfersModule,
     fungibleTokens: fungibleTokensModule,
     nonFungibleTokens: nonFungibleTokensModule,
     newTransfer: newTransferModule,
     newAddress: newAddressModule,
     syncOptions: syncOptionsModule,
     viewAddress: viewAddressModule,
-    viewStealthMetaAddress: viewStealthMetaAddressModule,
     viewToken: viewTokenModule,
     config: configModule,
-    // mappings: mappingsModule,
     data: dataModule,
-    // account: accountModule,
     addresses: addressesModule,
-    // assets: assetsModule,
-    // report: reportModule,
-    // transactions: transactionsModule,
   }
 });
 

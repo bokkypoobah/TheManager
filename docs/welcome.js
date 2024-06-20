@@ -92,7 +92,7 @@ const Welcome = {
                 <h6>This Web3 Dapp</h6>
                 <ul>
                   <li>
-                    <b-link href="https://bokkypoobah.github.io/TheManager/" target="_blank">https://bokkypoobah.github.io/TheManager/</b-link>
+                    <b-link href="https://bokkypoobah.github.io/onlyfens/" target="_blank">https://bokkypoobah.github.io/onlyfens/</b-link>
                   </li>
                 </ul>
               </b-card-text>
@@ -101,7 +101,7 @@ const Welcome = {
                 <h6>Source Code</h6>
                 <ul>
                   <li>
-                    <b-link href="https://github.com/bokkypoobah/TheManager" target="_blank">https://github.com/bokkypoobah/TheManager</b-link>
+                    <b-link href="https://github.com/bokkypoobah/onlyfens" target="_blank">https://github.com/bokkypoobah/onlyfens</b-link>
                   </li>
                 </ul>
               </b-card-text>

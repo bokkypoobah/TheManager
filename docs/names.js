@@ -441,9 +441,9 @@ const Names = {
           dateFrom = expiry1y;
         }
       }
-      if (dateFrom) {
-        console.log("filteredItems - dateFrom: " + dateFrom + " " + moment(dateFrom).format());
-      }
+      // if (dateFrom) {
+      //   console.log("filteredItems - dateFrom: " + dateFrom + " " + moment(dateFrom).format());
+      // }
 
       const selectedAddressesMap = {};
       for (const [address, addressData] of Object.entries(this.addresses)) {

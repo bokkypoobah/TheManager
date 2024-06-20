@@ -495,9 +495,7 @@ const dataModule = {
       logInfo("dataModule", "actions.resetData");
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-      // await db.announcements.clear();
       await db.cache.clear();
-      // await db.registrations.clear();
       await db.events.clear();
       db.close();
     },
@@ -506,53 +504,22 @@ const dataModule = {
       context.commit('addNewAddress', newAddress);
       await context.dispatch('saveData', ['addresses']);
     },
-    // async restoreAccount(context, addressData) {
-    //   logInfo("dataModule", "actions.restoreAccount - addressData: " + JSON.stringify(addressData));
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //   const ensReverseRecordsContract = new ethers.Contract(ENSREVERSERECORDSADDRESS, ENSREVERSERECORDSABI, provider);
-    //   const accountInfo = await getAccountInfo(addressData.account, provider)
-    //   if (accountInfo.account) {
-    //     context.commit('addNewAddress', accountInfo);
-    //     context.commit('addNewAccountInfo', addressData);
-    //   }
-    //   const names = await ensReverseRecordsContract.getNames([addressData.account]);
-    //   const name = names.length == 1 ? names[0] : addressData.account;
-    //   if (!(addressData.account in context.state.ensMap)) {
-    //     context.commit('addENSName', { account: addressData.account, name });
-    //   }
-    // },
-    // async restoreIntermediateData(context, info) {
-    //   if (info.blocks && info.txs) {
-    //     await context.commit('setState', { name: 'blocks', data: info.blocks });
-    //     await context.commit('setState', { name: 'txs', data: info.txs });
-    //   }
-    // },
 
     async syncIt(context, options) {
       logInfo("dataModule", "actions.syncIt - options: " + JSON.stringify(options, null, 2));
-      // const db = new Dexie(context.state.db.name);
-      // db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const block = await provider.getBlock();
       const confirmations = store.getters['config/settings'].confirmations && parseInt(store.getters['config/settings'].confirmations) || 10;
       const blockNumber = block && block.number || null;
-      const cryptoCompareAPIKey = store.getters['config/settings'].cryptoCompareAPIKey && store.getters['config/settings'].cryptoCompareAPIKey.length > 0 && store.getters['config/settings'].cryptoCompareAPIKey || null;
       const processFilters = store.getters['config/processFilters'];
 
-      const accountsToSync = [];
-      // for (const [account, addressData] of Object.entries(context.state.accounts)) {
-      //   const accountsInfo = context.state.accountsInfo[account] || {};
-      //   if ((info.parameters.length == 0 && accountsInfo.sync) || info.parameters.includes(account)) {
-      //       accountsToSync.push(account);
-      //   }
-      // }
       const chainId = store.getters['connection/chainId'];
       const coinbase = store.getters['connection/coinbase'];
       if (!(coinbase in context.state.addresses) && Object.keys(context.state.addresses).length == 0) {
         context.commit('addNewAddress', { action: "addCoinbase", check: ["ethers", "tokens"] });
       }
 
-      const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options };
+      const parameter = { chainId, coinbase, blockNumber, confirmations, ...options };
 
       if (options.transfers && !options.devThing) {
         await context.dispatch('syncTransfers', parameter);
@@ -583,7 +550,7 @@ const dataModule = {
       //   console.log("Dev Thing");
       // }
 
-      context.dispatch('saveData', ['addresses'/*, 'blocks', 'txs', 'ensMap'*/]);
+      // TODO: Delete context.dispatch('saveData', ['addresses']);
       context.commit('setSyncSection', { section: null, total: null });
       context.commit('setSyncHalt', false);
       context.commit('forceRefresh');

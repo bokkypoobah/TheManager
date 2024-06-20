@@ -495,8 +495,8 @@ function parseReservoirTokenData(info) {
 //                                                 03                   3
 //                                                   657468             eth
 //                                                         00           0
-const results = decodeNameWrapperBytes("0x0a736369656e74696669630b636f6c6c656374696f6e730365746800");
-console.log("results: " + JSON.stringify(results)); // results: ["scientific","collections","eth"]
+// const results = decodeNameWrapperBytes("0x0a736369656e74696669630b636f6c6c656374696f6e730365746800");
+// console.log("results: " + JSON.stringify(results)); // results: ["scientific","collections","eth"]
 function decodeNameWrapperBytes(b) {
   let start = 4;
   let len = ethers.BigNumber.from("0x" + b.substring(2, 4));

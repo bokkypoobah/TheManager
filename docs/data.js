@@ -457,7 +457,7 @@ const dataModule = {
       }
     },
     addTimestamp(state, info) {
-      logInfo("dataModule", "mutations.addTimestamp info: " + JSON.stringify(info, null, 2));
+      logInfo("dataModule", "mutations.addTimestamp: " + info.blockNumber + " => " + moment.unix(info.timestamp).format());
       if (!(info.chainId in state.timestamps)) {
         Vue.set(state.timestamps, info.chainId, {});
       }

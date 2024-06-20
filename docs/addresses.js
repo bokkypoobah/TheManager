@@ -435,8 +435,8 @@ const Addresses = {
   },
   methods: {
     saveSettings() {
-      logInfo("Addresses", "methods.saveSettings - addressesSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.addressesSettings = JSON.stringify(this.settings);
+      logInfo("Addresses", "methods.saveSettings - onlyfensAddressesSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.onlyfensAddressesSettings = JSON.stringify(this.settings);
     },
 
     newTransfer(stealthMetaAddress = null) {
@@ -610,8 +610,8 @@ const Addresses = {
   mounted() {
     logDebug("Addresses", "mounted() $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('addressesSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.addressesSettings);
+    if ('onlyfensAddressesSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.onlyfensAddressesSettings);
       if ('version' in tempSettings && tempSettings.version == 0) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;

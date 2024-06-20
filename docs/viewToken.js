@@ -275,8 +275,8 @@ const ViewToken = {
       return null;
     },
     saveSettings() {
-      logInfo("ViewToken", "methods.saveSettings - transfersSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.transfersSettings = JSON.stringify(this.settings);
+      logInfo("ViewToken", "methods.saveSettings - onlyfensViewTokenSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.onlyfensViewTokenSettings = JSON.stringify(this.settings);
     },
     setShow(show) {
       store.dispatch('viewToken/setShow', show);
@@ -386,8 +386,8 @@ const ViewToken = {
   },
   mounted() {
     logDebug("ViewToken", "mounted() $route: " + JSON.stringify(this.$route.params));
-    if ('transfersSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.transfersSettings);
+    if ('onlyfensViewTokenSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.onlyfensViewTokenSettings);
       if ('version' in tempSettings && tempSettings.version == 0) {
         this.settings = tempSettings;
       }

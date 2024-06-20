@@ -161,12 +161,12 @@ const ViewAddress = {
   },
   mounted() {
     logDebug("ViewAddress", "mounted() $route: " + JSON.stringify(this.$route.params));
-    if ('transfersSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.transfersSettings);
-      if ('version' in tempSettings && tempSettings.version == 0) {
-        this.settings = tempSettings;
-      }
-    }
+    // if ('onlyfensTransfersSettings' in localStorage) {
+    //   const tempSettings = JSON.parse(localStorage.onlyfensTransfersSettings);
+    //   if ('version' in tempSettings && tempSettings.version == 0) {
+    //     this.settings = tempSettings;
+    //   }
+    // }
   },
 };
 

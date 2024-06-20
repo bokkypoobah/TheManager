@@ -289,7 +289,7 @@ const NonFungibleTokens = {
         currentPage: 1,
         pageSize: 10,
         sortOption: 'expiryasc',
-        version: 1,
+        version: 0,
       },
       transfer: {
         item: null,
@@ -642,8 +642,8 @@ const NonFungibleTokens = {
       return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
     },
     saveSettings() {
-      logInfo("NonFungibleTokens", "methods.saveSettings - theManagerNonFungibleTokensSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.theManagerNonFungibleTokensSettings = JSON.stringify(this.settings);
+      logInfo("NonFungibleTokens", "methods.saveSettings - onlyfensNonFungibleTokensSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.onlyfensNonFungibleTokensSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {
       store.dispatch('syncOptions/viewSyncOptions');
@@ -752,8 +752,8 @@ const NonFungibleTokens = {
   mounted() {
     logDebug("NonFungibleTokens", "mounted() $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('theManagerNonFungibleTokensSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.theManagerNonFungibleTokensSettings);
+    if ('onlyfensNonFungibleTokensSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.onlyfensNonFungibleTokensSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;

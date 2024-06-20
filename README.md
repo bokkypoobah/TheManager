@@ -4,7 +4,7 @@
 
 ENS Portfolio Manager (WIP)
 
-https://bokkypoobah.github.io/TheManager/
+https://bokkypoobah.github.io/onlyfens/
 
 <br />
 

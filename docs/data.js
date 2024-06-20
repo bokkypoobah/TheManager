@@ -155,14 +155,10 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "themanagerdata080c",
+      name: "onlyfensdata080a",
       version: 1,
       schemaDefinition: {
-        // announcements: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,stealthAddress',
-        // registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
-        // transfers: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
         events: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,[type+blockNumber]',
-        // transfers: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,[eventType+confirmations]',
         cache: '&objectName',
       },
       updated: null,

@@ -154,8 +154,8 @@ const app = new Vue({
       store.dispatch('tokens/updateSelectedId', parseInt(this.$route.params["id"]));
     }
 
-    if (localStorage.getItem('powerOn')) {
-      var c = localStorage.getItem('powerOn');
+    if (localStorage.getItem('onlyfensPowerOn')) {
+      var c = localStorage.getItem('onlyfensPowerOn');
       store.dispatch('connection/setPowerOn', c == 'true' || c === true);
     }
     this.reschedule = true;
@@ -178,7 +178,7 @@ const app = new Vue({
     // },
     setPowerOn() {
       store.dispatch('connection/setPowerOn', true);
-      localStorage.setItem('powerOn', true);
+      localStorage.setItem('onlyfensPowerOn', true);
       var t = this;
       setTimeout(function() {
         t.statusSidebar = true;
@@ -186,7 +186,7 @@ const app = new Vue({
     },
     setPowerOff() {
       store.dispatch('connection/setPowerOn', false);
-      localStorage.setItem('powerOn', false);
+      localStorage.setItem('onlyfensPowerOn', false);
       var t = this;
       setTimeout(function() {
         t.statusSidebar = false;

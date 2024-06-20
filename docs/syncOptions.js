@@ -45,7 +45,7 @@ const SyncOptions = {
         timestamps: true,
         // txData: true,
         devThing: false,
-        version: 1,
+        version: 0,
       },
     }
   },
@@ -73,8 +73,8 @@ const SyncOptions = {
   },
   methods: {
     saveSettings() {
-      // logInfo("SyncOptions", "methods.saveSettings - theManagerSyncOptionsSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.theManagerSyncOptionsSettings = JSON.stringify(this.settings);
+      // logInfo("SyncOptions", "methods.saveSettings - onlyfensSyncOptionsSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.onlyfensSyncOptionsSettings = JSON.stringify(this.settings);
     },
     syncNow() {
       store.dispatch('data/syncIt', {
@@ -98,8 +98,8 @@ const SyncOptions = {
   },
   mounted() {
     logDebug("SyncOptions", "mounted() $route: " + JSON.stringify(this.$route.params));
-    if ('theManagerSyncOptionsSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.theManagerSyncOptionsSettings);
+    if ('onlyfensSyncOptionsSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.onlyfensSyncOptionsSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
       }

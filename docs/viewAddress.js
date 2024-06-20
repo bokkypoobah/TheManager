@@ -18,8 +18,8 @@ const ViewAddress = {
           <b-button size="sm" id="address-mine" :pressed.sync="mine" variant="transparent"><b-icon :icon="mine ? 'star-fill' : 'star'" shift-v="+1" font-scale="0.95" :variant="mine ? 'warning' : 'secondary'"></b-icon></b-button>
         </b-form-group>
 
-        <b-form-group label="Favourite:" label-for="address-favourite" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-          <b-button size="sm" id="address-favourite" :pressed.sync="favourite" variant="transparent"><b-icon :icon="favourite ? 'heart-fill' : 'heart'" shift-v="+1" font-scale="0.95" variant="danger"></b-icon></b-button>
+        <b-form-group label="Process:" label-for="address-process" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+          <b-button size="sm" id="address-process" :pressed.sync="process" variant="transparent"><b-icon :icon="process ? 'check-square' : 'square'" shift-v="+1" font-scale="0.95" variant="primary"></b-icon></b-button>
         </b-form-group>
 
         <b-form-group label="Name:" label-for="address-name" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -29,7 +29,7 @@ const ViewAddress = {
             <b-input-group-append>
               <div>
                 <b-button size="sm" :pressed.sync="mine" variant="transparent" v-b-popover.hover="addressTypeInfo[type || 'address'].name" class="m-0 ml-5 p-0"><b-icon :icon="mine ? 'star-fill' : 'star'" shift-v="+1" font-scale="0.95" :variant="addressTypeInfo[type || 'address'].variant"></b-icon></b-button>
-                <b-button size="sm" :pressed.sync="favourite" variant="transparent" v-b-popover.hover="'Favourite?'" class="m-0 ml-1 p-0"><b-icon :icon="favourite ? 'heart-fill' : 'heart'" shift-v="+1" font-scale="0.95" variant="danger"></b-icon></b-button>
+                <b-button size="sm" :pressed.sync="process" variant="transparent" v-b-popover.hover="'Process?'" class="m-0 ml-1 p-0"><b-icon :icon="process ? 'heart-fill' : 'heart'" shift-v="+1" font-scale="0.95" variant="danger"></b-icon></b-button>
               </div>
             </b-input-group-append>
             -->
@@ -85,13 +85,13 @@ const ViewAddress = {
         store.dispatch('viewAddress/setMine', mine);
       },
     },
-    favourite: {
+    process: {
       get: function () {
-        return store.getters['viewAddress/favourite'];
+        return store.getters['viewAddress/process'];
       },
-      set: function (favourite) {
-        store.dispatch('data/setAddressField', { address: store.getters['viewAddress/address'], field: 'favourite', value: favourite });
-        store.dispatch('viewAddress/setFavourite', favourite);
+      set: function (process) {
+        store.dispatch('data/setAddressField', { address: store.getters['viewAddress/address'], field: 'process', value: process });
+        store.dispatch('viewAddress/setProcess', process);
       },
     },
     check: {
@@ -175,14 +175,14 @@ const viewAddressModule = {
   state: {
     address: null,
     mine: null,
-    favourite: null,
+    process: null,
     name: null,
     show: false,
   },
   getters: {
     address: state => state.address,
     mine: state => state.mine,
-    favourite: state => state.favourite,
+    process: state => state.process,
     name: state => state.name,
     show: state => state.show,
   },
@@ -192,7 +192,7 @@ const viewAddressModule = {
       const data = store.getters['data/addresses'][address] || {};
       state.address = address;
       state.mine = data.mine;
-      state.favourite = data.favourite;
+      state.process = data.process;
       state.name = data.name;
       state.show = true;
     },
@@ -200,9 +200,9 @@ const viewAddressModule = {
       logInfo("viewAddressModule", "mutations.setMine - mine: " + mine);
       state.mine = mine;
     },
-    setFavourite(state, favourite) {
-      logInfo("viewAddressModule", "mutations.setFavourite - favourite: " + favourite);
-      state.favourite = favourite;
+    setProcess(state, process) {
+      logInfo("viewAddressModule", "mutations.setProcess - process: " + process);
+      state.process = process;
     },
     setName(state, name) {
       logInfo("viewAddressModule", "mutations.setName - name: " + name);
@@ -221,9 +221,9 @@ const viewAddressModule = {
       logInfo("viewAddressModule", "actions.setMine - mine: " + mine);
       await context.commit('setMine', mine);
     },
-    async setFavourite(context, favourite) {
-      logInfo("viewAddressModule", "actions.setFavourite - favourite: " + favourite);
-      await context.commit('setFavourite', favourite);
+    async setProcess(context, process) {
+      logInfo("viewAddressModule", "actions.setProcess - process: " + process);
+      await context.commit('setProcess', process);
     },
     async setName(context, name) {
       logInfo("viewAddressModule", "actions.setName - name: " + name);

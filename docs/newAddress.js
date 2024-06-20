@@ -9,8 +9,8 @@ const NewAddress = {
         <b-form-group label="Mine:" label-for="addnewaddress-mine" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-button size="sm" id="addnewaddress-mine" :pressed.sync="mine" variant="transparent"><b-icon :icon="mine ? 'star-fill' : 'star'" shift-v="+1" font-scale="0.95" :variant="mine ? 'warning' : 'secondary'"></b-icon></b-button>
         </b-form-group>
-        <b-form-group label="Favourite:" label-for="addnewaddress-favourite" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-          <b-button size="sm" id="addnewaddress-favourite" :pressed.sync="favourite" variant="transparent"><b-icon :icon="favourite ? 'heart-fill' : 'heart'" shift-v="+1" font-scale="0.95" variant="danger"></b-icon></b-button>
+        <b-form-group label="Process:" label-for="addnewaddress-process" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+          <b-button size="sm" id="addnewaddress-process" :pressed.sync="process" variant="transparent"><b-icon :icon="process ? 'check-square' : 'square'" shift-v="+1" font-scale="0.95" variant="primary"></b-icon></b-button>
         </b-form-group>
         <b-form-group label="Name:" label-for="addnewaddress-name" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-form-input size="sm" id="addnewaddress-name" v-model.trim="name" debounce="600" placeholder="optional" class="w-50"></b-form-input>
@@ -52,12 +52,12 @@ const NewAddress = {
         store.dispatch('newAddress/setMine', mine);
       },
     },
-    favourite: {
+    process: {
       get: function () {
-        return store.getters['newAddress/favourite'];
+        return store.getters['newAddress/process'];
       },
-      set: function (favourite) {
-        store.dispatch('newAddress/setFavourite', favourite);
+      set: function (process) {
+        store.dispatch('newAddress/setProcess', process);
       },
     },
     name: {
@@ -95,7 +95,7 @@ const NewAddress = {
       store.dispatch('data/addNewAddress', {
         address: this.address,
         mine: this.mine,
-        favourite: this.favourite,
+        process: this.process,
         name: this.name,
       });
       this.$refs['newaddress'].hide();
@@ -114,14 +114,14 @@ const newAddressModule = {
   state: {
     address: null,
     mine: null,
-    favourite: null,
+    process: null,
     name: null,
     show: false,
   },
   getters: {
     address: state => state.address,
     mine: state => state.mine,
-    favourite: state => state.favourite,
+    process: state => state.process,
     name: state => state.name,
     show: state => state.show,
   },
@@ -129,8 +129,8 @@ const newAddressModule = {
     newAddress(state) {
       logInfo("newAddressModule", "mutations.newAddress");
       state.address = null;
-      state.mine = false;
-      state.favourite = false;
+      state.mine = true;
+      state.process = true;
       state.name = null;
       state.show = true;
     },
@@ -142,9 +142,9 @@ const newAddressModule = {
       logInfo("newAddressModule", "mutations.setMine - mine: " + mine);
       state.mine = mine;
     },
-    setFavourite(state, favourite) {
-      logInfo("newAddressModule", "mutations.setFavourite - favourite: " + favourite);
-      state.favourite = favourite;
+    setProcess(state, process) {
+      logInfo("newAddressModule", "mutations.setProcess - process: " + process);
+      state.process = process;
     },
     setName(state, name) {
       logInfo("newAddressModule", "mutations.setName - name: " + name);
@@ -167,9 +167,9 @@ const newAddressModule = {
       logInfo("newAddressModule", "actions.setMine - mine: " + mine);
       await context.commit('setMine', mine);
     },
-    async setFavourite(context, favourite) {
-      logInfo("newAddressModule", "actions.setFavourite - favourite: " + favourite);
-      await context.commit('setFavourite', favourite);
+    async setProcess(context, process) {
+      logInfo("newAddressModule", "actions.setProcess - process: " + process);
+      await context.commit('setProcess', process);
     },
     async setName(context, name) {
       logInfo("newAddressModule", "actions.setName - name: " + name);

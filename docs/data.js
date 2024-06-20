@@ -105,7 +105,7 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "onlyfensdata080a",
+      name: "onlyfensdata080b",
       version: 1,
       schemaDefinition: {
         events: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,[type+blockNumber]',
@@ -192,35 +192,16 @@ const dataModule = {
       console.log("address: " + address);
       if (address in state.addresses) {
         Vue.set(state.addresses[address], 'mine', mine);
-        Vue.set(state.addresses[address], 'favourite', newAccount.favourite);
+        Vue.set(state.addresses[address], 'process', newAccount.process);
         Vue.set(state.addresses[address], 'name', newAccount.name);
       } else {
           Vue.set(state.addresses, address, {
             mine,
-            favourite: newAccount.favourite,
+            process: newAccount.process,
             name: newAccount.name,
           });
       }
       logInfo("dataModule", "mutations.addNewAddress AFTER - state.accounts: " + JSON.stringify(state.accounts, null, 2));
-    },
-    addNewStealthAddress(state, info) {
-      logInfo("dataModule", "mutations.addNewStealthAddress: " + JSON.stringify(info, null, 2));
-      Vue.set(state.addresses, info.stealthAddress, {
-        type: info.type,
-        linkedTo: info.linkedTo,
-        source: info.source,
-        mine: info.mine,
-        junk: info.junk,
-        favourite: info.favourite,
-        name: info.name,
-        notes: info.notes,
-      });
-    },
-    updateToStealthAddress(state, info) {
-      // logInfo("dataModule", "mutations.updateToStealthAddress: " + JSON.stringify(info, null, 2));
-      Vue.set(state.addresses[info.stealthAddress], 'type', info.type);
-      Vue.set(state.addresses[info.stealthAddress], 'linkedTo', info.linkedTo);
-      Vue.set(state.addresses[info.stealthAddress], 'mine', info.mine);
     },
     deleteAddress(state, address) {
       Vue.delete(state.addresses, address);

@@ -231,7 +231,7 @@ const Addresses = {
               <b-button size="sm" @click="newTransfer(data.item.account);" variant="link" v-b-popover.hover="'New Stealth Transfer to ' + data.item.account" class="m-0 ml-2 p-0"><b-icon-caret-right shift-v="+1" font-scale="1.1"></b-icon-caret-right></b-button>
             </span> -->
             <b-button size="sm" :pressed.sync="data.item.mine" @click="toggleAddressField(data.item.account, 'mine')" variant="transparent" class="m-0 ml-1 p-0"><b-icon :icon="data.item.mine ? 'star-fill' : 'star'" shift-v="+1" font-scale="0.95" variant="warning"></b-icon></b-button>
-            <b-button size="sm" :pressed.sync="data.item.favourite" @click="toggleAddressField(data.item.account, 'favourite')" variant="transparent" v-b-popover.hover="'Favourite?'" class="m-0 ml-1 p-0"><b-icon :icon="data.item.favourite ? 'heart-fill' : 'heart'" shift-v="+1" font-scale="0.95" variant="danger"></b-icon></b-button>
+            <b-button size="sm" :pressed.sync="data.item.process" @click="toggleAddressField(data.item.account, 'process')" variant="transparent" v-b-popover.hover="'Process?'" class="m-0 ml-1 p-0"><b-icon :icon="data.item.process ? 'check-square' : 'square'" shift-v="+1" font-scale="0.95" variant="primary"></b-icon></b-button>
           </template>
           <template #cell(account)="data">
             <div v-if="data.item.account.substring(0, 3) == 'st:'">
@@ -467,11 +467,7 @@ const Addresses = {
       logInfo("Addresses", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
         const account = item[0].account;
-        if (account.substring(0, 3) == "st:") {
-          store.dispatch('viewStealthMetaAddress/viewStealthMetaAddress', item[0].account);
-        } else {
-          store.dispatch('viewAddress/viewAddress', item[0].account);
-        }
+        store.dispatch('viewAddress/viewAddress', item[0].account);
         this.$refs.accountsTable.clearSelected();
       }
     },

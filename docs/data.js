@@ -9,20 +9,8 @@ const Data = {
           <b-col class="small px-1 truncate" cols="7">{{ Object.keys(addresses).length }}</b-col>
         </b-row>
         <b-row>
-          <b-col cols="5" class="small px-1 text-right">ERC-20 Contracts:</b-col>
-          <b-col class="small px-1 truncate" cols="7">{{ totalERC20Contracts }}</b-col>
-        </b-row>
-        <b-row>
           <b-col cols="5" class="small px-1 text-right">ERC-721 Tokens:</b-col>
           <b-col class="small px-1 truncate" cols="7">{{ totalERC721Tokens }}</b-col>
-        </b-row>
-        <b-row>
-          <b-col cols="5" class="small px-1 text-right">Registry:</b-col>
-          <b-col class="small px-1 truncate" cols="7">{{ Object.keys(registry[chainId] || {}).length }}</b-col>
-        </b-row>
-        <b-row>
-          <b-col cols="5" class="small px-1 text-right">Stealth Transfers:</b-col>
-          <b-col class="small px-1 truncate" cols="7">{{ totalStealthTransfers }}</b-col>
         </b-row>
         <!-- <b-row>
           <b-col cols="5" class="small px-1">ENS Map</b-col>
@@ -51,32 +39,8 @@ const Data = {
     addresses() {
       return store.getters['data/addresses'];
     },
-    registry() {
-      return store.getters['data/registry'];
-    },
-    stealthTransfers() {
-      return store.getters['data/stealthTransfers'];
-    },
     tokenContracts() {
       return store.getters['data/tokenContracts'];
-    },
-    totalStealthTransfers() {
-      let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
-      for (const [blockNumber, logIndexes] of Object.entries(this.stealthTransfers[this.chainId] || {})) {
-        for (const [logIndex, item] of Object.entries(logIndexes)) {
-          result++;
-        }
-      }
-      return result;
-    },
-    totalERC20Contracts() {
-      let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
-      for (const [address, data] of Object.entries(this.tokenContracts[this.chainId] || {})) {
-        if (data.type == "erc20") {
-          result++;
-        }
-      }
-      return result;
     },
     totalERC721Tokens() {
       let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
@@ -87,18 +51,6 @@ const Data = {
       }
       return result;
     },
-    // mappings() {
-    //   return store.getters['data/mappings'];
-    // },
-    // txs() {
-    //   return store.getters['data/txs'];
-    // },
-    // assets() {
-    //   return store.getters['data/assets'];
-    // },
-    // ens() {
-    //   return store.getters['data/ens'];
-    // },
   },
   methods: {
     async timeoutCallback() {
@@ -142,8 +94,6 @@ const dataModule = {
     timestamps: {}, // chainId -> blockNumber => timestamp
     txs: {}, // txHash => tx & txReceipt
 
-    registry: {}, // Address => StealthMetaAddress
-    stealthTransfers: {}, // ChainId, blockNumber, logIndex => data
     tokenContracts: {}, // ChainId, tokenContractAddress, tokenId => data
     ens: {},
     exchangeRates: {},
@@ -180,8 +130,6 @@ const dataModule = {
     timestamps: state => state.timestamps,
     txs: state => state.txs,
 
-    registry: state => state.registry,
-    stealthTransfers: state => state.stealthTransfers,
     tokenContracts: state => state.tokenContracts,
     ens: state => state.ens,
     exchangeRates: state => state.exchangeRates,
@@ -237,78 +185,21 @@ const dataModule = {
     addNewAddress(state, newAccount) {
       logInfo("dataModule", "mutations.addNewAddress(" + JSON.stringify(newAccount, null, 2) + ")");
       let address = null;
-      // let linkedToAddress = null;
       let type = null;
       let mine = false;
-      // let source = null;
-      // if (newAccount.action == "addCoinbase") {
-      //   address = store.getters['connection/coinbase'];
-      //   type = "address";
-      //   mine = true;
-      //   source = "attached";
-      // } else if (newAccount.action == "addAddress") {
-        address = ethers.utils.getAddress(newAccount.address);
-        // type = "address";
-        mine = newAccount.mine;
-        // source = "manual";
-      // } else if (newAccount.action == "addStealthMetaAddress") {
-      //   address = newAccount.address;
-      //   linkedToAddress = newAccount.linkedToAddress;
-      //   type = "stealthMetaAddress";
-      //   mine = newAccount.mine;
-      //   source = "manual";
-      // } else {
-      //   address = newAccount.address;
-      //   linkedToAddress = newAccount.linkedToAddress;
-      //   type = "stealthMetaAddress";
-      //   mine = true;
-      //   source = "attached";
-      // }
+      address = ethers.utils.getAddress(newAccount.address);
+      mine = newAccount.mine;
       console.log("address: " + address);
-      // console.log("linkedToAddress: " + linkedToAddress);
-      // console.log("type: " + type);
       if (address in state.addresses) {
-        // Vue.set(state.addresses[address], 'type', type);
-        // if (type == "stealthMetaAddress") {
-        //   Vue.set(state.addresses[address], 'linkedToAddress', linkedToAddress);
-        //   Vue.set(state.addresses[address], 'phrase', newAccount.action == "generateStealthMetaAddress" ? newAccount.phrase : undefined);
-        //   Vue.set(state.addresses[address], 'viewingPrivateKey', newAccount.action == "generateStealthMetaAddress" ? newAccount.viewingPrivateKey : undefined);
-        //   Vue.set(state.addresses[address], 'spendingPublicKey', newAccount.action == "generateStealthMetaAddress" ? newAccount.spendingPublicKey : undefined);
-        //   Vue.set(state.addresses[address], 'viewingPublicKey', newAccount.action == "generateStealthMetaAddress" ? newAccount.viewingPublicKey : undefined);
-        // }
         Vue.set(state.addresses[address], 'mine', mine);
         Vue.set(state.addresses[address], 'favourite', newAccount.favourite);
-        // Vue.set(state.addresses[address], 'check', newAccount.check);
         Vue.set(state.addresses[address], 'name', newAccount.name);
       } else {
-        // if (type == "address") {
           Vue.set(state.addresses, address, {
-            // type,
-            // source,
             mine,
-            // junk: false,
             favourite: newAccount.favourite,
-            // check: newAccount.check,
             name: newAccount.name,
-            // notes: null,
           });
-        // } else {
-        //   Vue.set(state.addresses, address, {
-        //     type,
-        //     linkedToAddress,
-        //     phrase: newAccount.action == "generateStealthMetaAddress" ? newAccount.phrase : undefined,
-        //     viewingPrivateKey: newAccount.action == "generateStealthMetaAddress" ? newAccount.viewingPrivateKey : undefined,
-        //     spendingPublicKey: newAccount.action == "generateStealthMetaAddress" ? newAccount.spendingPublicKey : undefined,
-        //     viewingPublicKey: newAccount.action == "generateStealthMetaAddress" ? newAccount.viewingPublicKey : undefined,
-        //     source,
-        //     mine,
-        //     junk: false,
-        //     favourite: newAccount.favourite,
-        //     check: newAccount.check,
-        //     name: newAccount.name,
-        //     notes: null,
-        //   });
-        // }
       }
       logInfo("dataModule", "mutations.addNewAddress AFTER - state.accounts: " + JSON.stringify(state.accounts, null, 2));
     },
@@ -443,18 +334,6 @@ const dataModule = {
         });
       // }
       console.log("state.prices[chainId][contract][tokenId]: " + JSON.stringify(state.prices[tokenData.chainId][tokenData.contract][tokenData.tokenId], null, 2));
-    },
-    addStealthTransfer(state, info) {
-      // logInfo("dataModule", "mutations.addStealthTransfer: " + JSON.stringify(info, null, 2));
-      if (!(info.chainId in state.stealthTransfers)) {
-        Vue.set(state.stealthTransfers, info.chainId, {});
-      }
-      if (!(info.blockNumber in state.stealthTransfers[info.chainId])) {
-        Vue.set(state.stealthTransfers[info.chainId], info.blockNumber, {});
-      }
-      if (!(info.logIndex in state.stealthTransfers[info.chainId][info.blockNumber])) {
-        Vue.set(state.stealthTransfers[info.chainId][info.blockNumber], info.logIndex, info);
-      }
     },
     addTimestamp(state, info) {
       logInfo("dataModule", "mutations.addTimestamp: " + info.blockNumber + " => " + moment.unix(info.timestamp).format());
@@ -723,7 +602,7 @@ const dataModule = {
       //   console.log("Dev Thing");
       // }
 
-      context.dispatch('saveData', ['addresses'/*, 'registry' , 'blocks', 'txs', 'ensMap'*/]);
+      context.dispatch('saveData', ['addresses'/*, 'blocks', 'txs', 'ensMap'*/]);
       context.commit('setSyncSection', { section: null, total: null });
       context.commit('setSyncHalt', false);
       context.commit('forceRefresh');

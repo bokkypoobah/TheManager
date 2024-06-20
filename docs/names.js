@@ -371,9 +371,6 @@ const Names = {
     addresses() {
       return store.getters['data/addresses'];
     },
-    registry() {
-      return store.getters['data/registry'];
-    },
     tokens() {
       return store.getters['data/tokens'];
     },

@@ -563,7 +563,7 @@ const dataModule = {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
 
-      // ERC-20 & ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
+      // ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
       // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', accountAs32Bytes, null ],
       // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', null, accountAs32Bytes ],
 
@@ -604,23 +604,8 @@ const dataModule = {
               if (log.topics.length == 4) {
                 from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
                 to = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokensOrTokenId = ethers.BigNumber.from(log.topics[3]).toString();
-              } else if (log.topics.length == 3) {
-                from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                to = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokensOrTokenId = ethers.BigNumber.from(log.data).toString();
-              // TODO: Handle 2
-              } else if (log.topics.length == 1) {
-                from = ethers.utils.getAddress('0x' + log.data.substring(26, 66));
-                to = ethers.utils.getAddress('0x' + log.data.substring(90, 130));
-                tokensOrTokenId = ethers.BigNumber.from('0x' + log.data.substring(130, 193)).toString();
-              }
-              if (from) {
-                if (log.topics.length == 4) {
-                  eventRecord = { type: "Transfer", from, to, tokenId: tokensOrTokenId, eventType: "erc721" };
-                } else {
-                  eventRecord = { type: "Transfer", from, to, tokens: tokensOrTokenId, eventType: "erc20" };
-                }
+                const tokenId = ethers.BigNumber.from(log.topics[3]).toString();
+                eventRecord = { type: "Transfer", from, to, tokenId, eventType: "erc721" };
               }
             } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
               if (log.topics.length == 4) {
@@ -628,11 +613,6 @@ const dataModule = {
                 const approved = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
                 tokenId = ethers.BigNumber.from(log.topics[3]).toString();
                 eventRecord = { type: "Approval", owner, approved, tokenId, eventType: "erc721" };
-              } else {
-                const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                const spender = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokens = ethers.BigNumber.from(log.data).toString();
-                eventRecord = { type: "Approval", owner, spender, tokens, eventType: "erc20" };
               }
             } else if (log.topics[0] == "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31") {
               const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
@@ -654,16 +634,6 @@ const dataModule = {
             } else {
               console.log("NOT HANDLED: " + JSON.stringify(log));
             }
-            // TODO: Testing if (eventRecord && contract == "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9") {
-            // if (eventRecord &&
-            //     ((parameter.erc20 && eventRecord.eventType == "erc20") ||
-            //      (parameter.erc721 && eventRecord.eventType == "erc721") ||
-            //      (parameter.erc1155 && eventRecord.eventType == "erc1155"))) {
-            // const testAddresses = parameter.devThing ? new Set(["0xB32979486938AA9694BFC898f35DBED459F44424","0x286E531F363768Fed5E18b468f5B76a9FFc33af5"]) : null;
-            // if (eventRecord && (!testAddresses || testAddresses.has(contract)) && eventRecord.eventType == "erc1155") {
-            // if (eventRecord && contract == "0xB32979486938AA9694BFC898f35DBED459F44424") {
-            // if (eventRecord && (contract == "0xB32979486938AA9694BFC898f35DBED459F44424" || contract == "0x286E531F363768Fed5E18b468f5B76a9FFc33af5")) {
-
             if (eventRecord && (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS || contract == ENS_NAMEWRAPPER_ADDRESS)) {
               records.push( {
                 chainId: parameter.chainId,
@@ -743,7 +713,7 @@ const dataModule = {
       context.commit('setSyncSection', { section: 'Transfer Events', total: null });
       const selectedAddresses = [];
       for (const [address, addressData] of Object.entries(context.state.addresses)) {
-        if (address.substring(0, 2) == "0x") {
+        if (address.substring(0, 2) == "0x" && addressData.process) {
           selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
         }
       }
@@ -768,7 +738,7 @@ const dataModule = {
       logInfo("dataModule", "actions.collateTokens BEGIN");
       const selectedAddressesMap = {};
       for (const [address, addressData] of Object.entries(context.state.addresses)) {
-        if (address.substring(0, 2) == "0x") {
+        if (address.substring(0, 2) == "0x" && addressData.process) {
           selectedAddressesMap[address] = true;
         }
       }
@@ -1723,7 +1693,7 @@ const dataModule = {
 
       const selectedAddressesMap = {};
       for (const [address, addressData] of Object.entries(context.state.addresses)) {
-        if (address.substring(0, 2) == "0x") {
+        if (address.substring(0, 2) == "0x" && addressData.process) {
           selectedAddressesMap[address] = true;
         }
       }
@@ -2034,285 +2004,6 @@ const dataModule = {
         } while (continuation != null /*&& !state.halt && !state.sync.error */);
       }
 
-    },
-
-    async syncTokenMetadataOld(context, parameter) {
-      logInfo("dataModule", "actions.syncTokenMetadataOld: " + JSON.stringify(parameter));
-      const db = new Dexie(context.state.db.name);
-      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-      logInfo("dataModule", "actions.syncTokenMetadataOld BEGIN");
-      const contractsToProcess = {};
-      const tokensToProcess = {};
-      let totalContractsToProcess = 0;
-      let totalTokensToProcess = 0;
-      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
-        if (!context.state.contractMetadata[parameter.chainId] || !context.state.contractMetadata[parameter.chainId][contract]) {
-          contractsToProcess[contract] = contractData;
-          totalContractsToProcess++;
-        }
-        if (contractData.type == "erc721" || contractData.type == "erc1155") {
-          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            if (!context.state.prices[parameter.chainId] || !context.state.prices[parameter.chainId][contract] || !context.state.prices[parameter.chainId][contract][tokenId]) {
-              if (!(contract in tokensToProcess)) {
-                tokensToProcess[contract] = {};
-              }
-              tokensToProcess[contract][tokenId] = tokenData;
-              totalTokensToProcess++;
-            }
-          }
-        }
-      }
-      // console.log("contractsToProcess: " + JSON.stringify(contractsToProcess));
-      console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
-
-      if (true) {
-        context.commit('setSyncSection', { section: 'Token Contract Metadata', total: totalContractsToProcess });
-        let completed = 0;
-        for (const [contract, contractData] of Object.entries(contractsToProcess)) {
-          console.log("Processing: " + contract + " => " + JSON.stringify(contractData));
-          context.commit('setSyncCompleted', completed);
-          const interface = new ethers.Contract(contract, ERC20ABI, provider);
-          let symbol = null;
-          let name = null;
-          let decimals = null;
-          let totalSupply = null;
-          if (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS) {
-            symbol = "ENS";
-            name = "Ethereum Name Service";
-          } else if (contract == ENS_NAMEWRAPPER_ADDRESS) {
-            symbol = "ENSW";
-            name = "Ethereum Name Service Name Wrapper";
-          } else {
-            try {
-              symbol = await interface.symbol();
-            } catch (e) {
-            }
-            try {
-              name = await interface.name();
-            } catch (e) {
-            }
-          }
-          if (contractData.type == "erc20") {
-              try {
-                decimals = await interface.decimals();
-              } catch (e) {
-              }
-          }
-          try {
-            totalSupply = await interface.totalSupply();
-          } catch (e) {
-          }
-          // console.log(contract + " " + contractData.type + " " + symbol + " " + name + " " + decimals + " " + totalSupply);
-          context.commit('addTokenContractMetadata', {
-            chainId: parameter.chainId,
-            contract,
-            symbol,
-            name,
-            decimals: decimals && parseInt(decimals) || null,
-            totalSupply: totalSupply && totalSupply.toString() || null,
-            ...contractData,
-          });
-          completed++;
-          if ((completed % 10) == 0) {
-            await context.dispatch('saveData', ['contractMetadata']);
-          }
-          if (context.state.sync.halt) {
-            break;
-          }
-        }
-        // console.log("context.state.metadata: " + JSON.stringify(context.state.metadata, null, 2));
-        await context.dispatch('saveData', ['contractMetadata']);
-      }
-
-      completed = 0;
-      context.commit('setSyncSection', { section: 'Token Metadata', total: totalTokensToProcess });
-      context.commit('setSyncCompleted', 0);
-      // data:application/json;base64, 0x72A94e6c51CB06453B84c049Ce1E1312f7c05e2c Wiiides
-      // https:// -> ipfs://           0x31385d3520bCED94f77AaE104b406994D8F2168C BGANPUNKV2
-      // data:application/json;base64, 0x1C60841b70821dcA733c9B1a26dBe1a33338bD43 GLICPIXXXVER002
-      // IPFS data in another contract 0xC2C747E0F7004F9E8817Db2ca4997657a7746928 Hashmask
-      // No tokenURI                   0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 ENS
-      // TODO ?                        0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401 ENS Name Wrapper
-      // IPFS retrieval failure        0xbe9371326F91345777b04394448c23E2BFEaa826 OSP Gemesis
-
-      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
-        const contractType = context.state.tokens[parameter.chainId][contract].type;
-        // console.log(contract + " => " + contractType);
-        for (const [tokenId, tokenData] of Object.entries(contractData)) {
-          context.commit('setSyncCompleted', completed);
-          try {
-            let tokenURIResult = null;
-            if (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS || contract == ENS_NAMEWRAPPER_ADDRESS) {
-              tokenURIResult = "https://metadata.ens.domains/mainnet/" + contract + "/" + tokenId;
-            // } else if (contract == HASHMASK) {
-            //   // Cannot access to server CORS configuration tokenURIResult = "https://hashmap.azurewebsites.net/getMask/" + tokenId;
-            //   tokenURIResult = "https://api.reservoir.tools/tokens/v7?tokens=" + contract + "%3A" + tokenId + "&includeAttributes=true";
-            } else {
-              if (contractType == "erc721") {
-                const interface = new ethers.Contract(contract, ERC721ABI, provider);
-                tokenURIResult = await interface.tokenURI(tokenId);
-              } else if (contractType == "erc1155") {
-                const interface = new ethers.Contract(contract, ERC1155ABI, provider);
-                tokenURIResult = await interface.uri(tokenId);
-                // console.log("ERC-1155 tokenURIResult: " + tokenURIResult);
-              }
-            }
-            console.log("FIRST: " + contract + "/" + tokenId + " => " + JSON.stringify(tokenURIResult));
-            let name = null;
-            let description = null;
-            let attributes = null;
-            let imageSource = null;
-            let image = null;
-            let expiry = null;
-            let expired = false;
-            if (tokenURIResult && tokenURIResult.substring(0, 29) == "data:application/json;base64,") {
-              const decodedJSON = atob(tokenURIResult.substring(29));
-              const data = JSON.parse(decodedJSON);
-              name = data.name || undefined;
-              description = data.description || undefined;
-              attributes = data.attributes || {};
-              image = data.image || undefined;
-              context.commit('addTokenMetadata', {
-                chainId: parameter.chainId,
-                contract,
-                tokenId,
-                name,
-                description,
-                image,
-                attributes,
-              });
-            } else if (tokenURIResult && (tokenURIResult.substring(0, 7) == "ipfs://" || tokenURIResult.substring(0, 8) == "https://")) {
-              let metadataFile = null;
-              if (tokenURIResult.substring(0, 12) == "ipfs://ipfs/") {
-                metadataFile = "https://ipfs.io/" + tokenURIResult.substring(7)
-              } else if (tokenURIResult.substring(0, 7) == "ipfs://") {
-                metadataFile = "https://ipfs.io/ipfs/" + tokenURIResult.substring(7);
-              } else {
-                metadataFile = tokenURIResult;
-              }
-              // let metadataFile = tokenURIResult.substring(0, 7) == "ipfs://" ? ("https://ipfs.io/ipfs/" + tokenURIResult.substring(7)) : tokenURIResult;
-              console.log("metadataFile: " + metadataFile + ", tokenURIResult: " + tokenURIResult);
-
-              // console.log("metadataFile: " + JSON.stringify(metadataFile, null, 2));
-              if (contractType == "erc1155") {
-                // console.log("ERC-1155 metadataFile BEFORE: " + JSON.stringify(metadataFile, null, 2));
-                metadataFile = metadataFile.replace(/0x{id}/, tokenId);
-                // console.log("ERC-1155 metadataFile AFTER: " + JSON.stringify(metadataFile, null, 2));
-              }
-              try {
-                const metadataFileContent = await fetch(metadataFile, {mode: 'cors'}).then(response => response.json());
-                console.log("metadataFile: " + metadataFile + " => " + JSON.stringify(metadataFileContent, null, 2));
-
-                if (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS || contract == ENS_NAMEWRAPPER_ADDRESS) {
-                  if (metadataFileContent && metadataFileContent.message) {
-                    // metadataFileContent: {
-                    //   "message": "'©god.eth' is already been expired at Fri, 29 Sep 2023 06:31:14 GMT."
-                    // }
-                    // console.log("EXPIRED: " + metadataFileContent.message);
-                    let inputString;
-                    [inputString, name, expiryString] = metadataFileContent.message.match(/'(.*)'.*at\s(.*)\./) || [null, null, null]
-                    expiry = moment.utc(expiryString).unix();
-                    console.log("EXPIRED - name: '" + name + "', expiryString: '" + expiryString + "', expiry: " + expiry);
-                    expired = true;
-                    context.commit('addTokenMetadata', {
-                      chainId: parameter.chainId,
-                      contract,
-                      tokenId,
-                      created: null,
-                      registration: null,
-                      expiry,
-                      name: name,
-                      description: "Expired '" + name + "'",
-                      image: null,
-                      attributes: [],
-                    });
-                  } else { // if (metadataFileContent && metadataFileContent.attributes) {
-                    if (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS) {
-                      const createdRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Created Date");
-                      created = createdRecord.length == 1 && createdRecord[0].value / 1000 || null;
-                      const registrationRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Registration Date");
-                      registration = registrationRecord.length == 1 && registrationRecord[0].value / 1000 || null;
-                      const expiryRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Expiration Date");
-                      expiry = expiryRecord.length == 1 && expiryRecord[0].value / 1000 || null;
-                      const attributes = metadataFileContent.attributes || [];
-                      attributes.sort((a, b) => {
-                        return ('' + a.trait_type).localeCompare(b.trait_type);
-                      });
-                      context.commit('addTokenMetadata', {
-                        chainId: parameter.chainId,
-                        contract,
-                        tokenId,
-                        created,
-                        registration,
-                        expiry,
-                        name: metadataFileContent.name || null,
-                        description: metadataFileContent.name || null,
-                        image: metadataFileContent.image || null,
-                        attributes,
-                      });
-                    } else if (contract == ENS_NAMEWRAPPER_ADDRESS) {
-                      const createdRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Created Date");
-                      created = createdRecord.length == 1 && createdRecord[0].value / 1000 || null;
-                      const expiryRecord = metadataFileContent.attributes.filter(e => e.trait_type == "Namewrapper Expiry Date");
-                      expiry = expiryRecord.length == 1 && expiryRecord[0].value / 1000 || null;
-                      const attributes = metadataFileContent.attributes || [];
-                      attributes.sort((a, b) => {
-                        return ('' + a.trait_type).localeCompare(b.trait_type);
-                      });
-                      context.commit('addTokenMetadata', {
-                        chainId: parameter.chainId,
-                        contract,
-                        tokenId,
-                        created,
-                        expiry,
-                        name: metadataFileContent.name || null,
-                        description: metadataFileContent.name || null,
-                        image: metadataFileContent.image || null,
-                        attributes,
-                      });
-                    }
-                  }
-                } else {
-                  console.log("NON-ENS");
-                  const attributes = metadataFileContent.attributes || [];
-                  attributes.sort((a, b) => {
-                    return ('' + a.trait_type).localeCompare(b.trait_type);
-                  });
-                  const image = metadataFileContent.image || null;
-                  console.log(contract + "/" + tokenId + " => " + image);
-                  context.commit('addTokenMetadata', {
-                    chainId: parameter.chainId,
-                    contract,
-                    tokenId,
-                    name: metadataFileContent.name || null,
-                    description: metadataFileContent.name || null,
-                    image: metadataFileContent.image || null,
-                    attributes,
-                  });
-                }
-              } catch (e1) {
-                console.error(e1.message);
-              }
-            }
-          } catch (e) {
-            console.error(e.message);
-          }
-          completed++;
-          if ((completed % 10) == 0) {
-            await context.dispatch('saveData', ['prices']);
-          }
-          if (context.state.sync.halt) {
-            break;
-          }
-        }
-        if (context.state.sync.halt) {
-          break;
-        }
-      }
-      await context.dispatch('saveData', ['prices']);
-      logInfo("dataModule", "actions.syncTokenMetadataOld END");
     },
 
     // async syncENS(context, parameter) {

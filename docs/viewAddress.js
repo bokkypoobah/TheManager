@@ -123,7 +123,7 @@ const viewAddressModule = {
   },
   mutations: {
     viewAddress(state, address) {
-      logInfo("viewAddressModule", "mutations.viewAddress - address: " + address);
+      // logInfo("viewAddressModule", "mutations.viewAddress - address: " + address);
       const data = store.getters['data/addresses'][address] || {};
       state.address = address;
       state.mine = data.mine;
@@ -132,15 +132,15 @@ const viewAddressModule = {
       state.show = true;
     },
     setMine(state, mine) {
-      logInfo("viewAddressModule", "mutations.setMine - mine: " + mine);
+      // logInfo("viewAddressModule", "mutations.setMine - mine: " + mine);
       state.mine = mine;
     },
     setProcess(state, process) {
-      logInfo("viewAddressModule", "mutations.setProcess - process: " + process);
+      // logInfo("viewAddressModule", "mutations.setProcess - process: " + process);
       state.process = process;
     },
     setName(state, name) {
-      logInfo("viewAddressModule", "mutations.setName - name: " + name);
+      // logInfo("viewAddressModule", "mutations.setName - name: " + name);
       state.name = name;
     },
     setShow(state, show) {
@@ -149,19 +149,19 @@ const viewAddressModule = {
   },
   actions: {
     async viewAddress(context, address) {
-      logInfo("viewAddressModule", "actions.viewAddress - address: " + address);
+      // logInfo("viewAddressModule", "actions.viewAddress - address: " + address);
       await context.commit('viewAddress', address);
     },
     async setMine(context, mine) {
-      logInfo("viewAddressModule", "actions.setMine - mine: " + mine);
+      // logInfo("viewAddressModule", "actions.setMine - mine: " + mine);
       await context.commit('setMine', mine);
     },
     async setProcess(context, process) {
-      logInfo("viewAddressModule", "actions.setProcess - process: " + process);
+      // logInfo("viewAddressModule", "actions.setProcess - process: " + process);
       await context.commit('setProcess', process);
     },
     async setName(context, name) {
-      logInfo("viewAddressModule", "actions.setName - name: " + name);
+      // logInfo("viewAddressModule", "actions.setName - name: " + name);
       await context.commit('setName', name);
     },
     async setShow(context, show) {

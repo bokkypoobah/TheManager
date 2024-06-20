@@ -578,11 +578,6 @@ const dataModule = {
       // ENS:ETH Registrar Controller NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
       // [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', [tokenIds] ],
 
-      // WETH Deposit (index_topic_1 address dst, uint256 wad)
-      // 0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c
-      // WETH Withdrawal (index_topic_1 address src, uint256 wad)
-      // 0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65
-
       // // ERC-20 Approval (index_topic_1 address owner, index_topic_2 address spender, uint256 value)
       // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
       // // ERC-721 Approval (index_topic_1 address owner, index_topic_2 address approved, index_topic_3 uint256 tokenId)
@@ -627,14 +622,6 @@ const dataModule = {
                   eventRecord = { type: "Transfer", from, to, tokens: tokensOrTokenId, eventType: "erc20" };
                 }
               }
-            } else if (log.topics[0] == "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c") {
-              const to = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-              tokens = ethers.BigNumber.from(log.data).toString();
-              eventRecord = { type: "Transfer", from: ADDRESS0, to, tokens, eventType: "erc20" };
-            } else if (log.topics[0] == "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65") {
-              const from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-              tokens = ethers.BigNumber.from(log.data).toString();
-              eventRecord = { type: "Transfer", from, to: ADDRESS0, tokens, eventType: "erc20" };
             } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
               if (log.topics.length == 4) {
                 const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
@@ -706,8 +693,6 @@ const dataModule = {
           if (section == 0) {
             topics = [[
                 '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-                '0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c',
-                '0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65',
                 '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925',
                 '0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31',
               ],
@@ -1032,11 +1017,6 @@ const dataModule = {
 
       // ENS:ETH Registrar Controller NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
       // [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', [tokenIds] ],
-
-      // WETH Deposit (index_topic_1 address dst, uint256 wad)
-      // 0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c
-      // WETH Withdrawal (index_topic_1 address src, uint256 wad)
-      // 0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65
 
       // // ERC-20 Approval (index_topic_1 address owner, index_topic_2 address spender, uint256 value)
       // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
@@ -1363,11 +1343,6 @@ const dataModule = {
       // ENS:ETH Registrar Controller NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
       // [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', [tokenIds] ],
 
-      // WETH Deposit (index_topic_1 address dst, uint256 wad)
-      // 0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c
-      // WETH Withdrawal (index_topic_1 address src, uint256 wad)
-      // 0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65
-
       // // ERC-20 Approval (index_topic_1 address owner, index_topic_2 address spender, uint256 value)
       // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
       // // ERC-721 Approval (index_topic_1 address owner, index_topic_2 address approved, index_topic_3 uint256 tokenId)
@@ -1412,14 +1387,6 @@ const dataModule = {
                   eventRecord = { type: "Transfer", from, to, tokens: tokensOrTokenId, eventType: "erc20" };
                 }
               }
-            } else if (log.topics[0] == "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c") {
-              const to = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-              tokens = ethers.BigNumber.from(log.data).toString();
-              eventRecord = { type: "Transfer", from: ADDRESS0, to, tokens, eventType: "erc20" };
-            } else if (log.topics[0] == "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65") {
-              const from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-              tokens = ethers.BigNumber.from(log.data).toString();
-              eventRecord = { type: "Transfer", from, to: ADDRESS0, tokens, eventType: "erc20" };
             } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
               if (log.topics.length == 4) {
                 const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));

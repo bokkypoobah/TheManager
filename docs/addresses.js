@@ -351,7 +351,7 @@ const Addresses = {
       return Object.keys(this.addresses).length;
     },
     filteredAddresses() {
-      logInfo("Addresses", "filteredAddresses - this.addresses: " + JSON.stringify(this.addresses, null, 2));
+      // logInfo("Addresses", "filteredAddresses - this.addresses: " + JSON.stringify(this.addresses, null, 2));
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       const filterLower = this.settings.filter && this.settings.filter.toLowerCase() || null;
       for (const [account, accountData] of Object.entries(this.addresses)) {
@@ -429,7 +429,7 @@ const Addresses = {
       return results;
     },
     pagedFilteredSortedAddresses() {
-      logInfo("Addresses", "filteredSortedAddresses - results[0..1]: " + JSON.stringify(this.filteredSortedAddresses.slice(0, 2), null, 2));
+      // logInfo("Addresses", "filteredSortedAddresses - results[0..1]: " + JSON.stringify(this.filteredSortedAddresses.slice(0, 2), null, 2));
       return this.filteredSortedAddresses.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
     },
   },

@@ -25,14 +25,6 @@ const ViewAddress = {
         <b-form-group label="Name:" label-for="address-name" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-input-group size="sm" class="w-75">
             <b-form-input size="sm" type="text" id="address-name" v-model.trim="name" debounce="600" placeholder="optional"></b-form-input>
-            <!--
-            <b-input-group-append>
-              <div>
-                <b-button size="sm" :pressed.sync="mine" variant="transparent" v-b-popover.hover="addressTypeInfo[type || 'address'].name" class="m-0 ml-5 p-0"><b-icon :icon="mine ? 'star-fill' : 'star'" shift-v="+1" font-scale="0.95" :variant="addressTypeInfo[type || 'address'].variant"></b-icon></b-button>
-                <b-button size="sm" :pressed.sync="process" variant="transparent" v-b-popover.hover="'Process?'" class="m-0 ml-1 p-0"><b-icon :icon="process ? 'heart-fill' : 'heart'" shift-v="+1" font-scale="0.95" variant="danger"></b-icon></b-button>
-              </div>
-            </b-input-group-append>
-            -->
           </b-input-group>
         </b-form-group>
         <b-form-group v-if="address" label="" label-for="address-delete" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -43,38 +35,11 @@ const ViewAddress = {
   `,
   data: function () {
     return {
-      stealthPrivateKey: null,
-      addressTypeInfo: {
-        "address": { variant: "warning", name: "My Address" },
-        "stealthAddress": { variant: "dark", name: "My Stealth Address" },
-        "stealthMetaAddress": { variant: "success", name: "My Stealth Meta-Address" },
-      },
     }
   },
   computed: {
-    powerOn() {
-      return store.getters['connection/powerOn'];
-    },
-    coinbase() {
-      return store.getters['connection/coinbase'];
-    },
-    chainId() {
-      return store.getters['connection/chainId'];
-    },
-    checkOptions() {
-      return store.getters['data/checkOptions'];
-    },
-    addresses() {
-      return store.getters['data/addresses'];
-    },
     address() {
       return store.getters['viewAddress/address'];
-    },
-    linkedTo() {
-      return store.getters['viewAddress/linkedTo'];
-    },
-    type() {
-      return store.getters['viewAddress/type'];
     },
     mine: {
       get: function () {
@@ -94,15 +59,6 @@ const ViewAddress = {
         store.dispatch('viewAddress/setProcess', process);
       },
     },
-    check: {
-      get: function () {
-        return store.getters['viewAddress/check'];
-      },
-      set: function (check) {
-        store.dispatch('data/setAddressField', { address: store.getters['viewAddress/address'], field: 'check', value: check });
-        store.dispatch('viewAddress/setCheck', check);
-      },
-    },
     name: {
       get: function () {
         return store.getters['viewAddress/name'];
@@ -111,21 +67,6 @@ const ViewAddress = {
         store.dispatch('data/setAddressField', { address: store.getters['viewAddress/address'], field: 'name', value: name });
         store.dispatch('viewAddress/setName', name);
       },
-    },
-    notes: {
-      get: function () {
-        return store.getters['viewAddress/notes'];
-      },
-      set: function (notes) {
-        store.dispatch('data/setAddressField', { address: store.getters['viewAddress/address'], field: 'notes', value: notes });
-        store.dispatch('viewAddress/setNotes', notes);
-      },
-    },
-    source() {
-      return store.getters['viewAddress/source'];
-    },
-    stealthTransfers() {
-      return store.getters['viewAddress/stealthTransfers'];
     },
     show: {
       get: function () {
@@ -161,12 +102,6 @@ const ViewAddress = {
   },
   mounted() {
     logDebug("ViewAddress", "mounted() $route: " + JSON.stringify(this.$route.params));
-    // if ('onlyfensTransfersSettings' in localStorage) {
-    //   const tempSettings = JSON.parse(localStorage.onlyfensTransfersSettings);
-    //   if ('version' in tempSettings && tempSettings.version == 0) {
-    //     this.settings = tempSettings;
-    //   }
-    // }
   },
 };
 

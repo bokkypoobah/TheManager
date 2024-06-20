@@ -10,62 +10,31 @@ const Welcome = {
 
               <b-card-text>
                 <h5>Welcome</h5>
-
-                The Manager is an lightweight serverless dapp to manager your ENS names. Status: <b>WIP</b>
-
-                <br />
-                <br />
-
-                <!--
-                Sync All: <b-button size="sm" @click="syncIt({ sections: ['syncAnnouncements', 'syncRegistrations', 'syncTokens'], parameters: [] })" variant="link" v-b-popover.hover.top="'Sync data from the blockchain'"><b-icon-cloud-download shift-v="+1" font-scale="1.2"></b-icon-cloud-download></b-button>
-                Tokens: <b-button size="sm" @click="syncIt({ sections: ['syncTokens'], parameters: [] })" variant="link" v-b-popover.hover.top="'Sync data from the blockchain'"><b-icon-cloud-download shift-v="+1" font-scale="1.2"></b-icon-cloud-download></b-button>
-                -->
-
+                Portfolio Manager - only for ENS. Status: <b>WIP</b>
               </b-card-text>
 
-              <b-card-text v-if="false" class="mt-3 mb-2">
-                <strike>
-                  <h6>Usage</h6>
-                  <ul>
-                    <li>
-                      Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-pencil shift-v="+1" font-scale="1.0"></b-icon-pencil></b-button> in the Accounts tab to enter your account(s)
-                    </li>
-                    <li>
-                      Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-cloud-download shift-v="+1" font-scale="1.2"></b-icon-cloud-download></b-button> to incrementally:
-                      <ul>
-                        <li>
-                          Retrieve all ERC-20, ERC-721 and ERC-1155 events related to your accounts via your web3 connection
-                        </li>
-                        <li>
-                          Retrieve all transactions and internal transactions related to your accounts via the Etherscan API
-                        </li>
-                        <li>
-                          Retrieve all transaction and transaction receipt information via your web3 connection, for the transaction hashes of the data imported above
-                        </li>
-                        <li>
-                          Retrieve collection and token metadata via the Reservoir API, for the contracts and assets resulting from the above processing
-                        </li>
-                        <li>
-                          Compute a simpler representation of your transactions
-                        </li>
-                      </ul>
-                    </li>
-                    <!--
-                    <li>
-                      View your transactions by accounts in the Account tab
-                    </li>
-                    -->
-                    <li>
-                      Click on the Generate Report icon <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-newspaper shift-v="+1" font-scale="1.0"></b-icon-newspaper></b-button> in the Report tab for the results to be displayed
-                    </li>
-                    <li>
-                      Enter your Etherscan API key in the Config tab to avoid your API data retrieval being throttled to 1 request per 6 seconds
-                    </li>
-                    <li>
-                      <b>WIP</b> You may have to re-enter your accounts and resync as this dapp still requires some data structure changes
-                    </li>
-                  </ul>
-                </strike>
+              <b-card-text class="mt-3 mb-2">
+                <h6>Algorithm</h6>
+                <ul>
+                  <li>
+                    Enter one or more of your Ethereum addresses
+                  </li>
+                  <li>
+                    Scrape all ERC-721 and ERC-1155 transfer events to and from your list of addresses
+                  </li>
+                  <li>
+                    Scrape all ERC-721 ENS <i>NameRegistered</i> and <i>NameRenewed</i> events for all the tokenIds of your transferred ERC-721 events
+                  </li>
+                  <li>
+                    Scrape all ERC-1155 ENS <i>NameWrapped</i> events for all the tokenIds of your transferred ERC-1155 events
+                  </li>
+                  <li>
+                    Scrape the block timestamps for each event above
+                  </li>
+                  <li>
+                    Merge all the data together
+                  </li>
+                </ul>
               </b-card-text>
 
               <b-card-text v-if="false" class="mt-3 mb-2">

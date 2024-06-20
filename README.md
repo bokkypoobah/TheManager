@@ -11,7 +11,7 @@ https://bokkypoobah.github.io/onlyfens/
 ## Algorithm
 
 * Enter one or more of your Ethereum addresses
-* Scrape all ERC-721 and ERC-1155 transfer events for your addresses
+* Scrape all ERC-721 and ERC-1155 transfer events to and from your list of addresses
 * Scrape all ERC-721 ENS `NameRegistered` and `NameRenewed` events for all the tokenIds of your transferred ERC-721 events
 * Scrape all ERC-1155 ENS `NameWrapped` events for all the tokenIds of your transferred ERC-1155 events
 * Scrape the block timestamps for each event above

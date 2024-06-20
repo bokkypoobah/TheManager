@@ -39,10 +39,10 @@ const routes = [{
   //   component: Report,
   //   name: 'Report',
   //   props: true,
-  }, {
-    path: '/names',
-    component: Names,
-    name: 'Names',
+  // }, {
+  //   path: '/names',
+  //   component: Names,
+  //   name: 'Names',
   // }, {
   //   path: '/data',
   //   component: Data,

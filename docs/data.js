@@ -102,10 +102,11 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "onlyfensdata080b",
+      name: "onlyfensdata080c",
       version: 1,
       schemaDefinition: {
         events: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,[type+blockNumber]',
+        registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,[type+blockNumber]',
         cache: '&objectName',
       },
       updated: null,
@@ -1264,77 +1265,35 @@ const dataModule = {
           });
         }
       }
-      async function getLogs(fromBlock, toBlock, section, selectedAddresses, processLogs) {
-        logInfo("dataModule", "actions.syncAllNames.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section);
+      async function getLogs(fromBlock, toBlock, processLogs) {
+        logInfo("dataModule", "actions.syncAllNames.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock);
         try {
-          let topics = null;
-          if (section == 0) {
-            topics = [[
-                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-                '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925',
-                '0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31',
-              ],
-              selectedAddresses,
-              null
-            ];
-            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, section, logs);
-          } else if (section == 1) {
-            topics = [[
-                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-              ],
-              null,
-              selectedAddresses
-            ];
-            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, section, logs);
-          } else if (section == 2) {
-            topics = [[
-                '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
-                '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb',
-              ],
-              null,
-              selectedAddresses
-            ];
-            logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, section, logs);
-          } else if (section == 3) {
-            topics = [ [
-                '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
-                '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb',
-              ],
-              null,
-              null,
-              selectedAddresses
-            ];
-            logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, section, logs);
-          }
+          const topics = [[
+              '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
+              '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+            ],
+            null,
+            null
+          ];
+          // const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+          const logs = await provider.getLogs({ address: ENS_OLDETHREGISTRARCONTROLLER_ADDRESS, fromBlock, toBlock, topics });
+          console.log("logs: " + JSON.stringify(logs, null, 2));
+          // await processLogs(fromBlock, toBlock, section, logs);
         } catch (e) {
           const mid = parseInt((fromBlock + toBlock) / 2);
-          await getLogs(fromBlock, mid, section, selectedAddresses, processLogs);
-          await getLogs(parseInt(mid) + 1, toBlock, section, selectedAddresses, processLogs);
+          await getLogs(fromBlock, mid, processLogs);
+          await getLogs(parseInt(mid) + 1, toBlock, processLogs);
         }
       }
 
       logInfo("dataModule", "actions.syncAllNames BEGIN");
       context.commit('setSyncSection', { section: 'NameRegistered Events', total: null });
-      const selectedAddresses = [];
-      for (const [address, addressData] of Object.entries(context.state.addresses)) {
-        if (address.substring(0, 2) == "0x" && addressData.process) {
-          selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
-        }
-      }
-      console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
-      if (selectedAddresses.length > 0) {
-        const deleteCall = await db.events.where("confirmations").below(parameter.confirmations).delete();
-        const latest = await db.events.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-        // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-        const startBlock = 0;
-        for (let section = 0; section < 4; section++) {
-          await getLogs(startBlock, parameter.blockNumber, section, selectedAddresses, processLogs);
-        }
-      }
+
+      const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
+      const latest = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
+      // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
+      const startBlock = 0;
+      await getLogs(startBlock, parameter.blockNumber, processLogs);
       logInfo("dataModule", "actions.syncAllNames END");
     },
 

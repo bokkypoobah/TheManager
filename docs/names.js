@@ -86,7 +86,7 @@ const Names = {
             <b-form-select size="sm" v-model="settings.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.top="'Yeah. Sort'"></b-form-select>
           </div>
           <div class="mt-0 pr-1">
-            <font size="-2" v-b-popover.hover.top="'# tokens / total tokens transferred'">{{ filteredSortedItems.length + '/' + totalERC721Tokens }}</font>
+            <font size="-2" v-b-popover.hover.top="'# tokens / total tokens transferred'">{{ filteredSortedItems.length + '/' + totalNames }}</font>
           </div>
           <div class="mt-0 pr-1">
             <b-pagination size="sm" v-model="settings.currentPage" @input="saveSettings" :total-rows="filteredSortedItems.length" :per-page="settings.pageSize" style="height: 0;"></b-pagination>
@@ -393,12 +393,10 @@ const Names = {
       return store.getters['data/tokenContracts'];
     },
 
-    totalERC721Tokens() {
+    totalNames() {
       let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
       for (const [address, data] of Object.entries(this.tokens[this.chainId] || {})) {
-        if (data.type == "erc721" || data.type == "erc1155") {
-          result += Object.keys(data.tokenIds).length;
-        }
+        result += Object.keys(data.tokenIds).length;
       }
       return result;
     },

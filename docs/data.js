@@ -857,10 +857,10 @@ const dataModule = {
       //   [ '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2', namehash, null ],
       let total = 0;
       let t = this;
-      async function processLogs(fromBlock, toBlock, logs) {
+      async function processLogs(logs) {
         total = parseInt(total) + logs.length;
         context.commit('setSyncCompleted', total);
-        logInfo("dataModule", "actions.syncENSEvents.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", logs.length: " + logs.length + ", total: " + total);
+        logInfo("dataModule", "actions.syncENSEvents.processLogs logs.length: " + logs.length + ", total: " + total);
         const records = [];
         for (const log of logs) {
           if (!log.removed) {
@@ -907,27 +907,6 @@ const dataModule = {
           });
         }
       }
-      async function getLogs(fromBlock, toBlock, tokens, processLogs) {
-        logInfo("dataModule", "actions.syncENSEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", tokens: " + JSON.stringify(tokens));
-        const hashes = tokens.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
-        try {
-          let topics = [[
-              '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
-              '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
-              // Need `node` '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
-              // Need `node` '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2',
-            ],
-            hashes,
-            null,
-          ];
-          const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-          await processLogs(fromBlock, toBlock, logs);
-        } catch (e) {
-          const mid = parseInt((fromBlock + toBlock) / 2);
-          await getLogs(fromBlock, mid, tokens, processLogs);
-          await getLogs(parseInt(mid) + 1, toBlock, tokens, processLogs);
-        }
-      }
 
       logInfo("dataModule", "actions.syncENSEvents BEGIN");
       let tokensToProcess = [];
@@ -943,8 +922,23 @@ const dataModule = {
       context.commit('setSyncCompleted', 0);
       for (let i = 0; i < tokensToProcess.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE);
-        const startBlock = 0;
-        await getLogs(startBlock, parameter.blockNumber, batch, processLogs);
+        const hashes = batch.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
+        console.log("hashes: " + JSON.stringify(hashes, null, 2));
+        try {
+          let topics = [[
+              '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
+              '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+              // Need `node` '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
+              // Need `node` '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2',
+            ],
+            hashes,
+            null,
+          ];
+          const logs = await provider.getLogs({ address: null, fromBlock: 0, toBlock: parameter.blockNumber, topics });
+          await processLogs(logs);
+        } catch (e) {
+          logInfo("dataModule", "actions.syncENSEvents - getLogs ERROR: " + e.message);
+        }
       }
       logInfo("dataModule", "actions.syncENSEvents END");
     },
@@ -1181,7 +1175,7 @@ const dataModule = {
               metadata[item.chainId][contract][tokenId].events.push(item);
 
             } else {
-              console.log("NOT Found NameRenewed: " + JSON.stringify(item, null, 2));
+              // console.log("NOT Found NameRenewed: " + JSON.stringify(item, null, 2));
               if (!(item.chainId in metadata)) {
                 metadata[item.chainId] = {};
               }
@@ -1291,7 +1285,7 @@ const dataModule = {
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
-      console.log("metadata: " + JSON.stringify(metadata, null, 2));
+      // console.log("metadata: " + JSON.stringify(metadata, null, 2));
       context.commit('setState', { name: "metadata", data: metadata });
       await context.dispatch('saveData', ['metadata']);
       logInfo("dataModule", "actions.collateMetadata END");

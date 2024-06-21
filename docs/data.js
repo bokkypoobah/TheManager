@@ -1148,37 +1148,23 @@ const dataModule = {
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const tokensToProcess = {};
+      const tokensToProcess = [];
       for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
-        if (contractData.type == "erc721" || contractData.type == "erc1155") {
+        if (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS || contract == ENS_NAMEWRAPPER_ADDRESS) {
           for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            // if (!context.state.prices[parameter.chainId] || !context.state.prices[parameter.chainId][contract] || !context.state.prices[parameter.chainId][contract][tokenId]) {
-              if (!(contract in tokensToProcess)) {
-                tokensToProcess[contract] = {};
-              }
-              tokensToProcess[contract][tokenId] = tokenData;
-            // }
+            tokensToProcess.push({ contract, tokenId });
           }
         }
       }
-      // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
-      let processList = [];
-      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
-        const contractType = context.state.tokens[parameter.chainId][contract].type;
-        for (const [tokenId, tokenData] of Object.entries(contractData)) {
-          processList.push({ contract, tokenId });
-        }
-      }
-      // processList = processList.slice(1, 3); // TODO
-      console.log("processList: " + JSON.stringify(processList, null, 2));
+      console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
       const BATCHSIZE = 50;
       const DELAYINMILLIS = 2000;
       let completed = 0;
-      context.commit('setSyncSection', { section: 'Token Metadata', total: processList.length });
+      context.commit('setSyncSection', { section: 'Token Metadata', total: tokensToProcess.length });
       context.commit('setSyncCompleted', completed);
-      for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
-        const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
-        // console.log("batch: " + JSON.stringify(batch, null, 2));
+      for (let i = 0; i < tokensToProcess.length && !context.state.sync.halt; i += BATCHSIZE) {
+        const batch = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE);
+        console.log("batch: " + JSON.stringify(batch, null, 2));
         let continuation = null;
         do {
           let url = "https://api.reservoir.tools/tokens/v7?";

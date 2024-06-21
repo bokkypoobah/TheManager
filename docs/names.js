@@ -445,111 +445,101 @@ const Names = {
       }
 
       for (const [contract, data] of Object.entries(this.tokens[this.chainId] || {})) {
-        // const contractMetadata = this.contractMetadata[this.chainId] && this.contractMetadata[this.chainId][contract] || {};
-        // console.log(contract + " => " + JSON.stringify(contractMetadata, null, 2));
-        // console.log("  metadata: " + JSON.stringify(metadata, null, 2));
-        if (data.type == "erc721" || data.type == "erc1155") {
-          // console.log(contract + " => " + JSON.stringify(data, null, 2));
-          // const collectionName = contractMetadata.name;
-          for (const [tokenId, tokenData] of Object.entries(data.tokenIds)) {
-            // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData, null, 2));
-            const metadata = this.metadata[this.chainId] && this.metadata[this.chainId][contract] && this.metadata[this.chainId][contract][tokenId] || {};
-            // console.log("  metadata: " + JSON.stringify(metadata, null, 2));
-            const info = this.tokenInfo[this.chainId] && this.tokenInfo[this.chainId][contract] && this.tokenInfo[this.chainId][contract][tokenId] || {};
-            // console.log("  info: " + JSON.stringify(info, null, 2));
-            // const metadata = this.contractMetadata[this.chainId] &&
-            //   this.contractMetadata[this.chainId][contract] &&
-            //   this.contractMetadata[this.chainId][contract][tokenId] ||
-            //   {};
-
-            let include = true;
-            if (this.settings.junkFilter) {
-              if (this.settings.junkFilter == 'junk' && !info.junk) {
-                include = false;
-              } else if (this.settings.junkFilter == 'excludejunk' && info.junk) {
-                include = false;
-              }
+        for (const [tokenId, tokenData] of Object.entries(data.tokenIds)) {
+          const metadata = this.metadata[this.chainId] && this.metadata[this.chainId][contract] && this.metadata[this.chainId][contract][tokenId] || {};
+          const price = this.prices[this.chainId] && this.prices[this.chainId][contract] && this.prices[this.chainId][contract][tokenId] || {};
+          const info = this.tokenInfo[this.chainId] && this.tokenInfo[this.chainId][contract] && this.tokenInfo[this.chainId][contract][tokenId] || {};
+          if (metadata.name == null || metadata.name == "null") {
+            console.log("  metadata: " + JSON.stringify(metadata, null, 2));
+            console.log("  price: " + JSON.stringify(price, null, 2));
+            console.log("  info: " + JSON.stringify(info, null, 2));
+          }
+          let include = true;
+          if (this.settings.junkFilter) {
+            if (this.settings.junkFilter == 'junk' && !info.junk) {
+              include = false;
+            } else if (this.settings.junkFilter == 'excludejunk' && info.junk) {
+              include = false;
             }
-            // if (include && this.settings.favouritesOnly && (!data.favourite || data.junk)) {
-            //   include = false;
-            // }
-            if (include && dateFrom) {
-              if (metadata.expiry < dateFrom) {
+          }
+          if (include && dateFrom) {
+            if (metadata.expiry < dateFrom) {
+              include = false;
+            }
+          }
+          if (include && dateTo) {
+            if (metadata.expiry > dateTo) {
+              include = false;
+            }
+          }
+          if (include && regex) {
+            const name = metadata.name || null;
+            if (name) {
+              label = name.replace(/\.eth$/, '');
+              if (!(regex.test(label))) {
                 include = false;
               }
+            } else {
+              logInfo("Names", "filteredItems - missing name: " + JSON.stringify(metadata, null, 2));
+              include = false;
             }
-            if (include && dateTo) {
-              if (metadata.expiry > dateTo) {
-                include = false;
-              }
-            }
-            if (include && regex) {
-              const name = metadata.name || null;
-              const description = metadata.description || null;
-              if (!(/*regex.test(tokenId) || regex.test(collectionName) ||*/ regex.test(name) /*|| regex.test(description)*/)) {
-                include = false;
-              }
-            }
-            if (include) {
-              // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData));
-              let image = null;
-              if (metadata.image) {
-                if (metadata.image.substring(0, 12) == "ipfs://ipfs/") {
-                  image = "https://ipfs.io/" + metadata.image.substring(7)
-                } else if (metadata.image.substring(0, 7) == "ipfs://") {
-                  image = "https://ipfs.io/ipfs/" + metadata.image.substring(7);
-                } else {
-                  image = metadata.image;
-                }
-              }
-              const owners = [];
-              if (data.type == "erc721") {
-                if (tokenData in selectedAddressesMap) {
-                  owners.push({ owner: tokenData });
-                }
+          }
+          if (include) {
+            // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData));
+            let image = null;
+            if (metadata.image) {
+              if (metadata.image.substring(0, 12) == "ipfs://ipfs/") {
+                image = "https://ipfs.io/" + metadata.image.substring(7)
+              } else if (metadata.image.substring(0, 7) == "ipfs://") {
+                image = "https://ipfs.io/ipfs/" + metadata.image.substring(7);
               } else {
-                for (const [owner, count] of Object.entries(tokenData)) {
-                  if (owner in selectedAddressesMap) {
-                    owners.push({ owner, count });
-                  }
+                image = metadata.image;
+              }
+            }
+            const owners = [];
+            if (data.type == "erc721") {
+              if (tokenData in selectedAddressesMap) {
+                owners.push({ owner: tokenData });
+              }
+            } else {
+              for (const [owner, count] of Object.entries(tokenData)) {
+                if (owner in selectedAddressesMap) {
+                  owners.push({ owner, count });
                 }
               }
-              if (owners.length > 0) {
-                let status = "danger";
-                if (metadata.expiry) {
-                  if (metadata.expiry < moment().unix()) {
-                    status = "danger";
-                  } else if (metadata.expiry < expiry3m) {
-                    status = "warning";
-                  } else if (metadata.expiry < expiry1y) {
-                    status = "primary";
-                  } else {
-                    status = "success";
-                  }
+            }
+            if (owners.length > 0) {
+              let status = "danger";
+              if (metadata.expiry) {
+                if (metadata.expiry < moment().unix()) {
+                  status = "danger";
+                } else if (metadata.expiry < expiry3m) {
+                  status = "warning";
+                } else if (metadata.expiry < expiry1y) {
+                  status = "primary";
+                } else {
+                  status = "success";
                 }
-                // console.log(metadata.name + " " + moment.unix(metadata.expiry).format() + " " + status);
+              }
+              // console.log(metadata.name + " " + moment.unix(metadata.expiry).format() + " " + status);
 
-                results.push({
-                  contract,
-                  type: data.type,
-                  junk: info && info.junk || false,
-                  favourite: data.favourite,
-                  collectionSymbol: null, // "contractMetadata.symbol", // TODO: Delete
-                  collectionName: null, // "contractMetadata.name", // TODO: Delete
-                  totalSupply: data.totalSupply,
-                  tokenId,
-                  owners,
-                  name: metadata.name || null,
-                  description: metadata.description || null,
-                  expiry: metadata.expiry || undefined,
-                  attributes: metadata.attributes || null,
-                  status,
-                  // imageSource: metadata.imageSource || null,
-                  // image,
-                  // blockNumber: tokenData.blockNumber,
-                  // logIndex: tokenData.logIndex,
-                });
-              }
+              results.push({
+                contract,
+                type: data.type,
+                junk: info && info.junk || false,
+                // favourite: data.favourite,
+                totalSupply: data.totalSupply,
+                tokenId,
+                owners,
+                name: metadata.name || null,
+                description: metadata.description || null,
+                expiry: metadata.expiry || undefined,
+                attributes: metadata.attributes || null,
+                status,
+                lastSale: price.lastSale,
+                price: price.price,
+                topBid: price.topBid,
+              });
             }
           }
         }
@@ -570,7 +560,7 @@ const Names = {
       return results;
     },
     pagedFilteredSortedItems() {
-      // logInfo("Names", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
+      logInfo("Names", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
       return this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
     },
 

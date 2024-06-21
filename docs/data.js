@@ -893,8 +893,7 @@ const dataModule = {
       context.commit('setSyncSection', { section: 'ENS Events', total: null });
       context.commit('setSyncCompleted', 0);
       for (let i = 0; i < tokensToProcess.length && !context.state.sync.halt; i += BATCHSIZE) {
-        const batch = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE);
-        const hashes = batch.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
+        const tokenIds = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE).map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
         try {
           let topics = [[
               '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
@@ -902,7 +901,7 @@ const dataModule = {
               // Need `node` '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
               // Need `node` '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2',
             ],
-            hashes,
+            tokenIds,
             null,
           ];
           const logs = await provider.getLogs({ address: null, fromBlock: 0, toBlock: parameter.blockNumber, topics });
@@ -994,14 +993,13 @@ const dataModule = {
       context.commit('setSyncSection', { section: 'Wrapped ENS Events', total: null });
       context.commit('setSyncCompleted', 0);
       for (let i = 0; i < tokensToProcess.length && !context.state.sync.halt; i += BATCHSIZE) {
-        const batch = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE);
-        const hashes = batch.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
+        const tokenIds = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE).map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
         try {
           let topics = null;
           topics = [[
               '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
             ],
-            hashes,
+            tokenIds,
             null,
           ];
           const logs = await provider.getLogs({ address: null, fromBlock: 0, toBlock: parameter.blockNumber, topics });

@@ -389,9 +389,6 @@ const Names = {
     tokenInfo() {
       return store.getters['data/tokenInfo'];
     },
-    tokenContracts() {
-      return store.getters['data/tokenContracts'];
-    },
 
     totalNames() {
       let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;

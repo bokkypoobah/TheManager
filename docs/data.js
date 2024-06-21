@@ -9,8 +9,8 @@ const Data = {
           <b-col class="small px-1 truncate" cols="7">{{ Object.keys(addresses).length }}</b-col>
         </b-row>
         <b-row>
-          <b-col cols="5" class="small px-1 text-right">ERC-721 Tokens:</b-col>
-          <b-col class="small px-1 truncate" cols="7">{{ totalERC721Tokens }}</b-col>
+          <b-col cols="5" class="small px-1 text-right">Names:</b-col>
+          <b-col class="small px-1 truncate" cols="7">{{ totalNames }}</b-col>
         </b-row>
         <!-- <b-row>
           <b-col cols="5" class="small px-1">ENS Map</b-col>
@@ -39,15 +39,13 @@ const Data = {
     addresses() {
       return store.getters['data/addresses'];
     },
-    tokenContracts() {
-      return store.getters['data/tokenContracts'];
+    tokens() {
+      return store.getters['data/tokens'];
     },
-    totalERC721Tokens() {
+    totalNames() {
       let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
-      for (const [address, data] of Object.entries(this.tokenContracts[this.chainId] || {})) {
-        if (data.type == "erc721") {
-          result += Object.keys(data.tokenIds).length;
-        }
+      for (const [address, data] of Object.entries(this.tokens[this.chainId] || {})) {
+        result += Object.keys(data.tokenIds).length;
       }
       return result;
     },
@@ -94,7 +92,6 @@ const dataModule = {
     timestamps: {}, // chainId -> blockNumber => timestamp
     txs: {}, // txHash => tx & txReceipt
 
-    tokenContracts: {}, // ChainId, tokenContractAddress, tokenId => data
     ens: {},
     exchangeRates: {},
     forceRefresh: 0,
@@ -130,7 +127,6 @@ const dataModule = {
     timestamps: state => state.timestamps,
     txs: state => state.txs,
 
-    tokenContracts: state => state.tokenContracts,
     ens: state => state.ens,
     exchangeRates: state => state.exchangeRates,
     forceRefresh: state => state.forceRefresh,
@@ -156,11 +152,6 @@ const dataModule = {
     setAddressField(state, info) {
       Vue.set(state.addresses[info.address], info.field, info.value);
       logInfo("dataModule", "mutations.setAddressField - addresses[" + info.address + "]." + info.field + " = " + state.addresses[info.address][info.field]);
-    },
-    toggleTokenContractFavourite(state, tokenContract) {
-      const chainId = store.getters['connection/chainId'];
-      Vue.set(state.tokenContracts[chainId][tokenContract.address], 'favourite', !state.tokenContracts[chainId][tokenContract.address].favourite);
-      logInfo("dataModule", "mutations.toggleTokenContractFavourite - tokenContract: " + JSON.stringify(state.tokenContracts[chainId][tokenContract.address]));
     },
     toggleTokenJunk(state, token) {
       const chainId = store.getters['connection/chainId'];
@@ -371,11 +362,6 @@ const dataModule = {
       // logInfo("dataModule", "actions.setAddressField - info: " + JSON.stringify(info));
       await context.commit('setAddressField', info);
       await context.dispatch('saveData', ['addresses']);
-    },
-    async toggleTokenContractFavourite(context, tokenContract) {
-      // logInfo("dataModule", "actions.toggleTokenContractFavourite - info: " + JSON.stringify(info));
-      await context.commit('toggleTokenContractFavourite', tokenContract);
-      await context.dispatch('saveData', ['tokenContracts']);
     },
     async toggleTokenJunk(context, token) {
       logInfo("dataModule", "actions.toggleTokenJunk - token: " + JSON.stringify(token));

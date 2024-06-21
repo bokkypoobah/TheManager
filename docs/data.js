@@ -511,14 +511,8 @@ const dataModule = {
       const block = await provider.getBlock();
       const confirmations = store.getters['config/settings'].confirmations && parseInt(store.getters['config/settings'].confirmations) || 10;
       const blockNumber = block && block.number || null;
-      const processFilters = store.getters['config/processFilters'];
-
       const chainId = store.getters['connection/chainId'];
       const coinbase = store.getters['connection/coinbase'];
-      if (!(coinbase in context.state.addresses) && Object.keys(context.state.addresses).length == 0) {
-        context.commit('addNewAddress', { action: "addCoinbase", check: ["ethers", "tokens"] });
-      }
-
       const parameter = { chainId, coinbase, blockNumber, confirmations, ...options };
 
       if (options.transfers && !options.devThing) {

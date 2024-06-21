@@ -860,7 +860,7 @@ const dataModule = {
       async function processLogs(logs) {
         total = parseInt(total) + logs.length;
         context.commit('setSyncCompleted', total);
-        logInfo("dataModule", "actions.syncENSEvents.processLogs logs.length: " + logs.length + ", total: " + total);
+        logInfo("dataModule", "actions.syncENSEvents.processLogs - logs.length: " + logs.length + ", total: " + total);
         const records = [];
         for (const log of logs) {
           if (!log.removed) {
@@ -899,7 +899,7 @@ const dataModule = {
           }
         }
         if (records.length) {
-          logInfo("dataModule", "actions.syncENSEvents.bulkAdd - records: " + JSON.stringify(records));
+          // logInfo("dataModule", "actions.syncENSEvents.bulkAdd - records: " + JSON.stringify(records));
           await db.events.bulkAdd(records).then(function(lastKey) {
             console.log("syncENSEvents.bulkAdd lastKey: " + JSON.stringify(lastKey));
           }).catch(Dexie.BulkError, function(e) {
@@ -923,7 +923,6 @@ const dataModule = {
       for (let i = 0; i < tokensToProcess.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE);
         const hashes = batch.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
-        console.log("hashes: " + JSON.stringify(hashes, null, 2));
         try {
           let topics = [[
               '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
@@ -956,10 +955,10 @@ const dataModule = {
       //   [ '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', namehash, null ],
       let total = 0;
       let t = this;
-      async function processLogs(fromBlock, toBlock, logs) {
+      async function processLogs(logs) {
         total = parseInt(total) + logs.length;
         context.commit('setSyncCompleted', total);
-        logInfo("dataModule", "actions.syncWrappedENSEvents.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", logs.length: " + logs.length + ", total: " + total);
+        logInfo("dataModule", "actions.syncWrappedENSEvents.processLogs - logs.length: " + logs.length + ", total: " + total);
         const records = [];
         for (const log of logs) {
           if (!log.removed) {
@@ -968,7 +967,6 @@ const dataModule = {
             if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
               const logData = nameWrapperInterface.parseLog(log);
-              // console.log(JSON.stringify(logData, null, 2));
               const [node, name, owner, fuses, expiry] = logData.args;
               let parts = decodeNameWrapperBytes(name);
               let nameString = parts.join(".");
@@ -983,7 +981,7 @@ const dataModule = {
               const namehashDecimals = ethers.BigNumber.from(node).toString();
               const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
               eventRecord = { type: "NameWrapped", namehash: node, name: nameString, label, labelhash, subdomain, owner, fuses, expiry: parseInt(expiry) };
-              console.log(JSON.stringify(eventRecord, null, 2));
+              // console.log(JSON.stringify(eventRecord, null, 2));
             } else {
               console.log("NOT HANDLED: " + JSON.stringify(log));
             }
@@ -1002,33 +1000,12 @@ const dataModule = {
           }
         }
         if (records.length) {
-          logInfo("dataModule", "actions.syncWrappedENSEvents.bulkAdd - records: " + JSON.stringify(records));
+          // logInfo("dataModule", "actions.syncWrappedENSEvents.bulkAdd - records: " + JSON.stringify(records));
           await db.events.bulkAdd(records).then(function(lastKey) {
             console.log("syncWrappedENSEvents.bulkAdd lastKey: " + JSON.stringify(lastKey));
           }).catch(Dexie.BulkError, function(e) {
             console.log("syncWrappedENSEvents.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
           });
-        }
-      }
-      async function getLogs(fromBlock, toBlock, selectedRecords, processLogs) {
-        logInfo("dataModule", "actions.syncWrappedENSEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", selectedRecords: " + JSON.stringify(selectedRecords));
-        const hashes = selectedRecords.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
-        try {
-          let topics = null;
-          topics = [[
-              '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
-            ],
-            hashes,
-            null,
-          ];
-          const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-          console.log("logs: " + JSON.stringify(logs, null, 2));
-          await processLogs(fromBlock, toBlock, logs);
-
-        } catch (e) {
-          const mid = parseInt((fromBlock + toBlock) / 2);
-          await getLogs(fromBlock, mid, selectedRecords, processLogs);
-          await getLogs(parseInt(mid) + 1, toBlock, selectedRecords, processLogs);
         }
       }
 
@@ -1041,14 +1018,26 @@ const dataModule = {
           }
         }
       }
-      console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
       const BATCHSIZE = 100;
       context.commit('setSyncSection', { section: 'Wrapped ENS Events', total: null });
       context.commit('setSyncCompleted', 0);
       for (let i = 0; i < tokensToProcess.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE);
-        const startBlock = 0;
-        await getLogs(startBlock, parameter.blockNumber, batch, processLogs);
+        const hashes = batch.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
+        try {
+          let topics = null;
+          topics = [[
+              '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
+            ],
+            hashes,
+            null,
+          ];
+          const logs = await provider.getLogs({ address: null, fromBlock: 0, toBlock: parameter.blockNumber, topics });
+          // console.log("logs: " + JSON.stringify(logs, null, 2));
+          await processLogs(logs);
+        } catch (e) {
+          logInfo("dataModule", "actions.syncWrappedENSEvents - getLogs ERROR: " + e.message);
+        }
       }
       logInfo("dataModule", "actions.syncWrappedENSEvents END");
     },

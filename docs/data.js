@@ -955,60 +955,11 @@ const dataModule = {
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
-      const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
-      const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
 
       // ERC-1155 portraits.eth 27727362303445643037535452095569739813950020376856883309402147522300287323280
       // ERC-1155 yourmum.lovesyou.eth 57229065116737680790555199455465332171886850449809000367294662727325932836690
       // - ENS: Name Wrapper 0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401 NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry) 0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340
       //   [ '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', namehash, null ],
-
-      // 925.eth ERC-721 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
-
-      // - ENS: Old ETH Registrar Controller 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires) 0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f
-      //   [ '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', namehash, null ],
-      // - ENS: Old ETH Registrar Controller 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5 NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires) 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
-      //   [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', namehash, null ],
-
-
-      // Need `node` - ENS: Public Resolver 2 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41 AddressChanged (index_topic_1 bytes32 node, uint256 coinType, bytes newAddress) 0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752
-      //   [ '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752', namehash, null ],
-      // Need `node` - ENS: Public Resolver 2 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41 AddrChanged (index_topic_1 bytes32 node, address a) 0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2
-      //   [ '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2', namehash, null ],
-
-
-
-      // - ENS: ETH Registrar Controller 0x253553366Da8546fC250F225fe3d25d0C782303b NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 baseCost, uint256 premium, uint256 expires) 0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27
-      //   [ '0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27', namehash, null ],
-
-      // - ENS Base Registrar Implementation 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 NameRenewed (index_topic_1 uint256 id, uint256 expires) Topic 0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6
-      //   [ '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6', namehash, null ],
-      // - ETH Registrar Controller 0x253553366Da8546fC250F225fe3d25d0C782303b NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires) 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
-      //   [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', name, namehash, null ],
-      // x - ENS Base Registrar Implementation 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 NameRegistered (index_topic_1 uint256 id, index_topic_2 address owner, uint256 expires) 0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9
-      // x   [ '0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9', namehash, null ],
-
-      // ERC-20 & ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
-      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', accountAs32Bytes, null ],
-      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', null, accountAs32Bytes ],
-
-      // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
-      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, accountAs32Bytes, null ],
-      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, null, accountAs32Bytes ],
-
-      // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
-      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, accountAs32Bytes, null ],
-      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, null, accountAs32Bytes ],
-
-      // ENS:ETH Registrar Controller NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
-      // [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', [tokenIds] ],
-
-      // // ERC-20 Approval (index_topic_1 address owner, index_topic_2 address spender, uint256 value)
-      // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
-      // // ERC-721 Approval (index_topic_1 address owner, index_topic_2 address approved, index_topic_3 uint256 tokenId)
-      // // 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
-      // // ERC-721 ApprovalForAll (index_topic_1 address owner, index_topic_2 address operator, bool approved)
-      // // 0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31
       let total = 0;
       let t = this;
       async function processLogs(fromBlock, toBlock, logs) {
@@ -1020,120 +971,25 @@ const dataModule = {
           if (!log.removed) {
             const contract = log.address;
             let eventRecord = null;
-            if (log.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") {
-              let from = null;
-              let to = null;
-              let tokensOrTokenId = null;
-              let tokens = null;
-              let tokenId = null;
-              if (log.topics.length == 4) {
-                from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                to = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokensOrTokenId = ethers.BigNumber.from(log.topics[3]).toString();
-              } else if (log.topics.length == 3) {
-                from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                to = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokensOrTokenId = ethers.BigNumber.from(log.data).toString();
-              // TODO: Handle 2
-              } else if (log.topics.length == 1) {
-                from = ethers.utils.getAddress('0x' + log.data.substring(26, 66));
-                to = ethers.utils.getAddress('0x' + log.data.substring(90, 130));
-                tokensOrTokenId = ethers.BigNumber.from('0x' + log.data.substring(130, 193)).toString();
-              }
-              if (from) {
-                if (log.topics.length == 4) {
-                  eventRecord = { type: "Transfer", from, to, tokenId: tokensOrTokenId, eventType: "erc721" };
-                } else {
-                  eventRecord = { type: "Transfer", from, to, tokens: tokensOrTokenId, eventType: "erc20" };
-                }
-              }
-            } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
-              if (log.topics.length == 4) {
-                const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                const approved = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokenId = ethers.BigNumber.from(log.topics[3]).toString();
-                eventRecord = { type: "Approval", owner, approved, tokenId, eventType: "erc721" };
-              } else {
-                const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-                const spender = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-                tokens = ethers.BigNumber.from(log.data).toString();
-                eventRecord = { type: "Approval", owner, spender, tokens, eventType: "erc20" };
-              }
-            } else if (log.topics[0] == "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31") {
-              const owner = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
-              const operator = ethers.utils.getAddress('0x' + log.topics[2].substring(26));
-              approved = ethers.BigNumber.from(log.data).toString();
-              eventRecord = { type: "ApprovalForAll", owner, operator, approved, eventType: "erc721" };
-            } else if (log.topics[0] == "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") {
-              // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
-              const logData = erc1155Interface.parseLog(log);
-              const [operator, from, to, id, value] = logData.args;
-              tokenId = ethers.BigNumber.from(id).toString();
-              eventRecord = { type: "TransferSingle", operator, from, to, tokenId, value: value.toString(), eventType: "erc1155" };
-            } else if (log.topics[0] == "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb") {
-              // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
-              const logData = erc1155Interface.parseLog(log);
-              const [operator, from, to, ids, values] = logData.args;
-              const tokenIds = ids.map(e => ethers.BigNumber.from(e).toString());
-              eventRecord = { type: "TransferBatch", operator, from, to, tokenIds, values: values.map(e => e.toString()), eventType: "erc1155" };
-
-            } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
-              // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
-              const logData = oldETHRegistarControllerInterface.parseLog(log);
-              const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
-              console.log(JSON.stringify(eventRecord, null, 2));
-
-            } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
-              // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
-              const logData = oldETHRegistarControllerInterface.parseLog(log);
-              // console.log(JSON.stringify(logData, null, 2));
-              const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
-              console.log(JSON.stringify(eventRecord, null, 2));
-
-            } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
-              // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
-              const logData = ethRegistarControllerInterface.parseLog(log);
-              // console.log(JSON.stringify(logData, null, 2));
-              const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
-              console.log(JSON.stringify(eventRecord, null, 2));
-
-            } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
+            if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
               const logData = nameWrapperInterface.parseLog(log);
               // console.log(JSON.stringify(logData, null, 2));
               const [node, name, owner, fuses, expiry] = logData.args;
               let parts = decodeNameWrapperBytes(name);
-              // console.log("parts: " + parts);
               let nameString = parts.join(".");
-              // nameString = nameString.replace("\u0003", '.').replace(/\u0000/, '').replace(/\u0006/, '').replace(/\u0007/, '').replace(/\u000b/, '').replace(/\t/, '').replace(/\n/, '').replace(/\r/, '').replace("\b", '.');
-              // // console.log("nameString: " + nameString);
-              // const parts = nameString.split(".");
-              // // console.log("parts: " + JSON.stringify(parts));
               let label = null;
               let labelhash = null;
               let labelhashDecimals = null;
               if (parts.length >= 2 && parts[parts.length - 1] == "eth") {
                 label = parts[parts.length - 2];
-                // console.log("label: " + label);
                 labelhash = ethers.utils.solidityKeccak256(["string"], [label]);
-                // console.log("labelhash: " + labelhash);
                 labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
-                // console.log("labelhashDecimals: " + labelhashDecimals);
               }
               const namehashDecimals = ethers.BigNumber.from(node).toString();
               const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
-
-              // const namehash = ethers.utils.namehash(nameString);
-              // console.log("namehash: " + namehash);
-              // const decimalNameHash = ethers.BigNumber.from(namehash);
-              // console.log("decimalNameHash: " + decimalNameHash);
-
-              eventRecord = { type: "NameWrapped", namehash: node, /*namehashDecimals,*/ name: nameString, /*nameBytes: name,*/ label, labelhash, /* labelhashDecimals,*/ subdomain, owner, fuses, expiry: parseInt(expiry) /*, expiryString: moment.unix(expiry).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameWrapped", namehash: node, name: nameString, label, labelhash, subdomain, owner, fuses, expiry: parseInt(expiry) };
               console.log(JSON.stringify(eventRecord, null, 2));
-
             } else {
               console.log("NOT HANDLED: " + JSON.stringify(log));
             }
@@ -1163,17 +1019,10 @@ const dataModule = {
       async function getLogs(fromBlock, toBlock, selectedRecords, processLogs) {
         logInfo("dataModule", "actions.syncWrappedENSEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", selectedRecords: " + JSON.stringify(selectedRecords));
         const hashes = selectedRecords.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
-        // const hashes = selectedRecords.map(a => a.tokenId);
-        // console.log("hashes: " + JSON.stringify(hashes, null, 2));
-
         try {
           let topics = null;
           topics = [[
               '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
-              // '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
-              // '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
-              // Need `node` '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
-              // Need `node` '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2',
             ],
             hashes,
             null,
@@ -1190,21 +1039,20 @@ const dataModule = {
       }
 
       logInfo("dataModule", "actions.syncWrappedENSEvents BEGIN");
-      const tokensToProcess = {};
-      let processList = [];
+      let tokensToProcess = [];
       for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
         if (contract == ENS_NAMEWRAPPER_ADDRESS) {
           for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            processList.push({ contract, tokenId });
+            tokensToProcess.push({ contract, tokenId });
           }
         }
       }
-      console.log("processList: " + JSON.stringify(processList, null, 2));
+      console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
       const BATCHSIZE = 100;
       context.commit('setSyncSection', { section: 'Wrapped ENS Events', total: null });
       context.commit('setSyncCompleted', 0);
-      for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
-        const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
+      for (let i = 0; i < tokensToProcess.length && !context.state.sync.halt; i += BATCHSIZE) {
+        const batch = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE);
         const startBlock = 0;
         await getLogs(startBlock, parameter.blockNumber, batch, processLogs);
       }

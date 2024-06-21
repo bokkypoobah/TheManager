@@ -1099,7 +1099,6 @@ const dataModule = {
       context.commit('setSyncCompleted', completed);
       for (let i = 0; i < tokensToProcess.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = tokensToProcess.slice(i, parseInt(i) + BATCHSIZE);
-        // console.log("batch: " + JSON.stringify(batch, null, 2));
         let continuation = null;
         do {
           let url = "https://api.reservoir.tools/tokens/v7?";
@@ -1113,9 +1112,7 @@ const dataModule = {
           console.log(url);
           const data = await fetch(url).then(response => response.json());
           continuation = data.continuation;
-          // console.log(JSON.stringify(data, null, 2));
           for (token of data.tokens) {
-            // console.log(JSON.stringify(token, null, 2));
             const priceData = parseReservoirTokenData(token);
             // if (/*priceData.created == null ||*/ priceData.expiry == null && false) {
             //   const url = "https://metadata.ens.domains/mainnet/" + priceData.contract + "/" + priceData.tokenId;
@@ -1143,7 +1140,7 @@ const dataModule = {
           context.commit('setSyncCompleted', completed);
           await context.dispatch('saveData', ['prices']);
           await delay(DELAYINMILLIS);
-        } while (continuation != null /*&& !state.halt && !state.sync.error */);
+        } while (continuation != null && !context.state.sync.halt);
       }
     },
 

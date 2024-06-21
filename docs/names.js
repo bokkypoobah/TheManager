@@ -377,6 +377,9 @@ const Names = {
     metadata() {
       return store.getters['data/metadata'];
     },
+    prices() {
+      return store.getters['data/prices'];
+    },
     contractMetadata() {
       return store.getters['data/contractMetadata'];
     },

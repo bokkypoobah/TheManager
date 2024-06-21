@@ -1,6 +1,6 @@
 ![](https://raw.githubusercontent.com/bokkypoobah/ChungoIntelligenceAgency/main/PornadoCash/freealexeypertsev.png)
 
-# Portfolio Manager - only for ENS (WIP)
+# Only for ENS (WIP)
 
 https://bokkypoobah.github.io/onlyfens/
 

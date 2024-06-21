@@ -173,12 +173,18 @@ const Names = {
           </template>
 
           <template #cell(prices)="data">
-            <font size="-2">
-              {{ data.item.lastSale }}
+            <font size="-1">
+              <b-badge v-if="data.item.lastSale && data.item.lastSale.amount" v-b-popover.hover.top="data.item.lastSale.amountUSD + ' USD'" variant="transparent">
+                Last: {{ data.item.lastSale.amount + ' ' + data.item.lastSale.currency + ' @ ' + formatTimestamp(data.item.lastSale.timestamp) }}
+              </b-badge>
               <br />
-              {{ data.item.price }}
+              <b-badge v-if="data.item.topBid && data.item.topBid.amount" v-b-popover.hover.top="'Net amount: ' + data.item.topBid.netAmount + ' ' + data.item.topBid.currency + ' ' + data.item.topBid.netAmountUSD + ' USD'" variant="transparent">
+                Top Bid: {{ data.item.topBid.amount + ' ' + data.item.topBid.currency + ' ' +  data.item.topBid.amountUSD + ' USD' }}
+              </b-badge>
               <br />
-              {{ data.item.topBid }}
+              <b-badge v-if="data.item.price && data.item.price.amount" v-b-popover.hover.top="data.item.price.amountUSD + ' USD on ' + data.item.price.source" variant="transparent">
+                Price: {{ data.item.price.amount + ' ' + data.item.price.currency + ' Expiry ' + formatTimestamp(data.item.price.expiry) }}
+              </b-badge>
             </font>
           </template>
 

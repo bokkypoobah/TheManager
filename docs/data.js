@@ -1038,121 +1038,23 @@ const dataModule = {
       }
 
       logInfo("dataModule", "actions.syncENSEvents BEGIN");
-
-      const tokensToProcess = {};
-      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
-        if (contractData.type == "erc721" || contractData.type == "erc1155") {
-          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            // if (!context.state.prices[parameter.chainId] || !context.state.prices[parameter.chainId][contract] || !context.state.prices[parameter.chainId][contract][tokenId]) {
-              if (!(contract in tokensToProcess)) {
-                tokensToProcess[contract] = {};
-              }
-              tokensToProcess[contract][tokenId] = tokenData;
-            // }
-          }
-        }
-      }
-      // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
       let processList = [];
-      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
-        const contractType = context.state.tokens[parameter.chainId][contract].type;
-        for (const [tokenId, tokenData] of Object.entries(contractData)) {
-          if (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS) {
+      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
+        if (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS) {
+          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
             processList.push({ contract, tokenId });
           }
         }
       }
-      // processList = processList.slice(0, 3); // TODO
-      // ERC-721 925.eth renewal 0x684d272ec79f907011b451daf5bb6d90b54ac56cac2e20c669c617bee778fd3d and ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
-      // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
-      // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081'].includes(e.tokenId));
-      // processList = processList.filter(e => e.contract === "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85");
-
-      // ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
-      // processList = processList.filter(e => ['27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
-      // processList = processList.filter(e => e.contract === "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401");
-
-      // const ZEROES = "0x0000000000000000000000000000000000000000000000000000000000000000";
-      // const ethPart = ethers.utils.solidityKeccak256(["string"], ["eth"]);
-      // console.log("ethPart: " + ethPart); // 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0
-      // const firstPart = ethers.utils.solidityKeccak256(["bytes"], [ZEROES + ethPart.substring(2,)]);
-      // console.log("firstPart: " + firstPart); // 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae
-      // const ensPart = ethers.utils.solidityKeccak256(["string"], ["ens"]);
-      // console.log("ensPart: " + ensPart); // 0x5cee339e13375638553bdf5a6e36ba80fb9f6a4f0783680884d92b558aa471da
-      // const secondPart = ethers.utils.solidityKeccak256(["bytes"], [firstPart + ensPart.substring(2,)]);
-      // console.log("secondPart: " + secondPart); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
-      // // const thirdPart = ethers.utils.solidityKeccak256(["bytes"], [secondPart + firstPart.substring(2,)]);
-      // const namehash = ethers.utils.namehash('ens.eth');
-      // console.log("namehash: " + namehash); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 35373739037748002394990259860942348737703776167876918520233297406984196933343
-
-      // https://docs.ethers.org/v4/api-utils.html#namehash
-      // https://docs.ens.domains/resolution/names
-
-      // ERC-721 portraits.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:44751912813930912337796007339729037742242848274525268603577754244108589799563
-      // const namehash = ethers.utils.solidityKeccak256(["string"], ["portraits"]);
-
-      // ERC-1155 portraits.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:27727362303445643037535452095569739813950020376856883309402147522300287323280
-      // const namehash = ethers.utils.namehash('portraits.eth');
-      // console.log("namehash: " + namehash); // 0x3d4d2183fb9835727050b65cba7fdffe10545fb323378f31e991b6b2c63b0c90
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 27727362303445643037535452095569739813950020376856883309402147522300287323280
-
-      // ERC-721 925.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
-      // ERC-1155 925.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:90617972706753856606077416428092812770327579333964424572858812298074332597719
-      // const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
-      // console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
-      // const decimalLabelhash = ethers.BigNumber.from(labelhash);
-      // console.log("decimalLabelhash: " + decimalLabelhash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
-      // const namehash = ethers.utils.namehash('925.eth');
-      // console.log("namehash: " + namehash); // 0xc857f4794464c8a531d378463f789ad3caea99e27510bd74cafe33b776fc0dd7
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 90617972706753856606077416428092812770327579333964424572858812298074332597719
-
-      // ERC-721 $mother.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:55031006666192158848045017008080447197965693849755532004656313918635033768881
-      // ERC-1155 $mother.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:37778769934711969306858083174867277506392124373311900965949141233376830547093
-      // const labelhash = ethers.utils.solidityKeccak256(["string"], ["$mother"]);
-      // console.log("labelhash: " + labelhash); // 0x79aa722c0c2fcde541f3a9a8057afe4e86133ea0dd0d28f1d337f3fd505033b1
-      // const decimalLabelhash = ethers.BigNumber.from(labelhash);
-      // console.log("decimalLabelhash: " + decimalLabelhash); // 55031006666192158848045017008080447197965693849755532004656313918635033768881
-      // const namehash = ethers.utils.namehash('$mother.eth');
-      // console.log("namehash: " + namehash); // 0x538606aa1287ef33e2454861d54dd58271c4f9f5e05f724ca6982fecdb3de495
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 37778769934711969306858083174867277506392124373311900965949141233376830547093
-      // return;
-
       console.log("processList: " + JSON.stringify(processList, null, 2));
-
       const BATCHSIZE = 100;
       context.commit('setSyncSection', { section: 'ENS Events', total: null });
       context.commit('setSyncCompleted', 0);
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
-        // console.log("batch: " + JSON.stringify(batch, null, 2));
         const startBlock = 0;
         await getLogs(startBlock, parameter.blockNumber, 0, batch, processLogs);
-        // await getLogs(startBlock, parameter.blockNumber, 1, batch, processLogs);
-        // await getLogs(startBlock, parameter.blockNumber, 2, batch, processLogs);
       }
-      return;
-
-      // const selectedAddresses = [];
-      // for (const [address, addressData] of Object.entries(context.state.addresses)) {
-      //   if (address.substring(0, 2) == "0x") {
-      //     selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
-      //   }
-      // }
-      // console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
-      // if (selectedAddresses.length > 0) {
-      //   const deleteCall = await db.events.where("confirmations").below(parameter.confirmations).delete();
-      //   const latest = await db.events.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-      //   // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-      //   const startBlock = 0;
-      //   for (let section = 0; section < 4; section++) {
-      //     await getLogs(startBlock, parameter.blockNumber, section, selectedAddresses, processLogs);
-      //   }
-      // }
       logInfo("dataModule", "actions.syncENSEvents END");
     },
 
@@ -1161,7 +1063,6 @@ const dataModule = {
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      // const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
       const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
       const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
       const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
@@ -1345,16 +1246,6 @@ const dataModule = {
             } else {
               console.log("NOT HANDLED: " + JSON.stringify(log));
             }
-            // TODO: Testing if (eventRecord && contract == "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9") {
-            // if (eventRecord &&
-            //     ((parameter.erc20 && eventRecord.eventType == "erc20") ||
-            //      (parameter.erc721 && eventRecord.eventType == "erc721") ||
-            //      (parameter.erc1155 && eventRecord.eventType == "erc1155"))) {
-            // const testAddresses = parameter.devThing ? new Set(["0xB32979486938AA9694BFC898f35DBED459F44424","0x286E531F363768Fed5E18b468f5B76a9FFc33af5"]) : null;
-            // if (eventRecord && (!testAddresses || testAddresses.has(contract)) && eventRecord.eventType == "erc1155") {
-            // if (eventRecord && contract == "0xB32979486938AA9694BFC898f35DBED459F44424") {
-            // if (eventRecord && (contract == "0xB32979486938AA9694BFC898f35DBED459F44424" || contract == "0x286E531F363768Fed5E18b468f5B76a9FFc33af5")) {
-
             if (eventRecord) {
               records.push( {
                 chainId: parameter.chainId,
@@ -1455,130 +1346,24 @@ const dataModule = {
       }
 
       logInfo("dataModule", "actions.syncWrappedENSEvents BEGIN");
-
       const tokensToProcess = {};
-      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
-        if (contractData.type == "erc721" || contractData.type == "erc1155") {
-          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
-            // if (!context.state.prices[parameter.chainId] || !context.state.prices[parameter.chainId][contract] || !context.state.prices[parameter.chainId][contract][tokenId]) {
-              if (!(contract in tokensToProcess)) {
-                tokensToProcess[contract] = {};
-              }
-              tokensToProcess[contract][tokenId] = tokenData;
-            // }
-          }
-        }
-      }
-      // console.log("tokensToProcess: " + JSON.stringify(tokensToProcess, null, 2));
       let processList = [];
-      for (const [contract, contractData] of Object.entries(tokensToProcess)) {
-        const contractType = context.state.tokens[parameter.chainId][contract].type;
-        for (const [tokenId, tokenData] of Object.entries(contractData)) {
-          if (contract == ENS_NAMEWRAPPER_ADDRESS) {
+      for (const [contract, contractData] of Object.entries(context.state.tokens[parameter.chainId] || {})) {
+        if (contract == ENS_NAMEWRAPPER_ADDRESS) {
+          for (const [tokenId, tokenData] of Object.entries(contractData.tokenIds)) {
             processList.push({ contract, tokenId });
           }
         }
       }
-      // processList = processList.slice(0, 3); // TODO
-      // ERC-721 925.eth renewal 0x684d272ec79f907011b451daf5bb6d90b54ac56cac2e20c669c617bee778fd3d and ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
-      // processList = processList.filter(e => ['53835211818918528779359817553631021141919078878710948845228773628660104698081', '27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
-
-      // ERC-1155 portraits.eth 27727362303445643037535452095569739813950020376856883309402147522300287323280
-      // ERC-1155 yourmum.lovesyou.eth 57229065116737680790555199455465332171886850449809000367294662727325932836690
-      // processList = processList.filter(e => ['27727362303445643037535452095569739813950020376856883309402147522300287323280', '57229065116737680790555199455465332171886850449809000367294662727325932836690'].includes(e.tokenId));
-
-      // processList = processList.filter(e => e.contract === "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85");
-
-      // ERC-1155 portraits.eth 0xfcf5eb4b2e7f0debe905fa7f573ce220fb9f123a1dfa1e13186f34aec2a4df00
-      // processList = processList.filter(e => ['27727362303445643037535452095569739813950020376856883309402147522300287323280'].includes(e.tokenId));
-      // processList = processList.filter(e => e.contract === "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401");
-
-      // const ZEROES = "0x0000000000000000000000000000000000000000000000000000000000000000";
-      // const ethPart = ethers.utils.solidityKeccak256(["string"], ["eth"]);
-      // console.log("ethPart: " + ethPart); // 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0
-      // const firstPart = ethers.utils.solidityKeccak256(["bytes"], [ZEROES + ethPart.substring(2,)]);
-      // console.log("firstPart: " + firstPart); // 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae
-      // const ensPart = ethers.utils.solidityKeccak256(["string"], ["ens"]);
-      // console.log("ensPart: " + ensPart); // 0x5cee339e13375638553bdf5a6e36ba80fb9f6a4f0783680884d92b558aa471da
-      // const secondPart = ethers.utils.solidityKeccak256(["bytes"], [firstPart + ensPart.substring(2,)]);
-      // console.log("secondPart: " + secondPart); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
-      // // const thirdPart = ethers.utils.solidityKeccak256(["bytes"], [secondPart + firstPart.substring(2,)]);
-      // const namehash = ethers.utils.namehash('ens.eth');
-      // console.log("namehash: " + namehash); // 0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 35373739037748002394990259860942348737703776167876918520233297406984196933343
-
-      // https://docs.ethers.org/v4/api-utils.html#namehash
-      // https://docs.ens.domains/resolution/names
-
-      // ERC-721 portraits.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:44751912813930912337796007339729037742242848274525268603577754244108589799563
-      // const namehash = ethers.utils.solidityKeccak256(["string"], ["portraits"]);
-
-      // ERC-1155 portraits.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:27727362303445643037535452095569739813950020376856883309402147522300287323280
-      // const namehash = ethers.utils.namehash('portraits.eth');
-      // console.log("namehash: " + namehash); // 0x3d4d2183fb9835727050b65cba7fdffe10545fb323378f31e991b6b2c63b0c90
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 27727362303445643037535452095569739813950020376856883309402147522300287323280
-
-      // ERC-721 925.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:53835211818918528779359817553631021141919078878710948845228773628660104698081
-      // ERC-1155 925.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:90617972706753856606077416428092812770327579333964424572858812298074332597719
-      // const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
-      // console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
-      // const decimalLabelhash = ethers.BigNumber.from(labelhash);
-      // console.log("decimalLabelhash: " + decimalLabelhash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
-      // const namehash = ethers.utils.namehash('925.eth');
-      // console.log("namehash: " + namehash); // 0xc857f4794464c8a531d378463f789ad3caea99e27510bd74cafe33b776fc0dd7
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 90617972706753856606077416428092812770327579333964424572858812298074332597719
-
-      // ERC-721 $mother.eth 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85:55031006666192158848045017008080447197965693849755532004656313918635033768881
-      // ERC-1155 $mother.eth 0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401:37778769934711969306858083174867277506392124373311900965949141233376830547093
-      // const labelhash = ethers.utils.solidityKeccak256(["string"], ["$mother"]);
-      // console.log("labelhash: " + labelhash); // 0x79aa722c0c2fcde541f3a9a8057afe4e86133ea0dd0d28f1d337f3fd505033b1
-      // const decimalLabelhash = ethers.BigNumber.from(labelhash);
-      // console.log("decimalLabelhash: " + decimalLabelhash); // 55031006666192158848045017008080447197965693849755532004656313918635033768881
-      // const namehash = ethers.utils.namehash('$mother.eth');
-      // console.log("namehash: " + namehash); // 0x538606aa1287ef33e2454861d54dd58271c4f9f5e05f724ca6982fecdb3de495
-      // const decimalNameHash = ethers.BigNumber.from(namehash);
-      // console.log("decimalNameHash: " + decimalNameHash); // 37778769934711969306858083174867277506392124373311900965949141233376830547093
-
-      // const labelhash = ethers.utils.solidityKeccak256(["string"], ["best"]);
-      // console.log("labelhash: " + labelhash); // 0x79aa722c0c2fcde541f3a9a8057afe4e86133ea0dd0d28f1d337f3fd505033b1
-      // const namehash = ethers.utils.namehash('collections.eth');
-      // console.log("namehash: " + namehash); // 0x538606aa1287ef33e2454861d54dd58271c4f9f5e05f724ca6982fecdb3de495
-      // return;
-
       console.log("processList: " + JSON.stringify(processList, null, 2));
-
       const BATCHSIZE = 100;
       context.commit('setSyncSection', { section: 'Wrapped ENS Events', total: null });
       context.commit('setSyncCompleted', 0);
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
-        // console.log("batch: " + JSON.stringify(batch, null, 2));
         const startBlock = 0;
         await getLogs(startBlock, parameter.blockNumber, 0, batch, processLogs);
-        // await getLogs(startBlock, parameter.blockNumber, 1, batch, processLogs);
-        // await getLogs(startBlock, parameter.blockNumber, 2, batch, processLogs);
       }
-      return;
-
-      // const selectedAddresses = [];
-      // for (const [address, addressData] of Object.entries(context.state.addresses)) {
-      //   if (address.substring(0, 2) == "0x") {
-      //     selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
-      //   }
-      // }
-      // console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
-      // if (selectedAddresses.length > 0) {
-      //   const deleteCall = await db.events.where("confirmations").below(parameter.confirmations).delete();
-      //   const latest = await db.events.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-      //   // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-      //   const startBlock = 0;
-      //   for (let section = 0; section < 4; section++) {
-      //     await getLogs(startBlock, parameter.blockNumber, section, selectedAddresses, processLogs);
-      //   }
-      // }
       logInfo("dataModule", "actions.syncWrappedENSEvents END");
     },
 

@@ -1276,7 +1276,9 @@ const dataModule = {
       const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
       const latest = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
       // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-      const startBlock = 0;
+      // const startBlock = 0;
+      const startBlock = latest ? parseInt(latest.blockNumber) + 1: 0;
+      console.log("startBlock: " + startBlock);
       await getLogs(startBlock, parameter.blockNumber, processLogs);
 
       // const fromBlock = 9456662;

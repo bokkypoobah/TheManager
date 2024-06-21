@@ -534,7 +534,7 @@ const Names = {
                 name: metadata.name || null,
                 description: metadata.description || null,
                 expiry: metadata.expiry || undefined,
-                attributes: metadata.attributes || null,
+                attributes: price.attributes || null,
                 status,
                 lastSale: price.lastSale,
                 price: price.price,

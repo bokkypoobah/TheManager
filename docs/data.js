@@ -745,34 +745,12 @@ const dataModule = {
         logInfo("dataModule", "actions.collateTokens - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
           if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type) && !(item.contract in tokens)) {
-            if (item.eventType == "erc20") {
-              tokens[item.contract] = {
-                type: item.eventType,
-                balances: {},
-              };
-            } else {
-              tokens[item.contract] = {
-                type: item.eventType,
-                tokenIds: {},
-              };
-            }
+            tokens[item.contract] = {
+              type: item.eventType,
+              tokenIds: {},
+            };
           }
-          if (item.eventType == "erc20" && item.type == "Transfer") {
-            const balances = tokens[item.contract].balances || {};
-            if (item.from in selectedAddressesMap) {
-              if (!(item.from in balances)) {
-                balances[item.from] = "0";
-              }
-              balances[item.from] = ethers.BigNumber.from(balances[item.from]).sub(item.tokens).toString();
-            }
-            if (item.to in selectedAddressesMap) {
-              if (!(item.to in balances)) {
-                balances[item.to] = "0";
-              }
-              balances[item.to] = ethers.BigNumber.from(balances[item.to]).add(item.tokens).toString();
-            }
-            tokens[item.contract].balances = balances;
-          } else if (item.eventType == "erc721" && item.type == "Transfer") {
+          if (item.eventType == "erc721" && item.type == "Transfer") {
             if (item.from in selectedAddressesMap || item.to in selectedAddressesMap) {
               tokens[item.contract].tokenIds[item.tokenId] = item.to;
             }

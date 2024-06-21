@@ -870,17 +870,17 @@ const dataModule = {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires)/*, expiryString: moment.unix(expires).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires)/*, expiryString: moment.unix(expires).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = ethRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires)/*, expiryString: moment.unix(expires).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
             } else {
               console.log("NOT HANDLED: " + JSON.stringify(log));
             }
@@ -1011,10 +1011,10 @@ const dataModule = {
       // // 0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31
       let total = 0;
       let t = this;
-      async function processLogs(fromBlock, toBlock, section, logs) {
+      async function processLogs(fromBlock, toBlock, logs) {
         total = parseInt(total) + logs.length;
         context.commit('setSyncCompleted', total);
-        logInfo("dataModule", "actions.syncWrappedENSEvents.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section + ", logs.length: " + logs.length + ", total: " + total);
+        logInfo("dataModule", "actions.syncWrappedENSEvents.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", logs.length: " + logs.length + ", total: " + total);
         const records = [];
         for (const log of logs) {
           if (!log.removed) {
@@ -1081,7 +1081,7 @@ const dataModule = {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires)/*, expiryString: moment.unix(expires).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
               console.log(JSON.stringify(eventRecord, null, 2));
 
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
@@ -1089,7 +1089,7 @@ const dataModule = {
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               // console.log(JSON.stringify(logData, null, 2));
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires)/*, expiryString: moment.unix(expires).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
               console.log(JSON.stringify(eventRecord, null, 2));
 
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
@@ -1097,7 +1097,7 @@ const dataModule = {
               const logData = ethRegistarControllerInterface.parseLog(log);
               // console.log(JSON.stringify(logData, null, 2));
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires)/*, expiryString: moment.unix(expires).format("MMM DD YYYY")*/ };
+              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
               console.log(JSON.stringify(eventRecord, null, 2));
 
             } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
@@ -1160,79 +1160,32 @@ const dataModule = {
           });
         }
       }
-      async function getLogs(fromBlock, toBlock, section, selectedRecords, processLogs) {
-        logInfo("dataModule", "actions.syncWrappedENSEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", section: " + section + ", selectedRecords: " + JSON.stringify(selectedRecords));
+      async function getLogs(fromBlock, toBlock, selectedRecords, processLogs) {
+        logInfo("dataModule", "actions.syncWrappedENSEvents.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", selectedRecords: " + JSON.stringify(selectedRecords));
         const hashes = selectedRecords.map(a => "0x" + ethers.BigNumber.from(a.tokenId).toHexString().slice(2).padStart(64, '0'));
         // const hashes = selectedRecords.map(a => a.tokenId);
         // console.log("hashes: " + JSON.stringify(hashes, null, 2));
 
         try {
           let topics = null;
-          if (section == 0) {
-            topics = [[
-                '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
-                // '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
-                // '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
-                // Need `node` '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
-                // Need `node` '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2',
-              ],
-              hashes,
-              null,
-            ];
-            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            // console.log("logs: " + JSON.stringify(logs, null, 2));
-            // return;
-            await processLogs(fromBlock, toBlock, section, logs);
+          topics = [[
+              '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
+              // '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
+              // '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+              // Need `node` '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
+              // Need `node` '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2',
+            ],
+            hashes,
+            null,
+          ];
+          const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+          console.log("logs: " + JSON.stringify(logs, null, 2));
+          await processLogs(fromBlock, toBlock, logs);
 
-          } else if (section == 1) {
-            topics = [[
-                '0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6',
-              ],
-              hashes,
-              null,
-            ];
-            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            console.log("logs: " + JSON.stringify(logs, null, 2));
-            return;
-
-            // await processLogs(fromBlock, toBlock, section, logs);
-          } else if (section == 2) {
-            topics = [
-              '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
-              hashes,
-              // null,
-            ];
-            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            console.log("logs: " + JSON.stringify(logs, null, 2));
-            return;
-
-            // await processLogs(fromBlock, toBlock, section, logs);
-          // } else if (section == 2) {
-          //   topics = [[
-          //       '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
-          //       '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb',
-          //     ],
-          //     null,
-          //     selectedAddresses
-          //   ];
-          //   logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-          //   await processLogs(fromBlock, toBlock, section, logs);
-          // } else if (section == 3) {
-          //   topics = [ [
-          //       '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
-          //       '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb',
-          //     ],
-          //     null,
-          //     null,
-          //     selectedAddresses
-          //   ];
-          //   logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-          //   await processLogs(fromBlock, toBlock, section, logs);
-          }
         } catch (e) {
           const mid = parseInt((fromBlock + toBlock) / 2);
-          await getLogs(fromBlock, mid, section, selectedRecords, processLogs);
-          await getLogs(parseInt(mid) + 1, toBlock, section, selectedRecords, processLogs);
+          await getLogs(fromBlock, mid, selectedRecords, processLogs);
+          await getLogs(parseInt(mid) + 1, toBlock, selectedRecords, processLogs);
         }
       }
 
@@ -1253,7 +1206,7 @@ const dataModule = {
       for (let i = 0; i < processList.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = processList.slice(i, parseInt(i) + BATCHSIZE);
         const startBlock = 0;
-        await getLogs(startBlock, parameter.blockNumber, 0, batch, processLogs);
+        await getLogs(startBlock, parameter.blockNumber, batch, processLogs);
       }
       logInfo("dataModule", "actions.syncWrappedENSEvents END");
     },
@@ -1395,7 +1348,7 @@ const dataModule = {
                 events: [],
               };
               metadata[item.chainId][contract][tokenId].events.push(item);
-              console.log("NOT Found NameRenewed - after: " + JSON.stringify(metadata[item.chainId][contract][tokenId], null, 2));
+              // console.log("NOT Found NameRenewed - after: " + JSON.stringify(metadata[item.chainId][contract][tokenId], null, 2));
             }
           } else if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type)) {
             //

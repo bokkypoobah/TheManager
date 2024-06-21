@@ -1033,12 +1033,6 @@ const dataModule = {
         let data = await db.events.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         logInfo("dataModule", "actions.collateMetadata - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
-
-          // youresocool.eth registration txHash 0x81c71d2a0521abfb8c0c1f8f706fb3f18de028b0f47dd5619aec9ce4b6b3ba59
-          // if (item.txHash == "0x81c71d2a0521abfb8c0c1f8f706fb3f18de028b0f47dd5619aec9ce4b6b3ba59") {
-          //   console.log("---> " + JSON.stringify(item, null, 2));
-          // }
-
           if (item.type == "NameRegistered" && item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
             // console.log(item.contract + " " + item.name + " " + item.txHash);
             const contract = ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
@@ -1068,7 +1062,6 @@ const dataModule = {
 
           } else if (item.type == "NameWrapped" && item.contract == ENS_NAMEWRAPPER_ADDRESS) {
             // console.log("NameWrapped: " + JSON.stringify(item, null, 2));
-            // console.log("NameWrapped: " + item.name);
             if (!(item.chainId in metadata)) {
               metadata[item.chainId] = {};
             }
@@ -1092,7 +1085,6 @@ const dataModule = {
               metadata[item.chainId][item.contract][wrappedTokenId].expiry = item.expiry;
             }
             metadata[item.chainId][item.contract][wrappedTokenId].events.push(item);
-
             if (item.subdomain == null) {
               const tokenId = ethers.BigNumber.from(item.labelhash).toString();
               if (!(wrappedTokenId in metadata[item.chainId][ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS])) {
@@ -1109,30 +1101,13 @@ const dataModule = {
               }
               metadata[item.chainId][ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS][tokenId].events.push(item);
             }
-
-            // console.log(item.contract + " " + item.type + " " + item.name + " " + item.txHash);
-            // console.log("  https://opensea.io/assets/ethereum/0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401/" + item.namehashDecimals);
-            //
           } else if (item.type == "NameRenewed" && (item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS || item.contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS)) {
-            // TODO
-            // console.log("NameRenewed: " + JSON.stringify(item, null, 2));
-            // const contract = item.contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS ? ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS : item.contract;
             const contract = ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
             const tokenId = ethers.BigNumber.from(item.label);
-
-            // const labelhash = ethers.utils.solidityKeccak256(["string"], ["925"]);
-            // console.log("labelhash: " + labelhash); // 0x7705a66c05de96d79dddf8024a7669ad29d5b174f4aa496e3ca7c392f0ca18e1
-            // const decimalLabelhash = ethers.BigNumber.from(labelhash);
-            // console.log("decimalLabelhash: " + decimalLabelhash); // 53835211818918528779359817553631021141919078878710948845228773628660104698081
-
             if (metadata[item.chainId] && metadata[item.chainId][contract] && (tokenId in metadata[item.chainId][contract])) {
-              // console.log("Found NameRenewed: " + JSON.stringify(item, null, 2));
-              // console.log("  https://opensea.io/assets/ethereum/" + ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS + "/" + tokenId);
-
               metadata[item.chainId][contract][tokenId].registered = item.blockNumber;
               metadata[item.chainId][contract][tokenId].expiry = item.expires;
               metadata[item.chainId][contract][tokenId].events.push(item);
-
             } else {
               // console.log("NOT Found NameRenewed: " + JSON.stringify(item, null, 2));
               if (!(item.chainId in metadata)) {
@@ -1158,88 +1133,6 @@ const dataModule = {
           } else {
             console.log("Unhandled: " + item.type + " " + JSON.stringify(item, null,  2));
           }
-
-
-
-          // if (!(["Transfer", "TransferSingle", "TransferBatch"].includes(item.type))) {
-          // }
-          // if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type) && !(item.contract in tokens)) {
-          //   if (item.eventType == "erc20") {
-          //     tokens[item.contract] = {
-          //       type: item.eventType,
-          //       balances: {},
-          //     };
-          //   } else {
-          //     tokens[item.contract] = {
-          //       type: item.eventType,
-          //       tokenIds: {},
-          //     };
-          //   }
-          // }
-          // if (item.eventType == "erc20" && item.type == "Transfer") {
-          //   const balances = tokens[item.contract].balances || {};
-          //   if (item.from in selectedAddressesMap) {
-          //     if (!(item.from in balances)) {
-          //       balances[item.from] = "0";
-          //     }
-          //     balances[item.from] = ethers.BigNumber.from(balances[item.from]).sub(item.tokens).toString();
-          //   }
-          //   if (item.to in selectedAddressesMap) {
-          //     if (!(item.to in balances)) {
-          //       balances[item.to] = "0";
-          //     }
-          //     balances[item.to] = ethers.BigNumber.from(balances[item.to]).add(item.tokens).toString();
-          //   }
-          //   tokens[item.contract].balances = balances;
-          // } else if (item.eventType == "erc721" && item.type == "Transfer") {
-          //   if (item.from in selectedAddressesMap || item.to in selectedAddressesMap) {
-          //     tokens[item.contract].tokenIds[item.tokenId] = item.to;
-          //   }
-          // } else if (item.eventType == "erc1155" && item.type == "TransferSingle") {
-          //   if (item.from in selectedAddressesMap) {
-          //     if (!(item.tokenId in tokens[item.contract].tokenIds)) {
-          //       tokens[item.contract].tokenIds[item.tokenId] = {};
-          //     }
-          //     if (item.from in tokens[item.contract].tokenIds[item.tokenId]) {
-          //       tokens[item.contract].tokenIds[item.tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.from]).sub(item.value).toString();
-          //       if (tokens[item.contract].tokenIds[item.tokenId][item.from] == "0") {
-          //         delete tokens[item.contract].tokenIds[item.tokenId][item.from];
-          //       }
-          //     }
-          //   }
-          //   if (item.to in selectedAddressesMap) {
-          //     if (!(item.tokenId in tokens[item.contract].tokenIds)) {
-          //       tokens[item.contract].tokenIds[item.tokenId] = {};
-          //     }
-          //     if (!(item.to in tokens[item.contract].tokenIds[item.tokenId])) {
-          //       tokens[item.contract].tokenIds[item.tokenId][item.to] = "0";
-          //     }
-          //     tokens[item.contract].tokenIds[item.tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.to]).add(item.value).toString();
-          //   }
-          // } else if (item.eventType == "erc1155" && item.type == "TransferBatch") {
-          //   for (const [index, tokenId] of item.tokenIds.entries()) {
-          //     if (item.from in selectedAddressesMap) {
-          //       if (!(tokenId in tokens[item.contract].tokenIds)) {
-          //         tokens[item.contract].tokenIds[tokenId] = {};
-          //       }
-          //       if (item.from in tokens[item.contract].tokenIds[tokenId]) {
-          //         tokens[item.contract].tokenIds[tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.from]).sub(item.values[index]).toString();
-          //         if (tokens[item.contract].tokenIds[tokenId][item.from] == "0") {
-          //           delete tokens[item.contract].tokenIds[tokenId][item.from];
-          //         }
-          //       }
-          //     }
-          //     if (item.to in selectedAddressesMap) {
-          //       if (!(tokenId in tokens[item.contract].tokenIds)) {
-          //         tokens[item.contract].tokenIds[tokenId] = {};
-          //       }
-          //       if (!(item.to in tokens[item.contract].tokenIds[tokenId])) {
-          //         tokens[item.contract].tokenIds[tokenId][item.to] = "0";
-          //       }
-          //       tokens[item.contract].tokenIds[tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.to]).add(item.values[index]).toString();
-          //     }
-          //   }
-          // }
         }
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;

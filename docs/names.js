@@ -401,8 +401,6 @@ const Names = {
       return result;
     },
     filteredItems() {
-      // console.log("filteredItems - tokenInfo: " + JSON.stringify(this.tokenInfo, null, 2));
-
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       let regex = null;
       if (this.settings.filter != null && this.settings.filter.length > 0) {
@@ -418,7 +416,6 @@ const Names = {
       const expiry1m = moment().add(1, 'months').unix();
       const expiry3m = moment().add(3, 'months').unix();
       const expiry1y = moment().add(1, 'years').unix();
-
       let dateFrom = null;
       let dateTo = null;
       if (this.settings.dateOption) {
@@ -442,17 +439,13 @@ const Names = {
           dateFrom = expiry1y;
         }
       }
-      // if (dateFrom) {
-      //   console.log("filteredItems - dateFrom: " + dateFrom + " " + moment(dateFrom).format());
-      // }
 
       const selectedAddressesMap = {};
       for (const [address, addressData] of Object.entries(this.addresses)) {
-        if (address.substring(0, 2) == "0x") {
+        if (address.substring(0, 2) == "0x" && addressData.process) {
           selectedAddressesMap[address] = true;
         }
       }
-      // console.log("selectedAddressesMap: " + Object.keys(selectedAddressesMap));
 
       for (const [contract, data] of Object.entries(this.tokens[this.chainId] || {})) {
         // const contractMetadata = this.contractMetadata[this.chainId] && this.contractMetadata[this.chainId][contract] || {};

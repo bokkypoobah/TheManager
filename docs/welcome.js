@@ -41,6 +41,21 @@ const Welcome = {
               </b-card-text>
 
               <b-card-text class="mt-3 mb-2">
+                <h6>Algorithm - Search (WIP)</h6>
+                <ul>
+                  <li>
+                    Retrieve all ERC-721 ENS <i>NameRegistered</i> and <i>NameRenewed</i> and ERC-1155 ENS <i>NameWrapped</i> events
+                  </li>
+                  <li>
+                    Use information above for initial search query results
+                  </li>
+                  <li>
+                    Retrieve transfers and prices for search query results when requested
+                  </li>
+                </ul>
+              </b-card-text>
+
+              <b-card-text class="mt-3 mb-2">
                 <h6>Your Data</h6>
                 <ul>
                   <li>
@@ -49,9 +64,6 @@ const Welcome = {
                   <li>
                     Your accounts will be used when querying data via the web3 connection
                   </li>
-                  <!-- <li>
-                    Your Etherscan API key and your accounts will be used when querying data via the Etherscan API
-                  </li> -->
                   <li>
                     Your collections and tokens will be used when querying data via the Reservoir API
                   </li>

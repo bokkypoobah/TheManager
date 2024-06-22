@@ -20,6 +20,14 @@ https://bokkypoobah.github.io/onlyfens/
 
 <br />
 
+## Algorithm - Search (WIP)
+
+* Retrieve all ERC-721 ENS `NameRegistered` and `NameRenewed` and ERC-1155 ENS `NameWrapped` events
+* Use information above for initial search query results
+* Retrieve transfers and prices for search query results when requested
+
+<br />
+
 <hr />
 
 ## Screenshots

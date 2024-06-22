@@ -90,6 +90,7 @@ const dataModule = {
     prices: {}, // chainId -> contract -> tokenId => metadata
     tokenInfo: {}, // chainId -> contract -> tokenId => info
     timestamps: {}, // chainId -> blockNumber => timestamp
+    names: {}, // name -> data
     txs: {}, // txHash => tx & txReceipt
 
     ens: {},
@@ -332,7 +333,7 @@ const dataModule = {
       if (Object.keys(context.state.addresses).length == 0) {
         const db0 = new Dexie(context.state.db.name);
         db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-        for (let type of ['addresses', 'timestamps', 'prices', 'tokenInfo', 'metadata', 'tokens']) {
+        for (let type of ['addresses', 'timestamps', 'prices', 'tokenInfo', 'metadata', 'tokens', 'names']) {
           const data = await db0.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             // logInfo("dataModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object));
@@ -1319,10 +1320,8 @@ const dataModule = {
             null,
             null
           ];
-          if (total < 100000) {
+          if (total < 1000000 && !context.state.sync.halt) {
             const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            // const logs = await provider.getLogs({ address: ENS_OLDETHREGISTRARCONTROLLER_ADDRESS, fromBlock, toBlock, topics });
-            // console.log("logs: " + JSON.stringify(logs, null, 2));
             await processLogs(fromBlock, toBlock, logs);
           }
         } catch (e) {
@@ -1375,29 +1374,48 @@ const dataModule = {
           let labelhash = null;
           let namehash = null;
           let expiry = null;
+          let subdomain = null;
 
           if (item.type == "NameRegistered") {
+            label = item.name;
+            name = label + ".eth";
+            labelhash = item.label;
+            try {
+              namehash = ethers.utils.namehash(name);
+            } catch (e) {
+              console.log("Error namehash: " + name + " " + e.message);
+            }
+            expiry = item.expires;
 
           } else if (item.type == "NameRenewed") {
             label = item.name;
             name = label + ".eth";
             labelhash = item.label;
-            namehash = ethers.utils.namehash(name);
+            try {
+              namehash = ethers.utils.namehash(name);
+            } catch (e) {
+              console.log("Error namehash: " + name + " " + e.message);
+            }
             expiry = item.expires;
-            // console.log(JSON.stringify(item));
-            // labelhash = ethers.utils.solidityKeccak256(["string"], [label]);
-            // console.log("labelhash: " + labelhash);
-            // console.log("namehash: " + namehash);
 
           } else if (item.type == "NameWrapped") {
+            label = item.label;
+            name = item.name;
+            labelhash = item.labelhash;
+            namehash = item.namehash;
+            expiry = item.expiry;
+            subdomain = item.subdomain;
+            console.log(JSON.stringify(item));
 
           } else {
-            console.log(JSON.stringify(item));
+            // console.log(JSON.stringify(item));
           }
 
           if (name) {
             if (name in names) {
-              console.log("names[name]: " + JSON.stringify(names[name]));
+              // console.log("names[name]: " + JSON.stringify(names[name]));
+              console.log(name + " expiry updated from " + moment.unix(names[name].expiry).format() + " to " + moment.unix(expiry).format());
+              names[name].expiry = expiry;
             } else {
               names[name] = {
                 name,
@@ -1405,9 +1423,9 @@ const dataModule = {
                 labelhash,
                 namehash,
                 expiry,
+                subdomain,
               };
             }
-
           }
 
           // console.log(JSON.stringify(item));
@@ -1472,8 +1490,8 @@ const dataModule = {
       } while (!done);
       console.log("names: " + JSON.stringify(names, null, 2));
       // console.log("tokens: " + JSON.stringify(tokens, null, 2));
-      // context.commit('updateTokens', tokens);
-      // await context.dispatch('saveData', ['tokens']);
+      context.commit('setState', { name: "names", data: names });
+      await context.dispatch('saveData', ['names']);
       logInfo("dataModule", "actions.collateSearchDatabase END");
     },
 

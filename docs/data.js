@@ -103,19 +103,15 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "onlyfensdata080c",
+      name: "onlyfensdata080d",
       version: 1,
       schemaDefinition: {
         events: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,[type+blockNumber]',
-        registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,[type+blockNumber]',
+        registrations: '[chainId+blockNumber+logIndex],[label+blockNumber+logIndex],confirmations',
         cache: '&objectName',
       },
       updated: null,
     },
-    checkOptions: [
-      { value: 'ethers', text: 'Ethers' },
-      { value: 'tokens', text: 'ERC-20, ERC-721 and ERC-1155 Tokens' },
-    ],
   },
   getters: {
     addresses: state => state.addresses,
@@ -135,7 +131,6 @@ const dataModule = {
     forceRefresh: state => state.forceRefresh,
     sync: state => state.sync,
     db: state => state.db,
-    checkOptions: state => state.checkOptions,
   },
   mutations: {
     setState(state, info) {

@@ -737,7 +737,6 @@ const searchModule = {
       const confirmations = 100;
       const blockNumber = block && block.number || null;
       const chainId = store.getters['connection/chainId'];
-      const db = store.getters['data/db'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
       await context.dispatch('syncSearchDatabase', parameter);
       await context.dispatch('collateSearchDatabase', parameter);
@@ -745,8 +744,9 @@ const searchModule = {
 
     async syncSearchDatabase(context, parameter) {
       logInfo("dataModule", "actions.syncSearchDatabase: " + JSON.stringify(parameter));
-      const db = new Dexie(context.state.db.name);
-      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const dbInfo = store.getters['data/db'];
+      const db = new Dexie(dbInfo.name);
+      db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
 
@@ -777,7 +777,7 @@ const searchModule = {
       let t = this;
       async function processLogs(fromBlock, toBlock, logs) {
         total = parseInt(total) + logs.length;
-        context.commit('setSyncCompleted', total);
+        // TODO: context.commit('setSyncCompleted', total);
         logInfo("dataModule", "actions.syncSearchDatabase.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", logs.length: " + logs.length + ", total: " + total);
         const records = [];
         for (const log of logs) {
@@ -789,37 +789,37 @@ const searchModule = {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarController1Interface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRegistered", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRegistered", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRegistered", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER1_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRenewed", label: name, labelhash: label, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRenewed", label: name, labelhash: label, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRenewed", label: name, labelhash: label, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = ethRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRenewed", label: name, labelhash: label, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
               const logData = nameWrapperInterface.parseLog(log);
@@ -878,12 +878,12 @@ const searchModule = {
               '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
               '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
               '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
-              '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4',
+              // '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4',
             ],
             null,
             null
           ];
-          if (total < 1000000 && !context.state.sync.halt) {
+          if (total < 100000 && !store.getters['data/sync'].halt) {
             const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
             await processLogs(fromBlock, toBlock, logs);
           }
@@ -896,7 +896,7 @@ const searchModule = {
       }
 
       logInfo("dataModule", "actions.syncSearchDatabase BEGIN");
-      context.commit('setSyncSection', { section: 'NameRegistered Events', total: null });
+      // TODO: context.commit('setSyncSection', { section: 'NameRegistered Events', total: null });
 
       const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
       const latest = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
@@ -915,10 +915,12 @@ const searchModule = {
 
     async collateSearchDatabase(context, parameter) {
       logInfo("dataModule", "actions.collateSearchDatabase: " + JSON.stringify(parameter));
-      const db = new Dexie(context.state.db.name);
-      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const dbInfo = store.getters['data/db'];
+      const db = new Dexie(dbInfo.name);
+      db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       logInfo("dataModule", "actions.collateSearchDatabase BEGIN");
+      return;
 
       let rows = 0;
       let done = false;
@@ -1058,6 +1060,6 @@ const searchModule = {
       await context.dispatch('saveData', ['names']);
       logInfo("dataModule", "actions.collateSearchDatabase END");
     },
-    
+
   },
 };

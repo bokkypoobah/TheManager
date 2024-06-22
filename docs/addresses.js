@@ -343,9 +343,6 @@ const Addresses = {
     coinbaseIncluded() {
       return this.addresses[this.coinbase] && true || false;
     },
-    checkOptions() {
-      return store.getters['data/checkOptions'];
-    },
 
     totalAddresses() {
       return Object.keys(this.addresses).length;

@@ -1190,6 +1190,7 @@ const dataModule = {
       const oldETHRegistarController2Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER2_ABI);
       const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
       const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
+      const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
 
       // ENS: Old ETH Registrar Controller 1 @ 0xF0AD5cAd05e10572EfcEB849f6Ff0c68f9700455 deployed Apr-30-2019 03:54:13 AM +UTC
       // ENS: Old ETH Registrar Controller 2 @ 0xB22c1C159d12461EA124b0deb4b5b93020E6Ad16 deployed Nov-04-2019 12:43:55 AM +UTC
@@ -1201,6 +1202,11 @@ const dataModule = {
       //   [ '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', namehash, null ],
       // - ENS: Old ETH Registrar Controller 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5 NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires) 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
       //   [ '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', namehash, null ],
+
+      // ERC-1155 portraits.eth 27727362303445643037535452095569739813950020376856883309402147522300287323280
+      // ERC-1155 yourmum.lovesyou.eth 57229065116737680790555199455465332171886850449809000367294662727325932836690
+      // - ENS: Name Wrapper 0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401 NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry) 0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340
+      //   [ '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', namehash, null ],
 
       let total = 0;
       let t = this;
@@ -1249,6 +1255,26 @@ const dataModule = {
               const logData = ethRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
               eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
+            } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
+              // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
+              const logData = nameWrapperInterface.parseLog(log);
+              const [node, name, owner, fuses, expiry] = logData.args;
+              let parts = decodeNameWrapperBytes(name);
+              let nameString = parts.join(".");
+              let label = null;
+              let labelhash = null;
+              let labelhashDecimals = null;
+              if (parts.length >= 2 && parts[parts.length - 1] == "eth") {
+                label = parts[parts.length - 2];
+                labelhash = ethers.utils.solidityKeccak256(["string"], [label]);
+                labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
+              }
+              const namehashDecimals = ethers.BigNumber.from(node).toString();
+              const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
+              eventRecord = { type: "NameWrapped", namehash: node, name: nameString, label, labelhash, subdomain, owner, fuses, expiry: parseInt(expiry) };
+              // console.log(JSON.stringify(eventRecord, null, 2));              
+            } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == "0x2411C98CC59D88e13Cc9CbFc576F7D40828aC47c") {
+              console.log("IGNORING: " + JSON.stringify(log));
             } else {
               console.log("NOT HANDLED: " + JSON.stringify(log));
             }
@@ -1279,8 +1305,9 @@ const dataModule = {
         logInfo("dataModule", "actions.syncSearchDatabase.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock);
         try {
           const topics = [[
-              '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
-              '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+              // '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
+              // '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+              '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
             ],
             null,
             null
@@ -1330,6 +1357,9 @@ const dataModule = {
       do {
         let data = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         logInfo("dataModule", "actions.collateSearchDatabase - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
+        if (data.length > 0) {
+          logInfo("dataModule", "actions.collateSearchDatabase - data[0..10]: " + JSON.stringify(data.slice(0, 10), null, 2));
+        }
         for (const item of data) {
           // console.log(JSON.stringify(item));
           // if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type) && !(item.contract in tokens)) {

@@ -458,8 +458,8 @@ const dataModule = {
       if (options.timestamps && !options.devThing) {
         await context.dispatch('syncEventTimestamps', parameter);
       }
-      if (options.devThing) {
-        await context.dispatch('syncAllNames', parameter);
+      if (options.searchDatabase && !options.devThing) {
+        await context.dispatch('syncSearchDatabase', parameter);
       }
 
       // if (options.ens || options.devThing) {
@@ -1176,8 +1176,8 @@ const dataModule = {
       logInfo("dataModule", "actions.syncEventTimestamps END");
     },
 
-    async syncAllNames(context, parameter) {
-      logInfo("dataModule", "actions.syncAllNames: " + JSON.stringify(parameter));
+    async syncSearchDatabase(context, parameter) {
+      logInfo("dataModule", "actions.syncSearchDatabase: " + JSON.stringify(parameter));
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -1198,7 +1198,7 @@ const dataModule = {
       async function processLogs(fromBlock, toBlock, logs) {
         total = parseInt(total) + logs.length;
         context.commit('setSyncCompleted', total);
-        logInfo("dataModule", "actions.syncAllNames.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", logs.length: " + logs.length + ", total: " + total);
+        logInfo("dataModule", "actions.syncSearchDatabase.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", logs.length: " + logs.length + ", total: " + total);
         const records = [];
         for (const log of logs) {
           // console.log("log: " + JSON.stringify(log));
@@ -1240,14 +1240,14 @@ const dataModule = {
         }
         if (records.length) {
           await db.registrations.bulkAdd(records).then(function(lastKey) {
-            console.log("syncAllNames.bulkAdd lastKey: " + JSON.stringify(lastKey));
+            console.log("syncSearchDatabase.bulkAdd lastKey: " + JSON.stringify(lastKey));
           }).catch(Dexie.BulkError, function(e) {
-            console.log("syncAllNames.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
+            console.log("syncSearchDatabase.bulkAdd e: " + JSON.stringify(e.failures, null, 2));
           });
         }
       }
       async function getLogs(fromBlock, toBlock, processLogs) {
-        logInfo("dataModule", "actions.syncAllNames.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock);
+        logInfo("dataModule", "actions.syncSearchDatabase.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock);
         try {
           const topics = [[
               '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
@@ -1263,14 +1263,14 @@ const dataModule = {
             await processLogs(fromBlock, toBlock, logs);
           // }
         } catch (e) {
-          logInfo("dataModule", "actions.syncAllNames.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
+          logInfo("dataModule", "actions.syncSearchDatabase.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
           const mid = parseInt((fromBlock + toBlock) / 2);
           await getLogs(fromBlock, mid, processLogs);
           await getLogs(parseInt(mid) + 1, toBlock, processLogs);
         }
       }
 
-      logInfo("dataModule", "actions.syncAllNames BEGIN");
+      logInfo("dataModule", "actions.syncSearchDatabase BEGIN");
       context.commit('setSyncSection', { section: 'NameRegistered Events', total: null });
 
       const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
@@ -1285,7 +1285,7 @@ const dataModule = {
       // const toBlock = 9456764;
       // await getLogs(fromBlock, toBlock, processLogs);
 
-      logInfo("dataModule", "actions.syncAllNames END");
+      logInfo("dataModule", "actions.syncSearchDatabase END");
     },
 
     // async syncENS(context, parameter) {

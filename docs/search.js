@@ -105,10 +105,7 @@ const Search = {
                   Connect to the Ethereum mainnet
                 </li>
                 <li>
-                  Enter your addresses in the Addresses menu
-                </li>
-                <li>
-                  Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-arrow-repeat shift-v="+1" font-scale="1.2"></b-icon-arrow-repeat></b-button> above to retrieve your ENS names from the blockchain
+                  Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-arrow-repeat shift-v="+1" font-scale="1.2"></b-icon-arrow-repeat></b-button> above and select Search Database to synchronise the ENS search database
                 </li>
               </ul>
             </div>

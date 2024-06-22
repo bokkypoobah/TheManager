@@ -921,83 +921,111 @@ const searchModule = {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       logInfo("dataModule", "actions.collateSearchDatabase BEGIN");
 
-      let rows = 0;
-      let done = false;
-      const DB_PROCESSING_BATCH_SIZE = 10000;
+
+      // db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => console.log(e.label));
+      let counter = 0;
       const names = {};
-      const tokens = {};
-      do {
-        let data = await db.registrations.where('[label+blockNumber+logIndex]').between([Dexie.minKey, Dexie.minKey, Dexie.minKey],[Dexie.maxKey, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(DB_PROCESSING_BATCH_SIZE).toArray();
-        logInfo("dataModule", "actions.collateSearchDatabase - data.length: " + data.length + ", first[0..2]: " + JSON.stringify(data.slice(0, 3).map(e => e.blockNumber + '.' + e.logIndex )));
-        if (data.length > 0) {
-          logInfo("dataModule", "actions.collateSearchDatabase - data[0..2]: " + JSON.stringify(data.slice(0, 3), null, 2));
+      await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
+        let label = null;
+        let expiry = null;
+        if (e.type == "NameRegistered") {
+          label = e.label;
+          expiry = e.expires;
+        } else if (e.type == "NameRenewed") {
+          label = e.label;
+          expiry = e.expires;
+        } else if (e.type == "NameWrapped") {
+          label = e.label;
+          expiry = e.expiry;
+          subdomain = e.subdomain;
+        } else {
+          // console.log(JSON.stringify(e));
         }
-        for (const item of data) {
-
-          // let name = null;
-          let label = null;
-          // let labelhash = null;
-          // let namehash = null;
-          let expiry = null;
-          let subdomain = null;
-
-          if (item.type == "NameRegistered") {
-            label = item.label;
-            // name = label + ".eth";
-            // labelhash = item.label;
-            // try {
-            //   namehash = ethers.utils.namehash(name);
-            // } catch (e) {
-            //   console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
-            // }
-            expiry = item.expires;
-
-          } else if (item.type == "NameRenewed") {
-            label = item.label;
-            // name = label + ".eth";
-            // labelhash = item.label;
-            // try {
-            //   namehash = ethers.utils.namehash(name);
-            // } catch (e) {
-            //   console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
-            // }
-            expiry = item.expires;
-
-          } else if (item.type == "NameWrapped") {
-            label = item.label;
-            // name = item.name;
-            // labelhash = item.labelhash;
-            // namehash = item.namehash;
-            expiry = item.expiry;
-            subdomain = item.subdomain;
-            // console.log(JSON.stringify(item));
-
-          } else {
-            // console.log(JSON.stringify(item));
-          }
-
-          if (label) {
-            if (label in names) {
-              // console.log("names[name]: " + JSON.stringify(names[name]));
-              // console.log(name + " expiry updated from " + moment.unix(names[name].expiry).format() + " to " + moment.unix(expiry).format());
-              names[label] = expiry;
-            } else {
-              names[label] = expiry;
-              // names[name] = {
-              //   // name,
-              //   // label,
-              //   // labelhash,
-              //   // namehash,
-              //   expiry,
-              //   // subdomain,
-              // };
-            }
-          }
-
+        names[label] = expiry;
+        if ((counter % 100000) == 0) {
+          console.log(counter + " " + e.label)
         }
-        rows = parseInt(rows) + data.length;
-        done = data.length < DB_PROCESSING_BATCH_SIZE;
-      } while (!done);
+        counter++;
+      });
+
+      // let rows = 0;
+      // let done = false;
+      // const DB_PROCESSING_BATCH_SIZE = 10000;
+      // const names = {};
+      // const tokens = {};
+      // do {
+      //   logInfo("dataModule", "actions.collateSearchDatabase - begin");
+      //   let data = await db.registrations.where('[label+blockNumber+logIndex]').between([Dexie.minKey, Dexie.minKey, Dexie.minKey],[Dexie.maxKey, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(DB_PROCESSING_BATCH_SIZE).toArray();
+      //   logInfo("dataModule", "actions.collateSearchDatabase - data.length: " + data.length + ", first[0..2]: " + JSON.stringify(data.slice(0, 3).map(e => e.blockNumber + '.' + e.logIndex )));
+      //   if (data.length > 0) {
+      //     logInfo("dataModule", "actions.collateSearchDatabase - data[0..2]: " + JSON.stringify(data.slice(0, 3), null, 2));
+      //   }
+      //   for (const item of data) {
+      //
+      //     // let name = null;
+      //     let label = null;
+      //     // let labelhash = null;
+      //     // let namehash = null;
+      //     let expiry = null;
+      //     let subdomain = null;
+      //
+      //     if (item.type == "NameRegistered") {
+      //       label = item.label;
+      //       // name = label + ".eth";
+      //       // labelhash = item.label;
+      //       // try {
+      //       //   namehash = ethers.utils.namehash(name);
+      //       // } catch (e) {
+      //       //   console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
+      //       // }
+      //       expiry = item.expires;
+      //
+      //     } else if (item.type == "NameRenewed") {
+      //       label = item.label;
+      //       // name = label + ".eth";
+      //       // labelhash = item.label;
+      //       // try {
+      //       //   namehash = ethers.utils.namehash(name);
+      //       // } catch (e) {
+      //       //   console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
+      //       // }
+      //       expiry = item.expires;
+      //
+      //     } else if (item.type == "NameWrapped") {
+      //       label = item.label;
+      //       // name = item.name;
+      //       // labelhash = item.labelhash;
+      //       // namehash = item.namehash;
+      //       expiry = item.expiry;
+      //       subdomain = item.subdomain;
+      //       // console.log(JSON.stringify(item));
+      //
+      //     } else {
+      //       // console.log(JSON.stringify(item));
+      //     }
+      //
+      //     if (label) {
+      //       if (label in names) {
+      //         // console.log("names[name]: " + JSON.stringify(names[name]));
+      //         // console.log(name + " expiry updated from " + moment.unix(names[name].expiry).format() + " to " + moment.unix(expiry).format());
+      //         names[label] = expiry;
+      //       } else {
+      //         names[label] = expiry;
+      //         // names[name] = {
+      //         //   // name,
+      //         //   // label,
+      //         //   // labelhash,
+      //         //   // namehash,
+      //         //   expiry,
+      //         //   // subdomain,
+      //         // };
+      //       }
+      //     }
+      //
+      //   }
+      //   rows = parseInt(rows) + data.length;
+      //   done = data.length < DB_PROCESSING_BATCH_SIZE;
+      // } while (!done);
       console.log("names: " + JSON.stringify(names, null, 2));
       // console.log("tokens: " + JSON.stringify(tokens, null, 2));
       context.commit('setState', { name: "names", data: names });

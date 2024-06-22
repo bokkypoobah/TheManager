@@ -789,37 +789,37 @@ const searchModule = {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarController1Interface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER1_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", label: name, labelhash: label, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", label: name, labelhash: label, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", label: name, labelhash: label, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = ethRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", label: name, labelhash: label, cost: cost.toString(), expires: parseInt(expires) };
+              eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
             } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
               const logData = nameWrapperInterface.parseLog(log);
@@ -836,13 +836,13 @@ const searchModule = {
               }
               const namehashDecimals = ethers.BigNumber.from(node).toString();
               const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
-              eventRecord = { type: "NameWrapped", namehash: node, name: nameString, label, labelhash, subdomain, owner, fuses, expiry: parseInt(expiry) };
+              eventRecord = { type: "NameWrapped", /*namehash: node, name: nameString, */label, /*labelhash, subdomain, owner, fuses, */expiry: parseInt(expiry) };
               // console.log(JSON.stringify(eventRecord, null, 2));
             } else if (log.topics[0] == "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameUnwrapped (index_topic_1 bytes32 node, address owner)
               const logData = nameWrapperInterface.parseLog(log);
               const [node, owner] = logData.args;
-              eventRecord = { type: "NameUnwrapped", namehash: node, owner };
+              eventRecord = { type: "NameUnwrapped", namehash: node/*, owner*/ };
             } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == "0x2411C98CC59D88e13Cc9CbFc576F7D40828aC47c") {
               console.log("IGNORING: " + JSON.stringify(log));
             } else {
@@ -851,12 +851,12 @@ const searchModule = {
             // if (eventRecord && (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS || contract == ENS_NAMEWRAPPER_ADDRESS)) {
             if (eventRecord) {
               records.push( {
-                chainId: parameter.chainId,
+                // chainId: parameter.chainId,
                 blockNumber: parseInt(log.blockNumber),
                 logIndex: parseInt(log.logIndex),
-                txIndex: parseInt(log.transactionIndex),
+                // txIndex: parseInt(log.transactionIndex),
                 txHash: log.transactionHash,
-                contract,
+                // contract,
                 ...eventRecord,
                 confirmations: parameter.blockNumber - log.blockNumber,
               });
@@ -883,7 +883,7 @@ const searchModule = {
             null,
             null
           ];
-          if (total < 100000 && !store.getters['data/sync'].halt) {
+          if (total < 10000000 && !store.getters['data/sync'].halt) {
             const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
             await processLogs(fromBlock, toBlock, logs);
           }
@@ -899,11 +899,11 @@ const searchModule = {
       // TODO: context.commit('setSyncSection', { section: 'NameRegistered Events', total: null });
 
       const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
-      const latest = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
+      const latest = await db.registrations.where('[blockNumber+logIndex]').between([Dexie.minKey, Dexie.minKey],[Dexie.maxKey, Dexie.maxKey]).last();
       // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
       // const startBlock = 0;
       const startBlock = latest ? parseInt(latest.blockNumber) + 1: 0;
-      console.log("startBlock: " + startBlock);
+      logInfo("dataModule", "actions.syncSearchDatabase - startBlock: " + startBlock);
       await getLogs(startBlock, parameter.blockNumber, processLogs);
 
       // const fromBlock = 9456662;
@@ -920,54 +920,54 @@ const searchModule = {
       db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       logInfo("dataModule", "actions.collateSearchDatabase BEGIN");
-      return;
 
       let rows = 0;
       let done = false;
+      const DB_PROCESSING_BATCH_SIZE = 10000;
       const names = {};
       const tokens = {};
       do {
-        let data = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-        logInfo("dataModule", "actions.collateSearchDatabase - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
+        let data = await db.registrations.where('[label+blockNumber+logIndex]').between([Dexie.minKey, Dexie.minKey, Dexie.minKey],[Dexie.maxKey, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(DB_PROCESSING_BATCH_SIZE).toArray();
+        logInfo("dataModule", "actions.collateSearchDatabase - data.length: " + data.length + ", first[0..2]: " + JSON.stringify(data.slice(0, 3).map(e => e.blockNumber + '.' + e.logIndex )));
         if (data.length > 0) {
-          logInfo("dataModule", "actions.collateSearchDatabase - data[0..10]: " + JSON.stringify(data.slice(0, 10), null, 2));
+          logInfo("dataModule", "actions.collateSearchDatabase - data[0..2]: " + JSON.stringify(data.slice(0, 3), null, 2));
         }
         for (const item of data) {
 
-          let name = null;
+          // let name = null;
           let label = null;
-          let labelhash = null;
-          let namehash = null;
+          // let labelhash = null;
+          // let namehash = null;
           let expiry = null;
           let subdomain = null;
 
           if (item.type == "NameRegistered") {
-            label = item.name;
-            name = label + ".eth";
-            labelhash = item.label;
-            try {
-              namehash = ethers.utils.namehash(name);
-            } catch (e) {
-              console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
-            }
+            label = item.label;
+            // name = label + ".eth";
+            // labelhash = item.label;
+            // try {
+            //   namehash = ethers.utils.namehash(name);
+            // } catch (e) {
+            //   console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
+            // }
             expiry = item.expires;
 
           } else if (item.type == "NameRenewed") {
-            label = item.name;
-            name = label + ".eth";
-            labelhash = item.label;
-            try {
-              namehash = ethers.utils.namehash(name);
-            } catch (e) {
-              console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
-            }
+            label = item.label;
+            // name = label + ".eth";
+            // labelhash = item.label;
+            // try {
+            //   namehash = ethers.utils.namehash(name);
+            // } catch (e) {
+            //   console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
+            // }
             expiry = item.expires;
 
           } else if (item.type == "NameWrapped") {
             label = item.label;
-            name = item.name;
-            labelhash = item.labelhash;
-            namehash = item.namehash;
+            // name = item.name;
+            // labelhash = item.labelhash;
+            // namehash = item.namehash;
             expiry = item.expiry;
             subdomain = item.subdomain;
             // console.log(JSON.stringify(item));
@@ -976,13 +976,13 @@ const searchModule = {
             // console.log(JSON.stringify(item));
           }
 
-          if (name && namehash) {
-            if (name in names) {
+          if (label) {
+            if (label in names) {
               // console.log("names[name]: " + JSON.stringify(names[name]));
               // console.log(name + " expiry updated from " + moment.unix(names[name].expiry).format() + " to " + moment.unix(expiry).format());
-              names[name] = expiry;
+              names[label] = expiry;
             } else {
-              names[name] = expiry;
+              names[label] = expiry;
               // names[name] = {
               //   // name,
               //   // label,
@@ -994,65 +994,9 @@ const searchModule = {
             }
           }
 
-          // console.log(JSON.stringify(item));
-          // if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type) && !(item.contract in tokens)) {
-          //   tokens[item.contract] = {
-          //     type: item.eventType,
-          //     tokenIds: {},
-          //   };
-          // }
-          // if (item.eventType == "erc721" && item.type == "Transfer") {
-          //   if (item.from in selectedAddressesMap || item.to in selectedAddressesMap) {
-          //     tokens[item.contract].tokenIds[item.tokenId] = item.to;
-          //   }
-          // } else if (item.eventType == "erc1155" && item.type == "TransferSingle") {
-          //   if (item.from in selectedAddressesMap) {
-          //     if (!(item.tokenId in tokens[item.contract].tokenIds)) {
-          //       tokens[item.contract].tokenIds[item.tokenId] = {};
-          //     }
-          //     if (item.from in tokens[item.contract].tokenIds[item.tokenId]) {
-          //       tokens[item.contract].tokenIds[item.tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.from]).sub(item.value).toString();
-          //       if (tokens[item.contract].tokenIds[item.tokenId][item.from] == "0") {
-          //         delete tokens[item.contract].tokenIds[item.tokenId][item.from];
-          //       }
-          //     }
-          //   }
-          //   if (item.to in selectedAddressesMap) {
-          //     if (!(item.tokenId in tokens[item.contract].tokenIds)) {
-          //       tokens[item.contract].tokenIds[item.tokenId] = {};
-          //     }
-          //     if (!(item.to in tokens[item.contract].tokenIds[item.tokenId])) {
-          //       tokens[item.contract].tokenIds[item.tokenId][item.to] = "0";
-          //     }
-          //     tokens[item.contract].tokenIds[item.tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.to]).add(item.value).toString();
-          //   }
-          // } else if (item.eventType == "erc1155" && item.type == "TransferBatch") {
-          //   for (const [index, tokenId] of item.tokenIds.entries()) {
-          //     if (item.from in selectedAddressesMap) {
-          //       if (!(tokenId in tokens[item.contract].tokenIds)) {
-          //         tokens[item.contract].tokenIds[tokenId] = {};
-          //       }
-          //       if (item.from in tokens[item.contract].tokenIds[tokenId]) {
-          //         tokens[item.contract].tokenIds[tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.from]).sub(item.values[index]).toString();
-          //         if (tokens[item.contract].tokenIds[tokenId][item.from] == "0") {
-          //           delete tokens[item.contract].tokenIds[tokenId][item.from];
-          //         }
-          //       }
-          //     }
-          //     if (item.to in selectedAddressesMap) {
-          //       if (!(tokenId in tokens[item.contract].tokenIds)) {
-          //         tokens[item.contract].tokenIds[tokenId] = {};
-          //       }
-          //       if (!(item.to in tokens[item.contract].tokenIds[tokenId])) {
-          //         tokens[item.contract].tokenIds[tokenId][item.to] = "0";
-          //       }
-          //       tokens[item.contract].tokenIds[tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.to]).add(item.values[index]).toString();
-          //     }
-          //   }
-          // }
         }
         rows = parseInt(rows) + data.length;
-        done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
+        done = data.length < DB_PROCESSING_BATCH_SIZE;
       } while (!done);
       console.log("names: " + JSON.stringify(names, null, 2));
       // console.log("tokens: " + JSON.stringify(tokens, null, 2));

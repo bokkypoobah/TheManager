@@ -80,7 +80,7 @@ const Data = {
 const dataModule = {
   namespaced: true,
   state: {
-    DB_PROCESSING_BATCH_SIZE: 123,
+    DB_PROCESSING_BATCH_SIZE: 123456,
     addresses: {}, // Address => Info
 
     collection: {}, // chainId -> contract => { id, symbol, name, image, slug, creator, tokenCount }
@@ -1187,10 +1187,12 @@ const dataModule = {
       const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
 
       const oldETHRegistarController1Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER1_ABI);
+      const oldETHRegistarController2Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER2_ABI);
       const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
       const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
 
       // ENS: Old ETH Registrar Controller 1 @ 0xF0AD5cAd05e10572EfcEB849f6Ff0c68f9700455 deployed Apr-30-2019 03:54:13 AM +UTC
+      // ENS: Old ETH Registrar Controller 2 @ 0xB22c1C159d12461EA124b0deb4b5b93020E6Ad16 deployed Nov-04-2019 12:43:55 AM +UTC
       // ENS: Old ETH Registrar Controller @ 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5 deployed Jan-30-2020 12:56:38 AM +UTC
       // ENS: ETH Registrar Controller @ 0x253553366Da8546fC250F225fe3d25d0C782303b deployed Mar-28-2023 11:44:59 AM +UTC
 
@@ -1217,12 +1219,22 @@ const dataModule = {
               const logData = oldETHRegistarController1Interface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
               eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
+            } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
+              // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
+              const logData = oldETHRegistarControllerInterface.parseLog(log);
+              const [name, label, owner, cost, expires] = logData.args;
+              eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
               eventRecord = { type: "NameRegistered", name, label, owner, cost: cost.toString(), expires: parseInt(expires) };
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER1_ADDRESS) {
+              // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
+              const logData = oldETHRegistarControllerInterface.parseLog(log);
+              const [name, label, cost, expires] = logData.args;
+              eventRecord = { type: "NameRenewed", name, label, cost: cost.toString(), expires: parseInt(expires) };
+            } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
@@ -1273,7 +1285,7 @@ const dataModule = {
             null,
             null
           ];
-          if (total < 10000) {
+          if (total < 100000) {
             const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
             // const logs = await provider.getLogs({ address: ENS_OLDETHREGISTRARCONTROLLER_ADDRESS, fromBlock, toBlock, topics });
             // console.log("logs: " + JSON.stringify(logs, null, 2));
@@ -1311,84 +1323,77 @@ const dataModule = {
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       logInfo("dataModule", "actions.collateSearchDatabase BEGIN");
-      return;
 
-      const selectedAddressesMap = {};
-      for (const [address, addressData] of Object.entries(context.state.addresses)) {
-        if (address.substring(0, 2) == "0x" && addressData.process) {
-          selectedAddressesMap[address] = true;
-        }
-      }
-      console.log("selectedAddressesMap: " + Object.keys(selectedAddressesMap));
       let rows = 0;
       let done = false;
       const tokens = {};
       do {
-        let data = await db.events.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
+        let data = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         logInfo("dataModule", "actions.collateSearchDatabase - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
-          if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type) && !(item.contract in tokens)) {
-            tokens[item.contract] = {
-              type: item.eventType,
-              tokenIds: {},
-            };
-          }
-          if (item.eventType == "erc721" && item.type == "Transfer") {
-            if (item.from in selectedAddressesMap || item.to in selectedAddressesMap) {
-              tokens[item.contract].tokenIds[item.tokenId] = item.to;
-            }
-          } else if (item.eventType == "erc1155" && item.type == "TransferSingle") {
-            if (item.from in selectedAddressesMap) {
-              if (!(item.tokenId in tokens[item.contract].tokenIds)) {
-                tokens[item.contract].tokenIds[item.tokenId] = {};
-              }
-              if (item.from in tokens[item.contract].tokenIds[item.tokenId]) {
-                tokens[item.contract].tokenIds[item.tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.from]).sub(item.value).toString();
-                if (tokens[item.contract].tokenIds[item.tokenId][item.from] == "0") {
-                  delete tokens[item.contract].tokenIds[item.tokenId][item.from];
-                }
-              }
-            }
-            if (item.to in selectedAddressesMap) {
-              if (!(item.tokenId in tokens[item.contract].tokenIds)) {
-                tokens[item.contract].tokenIds[item.tokenId] = {};
-              }
-              if (!(item.to in tokens[item.contract].tokenIds[item.tokenId])) {
-                tokens[item.contract].tokenIds[item.tokenId][item.to] = "0";
-              }
-              tokens[item.contract].tokenIds[item.tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.to]).add(item.value).toString();
-            }
-          } else if (item.eventType == "erc1155" && item.type == "TransferBatch") {
-            for (const [index, tokenId] of item.tokenIds.entries()) {
-              if (item.from in selectedAddressesMap) {
-                if (!(tokenId in tokens[item.contract].tokenIds)) {
-                  tokens[item.contract].tokenIds[tokenId] = {};
-                }
-                if (item.from in tokens[item.contract].tokenIds[tokenId]) {
-                  tokens[item.contract].tokenIds[tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.from]).sub(item.values[index]).toString();
-                  if (tokens[item.contract].tokenIds[tokenId][item.from] == "0") {
-                    delete tokens[item.contract].tokenIds[tokenId][item.from];
-                  }
-                }
-              }
-              if (item.to in selectedAddressesMap) {
-                if (!(tokenId in tokens[item.contract].tokenIds)) {
-                  tokens[item.contract].tokenIds[tokenId] = {};
-                }
-                if (!(item.to in tokens[item.contract].tokenIds[tokenId])) {
-                  tokens[item.contract].tokenIds[tokenId][item.to] = "0";
-                }
-                tokens[item.contract].tokenIds[tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.to]).add(item.values[index]).toString();
-              }
-            }
-          }
+          // console.log(JSON.stringify(item));
+          // if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type) && !(item.contract in tokens)) {
+          //   tokens[item.contract] = {
+          //     type: item.eventType,
+          //     tokenIds: {},
+          //   };
+          // }
+          // if (item.eventType == "erc721" && item.type == "Transfer") {
+          //   if (item.from in selectedAddressesMap || item.to in selectedAddressesMap) {
+          //     tokens[item.contract].tokenIds[item.tokenId] = item.to;
+          //   }
+          // } else if (item.eventType == "erc1155" && item.type == "TransferSingle") {
+          //   if (item.from in selectedAddressesMap) {
+          //     if (!(item.tokenId in tokens[item.contract].tokenIds)) {
+          //       tokens[item.contract].tokenIds[item.tokenId] = {};
+          //     }
+          //     if (item.from in tokens[item.contract].tokenIds[item.tokenId]) {
+          //       tokens[item.contract].tokenIds[item.tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.from]).sub(item.value).toString();
+          //       if (tokens[item.contract].tokenIds[item.tokenId][item.from] == "0") {
+          //         delete tokens[item.contract].tokenIds[item.tokenId][item.from];
+          //       }
+          //     }
+          //   }
+          //   if (item.to in selectedAddressesMap) {
+          //     if (!(item.tokenId in tokens[item.contract].tokenIds)) {
+          //       tokens[item.contract].tokenIds[item.tokenId] = {};
+          //     }
+          //     if (!(item.to in tokens[item.contract].tokenIds[item.tokenId])) {
+          //       tokens[item.contract].tokenIds[item.tokenId][item.to] = "0";
+          //     }
+          //     tokens[item.contract].tokenIds[item.tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[item.tokenId][item.to]).add(item.value).toString();
+          //   }
+          // } else if (item.eventType == "erc1155" && item.type == "TransferBatch") {
+          //   for (const [index, tokenId] of item.tokenIds.entries()) {
+          //     if (item.from in selectedAddressesMap) {
+          //       if (!(tokenId in tokens[item.contract].tokenIds)) {
+          //         tokens[item.contract].tokenIds[tokenId] = {};
+          //       }
+          //       if (item.from in tokens[item.contract].tokenIds[tokenId]) {
+          //         tokens[item.contract].tokenIds[tokenId][item.from] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.from]).sub(item.values[index]).toString();
+          //         if (tokens[item.contract].tokenIds[tokenId][item.from] == "0") {
+          //           delete tokens[item.contract].tokenIds[tokenId][item.from];
+          //         }
+          //       }
+          //     }
+          //     if (item.to in selectedAddressesMap) {
+          //       if (!(tokenId in tokens[item.contract].tokenIds)) {
+          //         tokens[item.contract].tokenIds[tokenId] = {};
+          //       }
+          //       if (!(item.to in tokens[item.contract].tokenIds[tokenId])) {
+          //         tokens[item.contract].tokenIds[tokenId][item.to] = "0";
+          //       }
+          //       tokens[item.contract].tokenIds[tokenId][item.to] = ethers.BigNumber.from(tokens[item.contract].tokenIds[tokenId][item.to]).add(item.values[index]).toString();
+          //     }
+          //   }
+          // }
         }
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
-      console.log("tokens: " + JSON.stringify(tokens, null, 2));
-      context.commit('updateTokens', tokens);
-      await context.dispatch('saveData', ['tokens']);
+      // console.log("tokens: " + JSON.stringify(tokens, null, 2));
+      // context.commit('updateTokens', tokens);
+      // await context.dispatch('saveData', ['tokens']);
       logInfo("dataModule", "actions.collateSearchDatabase END");
     },
 

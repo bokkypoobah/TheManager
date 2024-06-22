@@ -10,11 +10,11 @@ const Welcome = {
 
               <b-card-text>
                 <h5>Welcome</h5>
-                Portfolio Manager - only for ENS. Status: <b>WIP</b>
+                to <i>Only for ENS Portfolio Manager</i>. Status: <b>WIP</b>
               </b-card-text>
 
               <b-card-text class="mt-3 mb-2">
-                <h6>Algorithm</h6>
+                <h6>Algorithm - Addresses and Names</h6>
                 <ul>
                   <li>
                     Enter one or more of your Ethereum addresses
@@ -29,6 +29,9 @@ const Welcome = {
                     Scrape all ERC-1155 ENS <i>NameWrapped</i> events for all the tokenIds of your transferred ERC-1155 events
                   </li>
                   <li>
+                    Scrape last, listing and best offer prices from the Reservoir API for each of the ERC-721 and ERC-1155 ENS tokenIds
+                  </li>
+                  <li>
                     Scrape the block timestamps for each event above
                   </li>
                   <li>
@@ -37,24 +40,22 @@ const Welcome = {
                 </ul>
               </b-card-text>
 
-              <b-card-text v-if="false" class="mt-3 mb-2">
-                <strike>
-                  <h6>Your Data</h6>
-                  <ul>
-                    <li>
-                      Your personal information (e.g., accounts, Etherscan API key) is stored in your web browser local storage (LocalStorage and IndexedDB)
-                    </li>
-                    <li>
-                      Your accounts will be used when querying data via the web3 connection
-                    </li>
-                    <li>
-                      Your Etherscan API key and your accounts will be used when querying data via the Etherscan API
-                    </li>
-                    <li>
-                      Your collections and tokens will be used when querying data via the Reservoir API
-                    </li>
-                  </ul>
-                </strike>
+              <b-card-text class="mt-3 mb-2">
+                <h6>Your Data</h6>
+                <ul>
+                  <li>
+                    Your personal information (e.g., accounts) is stored in your web browser local storage (LocalStorage and IndexedDB)
+                  </li>
+                  <li>
+                    Your accounts will be used when querying data via the web3 connection
+                  </li>
+                  <!-- <li>
+                    Your Etherscan API key and your accounts will be used when querying data via the Etherscan API
+                  </li> -->
+                  <li>
+                    Your collections and tokens will be used when querying data via the Reservoir API
+                  </li>
+                </ul>
               </b-card-text>
 
               <b-card-text class="mt-3 mb-2">

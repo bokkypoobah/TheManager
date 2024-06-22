@@ -607,8 +607,8 @@ const Search = {
       return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
     },
     saveSettings() {
-      logInfo("Search", "methods.saveSettings - onlyfensNamesSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.onlyfensNamesSettings = JSON.stringify(this.settings);
+      logInfo("Search", "methods.saveSettings - onlyfensSearchSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.onlyfensSearchSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {
       store.dispatch('syncOptions/viewSyncOptions');
@@ -672,8 +672,8 @@ const Search = {
   mounted() {
     logDebug("Search", "mounted() $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('onlyfensNamesSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.onlyfensNamesSettings);
+    if ('onlyfensSearchSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.onlyfensSearchSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;

@@ -14,8 +14,6 @@ const SyncOptions = {
 
         <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.timestamps" @input="saveSettings" v-b-popover.hover="'Timestamps, optional'" class="ml-2 mt-1">Timestamps</b-form-checkbox>
 
-        <b-form-checkbox size="sm" switch :disabled="settings.devThing" v-model="settings.searchDatabase" @input="saveSettings" v-b-popover.hover="'Takes a while to sync initially'" class="ml-2 mt-1">Search Database</b-form-checkbox>
-
         <b-form-checkbox size="sm" switch v-model="settings.devThing" @input="saveSettings" v-b-popover.hover="'Do Some Dev Thing'" class="ml-2 mt-1">Dev Thing</b-form-checkbox>
 
         <b-form-group label="" label-for="sync-go" label-size="sm" label-cols-sm="5" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -32,9 +30,8 @@ const SyncOptions = {
         wrappedENSEvents: true,
         prices: true,
         timestamps: true,
-        searchDatabase: false,
         devThing: false,
-        version: 1,
+        version: 2,
       },
     }
   },
@@ -63,7 +60,6 @@ const SyncOptions = {
         wrappedENSEvents: this.settings.wrappedENSEvents,
         prices: this.settings.prices,
         timestamps: this.settings.timestamps,
-        searchDatabase: this.settings.searchDatabase,
         devThing: this.settings.devThing,
       });
       store.dispatch('syncOptions/setShow', false);

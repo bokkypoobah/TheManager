@@ -127,6 +127,7 @@ const dataModule = {
     prices: state => state.prices,
     tokenInfo: state => state.tokenInfo,
     timestamps: state => state.timestamps,
+    names: state => state.names,
     txs: state => state.txs,
 
     ens: state => state.ens,

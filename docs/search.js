@@ -394,8 +394,8 @@ const Search = {
     prices() {
       return store.getters['data/prices'];
     },
-    contractMetadata() {
-      return store.getters['data/contractMetadata'];
+    names() {
+      return store.getters['data/names'];
     },
     tokenMetadata() {
       return store.getters['data/tokenMetadata'];
@@ -412,6 +412,16 @@ const Search = {
       return result;
     },
     filteredItems() {
+      const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
+      for (const [name, expiry] of Object.entries(this.names || {})) {
+        results.push({
+          name,
+          expiry
+        });
+      }
+      return results;
+    },
+    filteredItemsOld() {
       return [];
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       let regex = null;

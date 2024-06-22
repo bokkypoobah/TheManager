@@ -59,6 +59,7 @@ const store = new Vuex.Store({
     connection: connectionModule,
     welcome: welcomeModule,
     names: namesModule,
+    search: searchModule,
     newAddress: newAddressModule,
     syncOptions: syncOptionsModule,
     viewAddress: viewAddressModule,

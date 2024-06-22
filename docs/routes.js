@@ -7,6 +7,10 @@ const routes = [{
     component: Names,
     name: 'Names',
   }, {
+    path: '/search',
+    component: Search,
+    name: 'Search',
+  }, {
     path: '/addresses',
     component: Addresses,
     name: 'Addresses',

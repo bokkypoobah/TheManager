@@ -1,4 +1,4 @@
-const Names = {
+const Search = {
   template: `
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
@@ -415,6 +415,7 @@ const Names = {
       return result;
     },
     filteredItems() {
+      return [];
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       let regex = null;
       if (this.settings.filter != null && this.settings.filter.length > 0) {
@@ -497,7 +498,7 @@ const Names = {
                 include = false;
               }
             } else {
-              logInfo("Names", "filteredItems - missing name: " + JSON.stringify(metadata, null, 2));
+              logInfo("Search", "filteredItems - missing name: " + JSON.stringify(metadata, null, 2));
               include = false;
             }
           }
@@ -577,18 +578,18 @@ const Names = {
       return results;
     },
     pagedFilteredSortedItems() {
-      logInfo("Names", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
+      logInfo("Search", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
       return this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
     },
 
   },
   methods: {
     toggleTokenJunk(token) {
-      logInfo("Names", "methods.toggleTokenJunk - token: " + JSON.stringify(token, null, 2));
+      logInfo("Search", "methods.toggleTokenJunk - token: " + JSON.stringify(token, null, 2));
       store.dispatch('data/toggleTokenJunk', token);
     },
     toggleTokenContractFavourite(item) {
-      logInfo("Names", "methods.toggleTokenContractFavourite - item: " + JSON.stringify(item, null, 2));
+      logInfo("Search", "methods.toggleTokenContractFavourite - item: " + JSON.stringify(item, null, 2));
       store.dispatch('data/toggleTokenContractFavourite', item);
     },
     copyToClipboard(str) {
@@ -609,7 +610,7 @@ const Names = {
       return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
     },
     saveSettings() {
-      logInfo("Names", "methods.saveSettings - onlyfensNamesSettings: " + JSON.stringify(this.settings, null, 2));
+      logInfo("Search", "methods.saveSettings - onlyfensNamesSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.onlyfensNamesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {
@@ -649,7 +650,7 @@ const Names = {
       return null;
     },
     rowSelected(item) {
-      logInfo("Names", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
+      logInfo("Search", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
         store.dispatch('viewToken/viewToken', { contract: item[0].contract, tokenId: item[0].tokenId });
         this.$refs.tokenContractsTable.clearSelected();
@@ -657,7 +658,7 @@ const Names = {
     },
 
     async timeoutCallback() {
-      logDebug("Names", "timeoutCallback() count: " + this.count);
+      logDebug("Search", "timeoutCallback() count: " + this.count);
 
       this.count++;
       var t = this;
@@ -669,10 +670,10 @@ const Names = {
     },
   },
   beforeDestroy() {
-    logDebug("Names", "beforeDestroy()");
+    logDebug("Search", "beforeDestroy()");
   },
   mounted() {
-    logDebug("Names", "mounted() $route: " + JSON.stringify(this.$route.params));
+    logDebug("Search", "mounted() $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
     if ('onlyfensNamesSettings' in localStorage) {
       const tempSettings = JSON.parse(localStorage.onlyfensNamesSettings);
@@ -682,7 +683,7 @@ const Names = {
       }
     }
     this.reschedule = true;
-    logDebug("Names", "Calling timeoutCallback()");
+    logDebug("Search", "Calling timeoutCallback()");
     this.timeoutCallback();
   },
   destroyed() {
@@ -690,7 +691,7 @@ const Names = {
   },
 };
 
-const namesModule = {
+const searchModule = {
   namespaced: true,
   state: {
     params: null,
@@ -703,16 +704,16 @@ const namesModule = {
   },
   mutations: {
     deQueue(state) {
-      logDebug("namesModule", "deQueue(" + JSON.stringify(state.executionQueue) + ")");
+      logDebug("searchModule", "deQueue(" + JSON.stringify(state.executionQueue) + ")");
       state.executionQueue.shift();
     },
     updateParams(state, params) {
       state.params = params;
-      logDebug("namesModule", "updateParams('" + params + "')")
+      logDebug("searchModule", "updateParams('" + params + "')")
     },
     updateExecuting(state, executing) {
       state.executing = executing;
-      logDebug("namesModule", "updateExecuting(" + executing + ")")
+      logDebug("searchModule", "updateExecuting(" + executing + ")")
     },
   },
   actions: {

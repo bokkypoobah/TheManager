@@ -1207,6 +1207,7 @@ const dataModule = {
       // ERC-1155 yourmum.lovesyou.eth 57229065116737680790555199455465332171886850449809000367294662727325932836690
       // - ENS: Name Wrapper 0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401 NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry) 0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340
       //   [ '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', namehash, null ],
+      // NameUnwrapped (index_topic_1 bytes32 node, address owner) 0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4
 
       let total = 0;
       let t = this;
@@ -1272,7 +1273,12 @@ const dataModule = {
               const namehashDecimals = ethers.BigNumber.from(node).toString();
               const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
               eventRecord = { type: "NameWrapped", namehash: node, name: nameString, label, labelhash, subdomain, owner, fuses, expiry: parseInt(expiry) };
-              // console.log(JSON.stringify(eventRecord, null, 2));              
+              // console.log(JSON.stringify(eventRecord, null, 2));
+            } else if (log.topics[0] == "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4" && contract == ENS_NAMEWRAPPER_ADDRESS) {
+              // NameUnwrapped (index_topic_1 bytes32 node, address owner)
+              const logData = nameWrapperInterface.parseLog(log);
+              const [node, owner] = logData.args;
+              eventRecord = { type: "NameUnwrapped", namehash: node, owner };
             } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == "0x2411C98CC59D88e13Cc9CbFc576F7D40828aC47c") {
               console.log("IGNORING: " + JSON.stringify(log));
             } else {
@@ -1305,9 +1311,10 @@ const dataModule = {
         logInfo("dataModule", "actions.syncSearchDatabase.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock);
         try {
           const topics = [[
-              // '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
-              // '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
+              '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
+              '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae',
               '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
+              '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4',
             ],
             null,
             null
@@ -1353,6 +1360,7 @@ const dataModule = {
 
       let rows = 0;
       let done = false;
+      const names = {};
       const tokens = {};
       do {
         let data = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
@@ -1361,6 +1369,47 @@ const dataModule = {
           logInfo("dataModule", "actions.collateSearchDatabase - data[0..10]: " + JSON.stringify(data.slice(0, 10), null, 2));
         }
         for (const item of data) {
+
+          let name = null;
+          let label = null;
+          let labelhash = null;
+          let namehash = null;
+          let expiry = null;
+
+          if (item.type == "NameRegistered") {
+
+          } else if (item.type == "NameRenewed") {
+            label = item.name;
+            name = label + ".eth";
+            labelhash = item.label;
+            namehash = ethers.utils.namehash(name);
+            expiry = item.expires;
+            // console.log(JSON.stringify(item));
+            // labelhash = ethers.utils.solidityKeccak256(["string"], [label]);
+            // console.log("labelhash: " + labelhash);
+            // console.log("namehash: " + namehash);
+
+          } else if (item.type == "NameWrapped") {
+
+          } else {
+            console.log(JSON.stringify(item));
+          }
+
+          if (name) {
+            if (name in names) {
+              console.log("names[name]: " + JSON.stringify(names[name]));
+            } else {
+              names[name] = {
+                name,
+                label,
+                labelhash,
+                namehash,
+                expiry,
+              };
+            }
+
+          }
+
           // console.log(JSON.stringify(item));
           // if (["Transfer", "TransferSingle", "TransferBatch"].includes(item.type) && !(item.contract in tokens)) {
           //   tokens[item.contract] = {
@@ -1421,6 +1470,7 @@ const dataModule = {
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
+      console.log("names: " + JSON.stringify(names, null, 2));
       // console.log("tokens: " + JSON.stringify(tokens, null, 2));
       // context.commit('updateTokens', tokens);
       // await context.dispatch('saveData', ['tokens']);

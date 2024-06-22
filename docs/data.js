@@ -431,7 +431,7 @@ const dataModule = {
       logInfo("dataModule", "actions.syncIt - options: " + JSON.stringify(options, null, 2));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const block = await provider.getBlock();
-      const confirmations = store.getters['config/settings'].confirmations && parseInt(store.getters['config/settings'].confirmations) || 10;
+      const confirmations = 100;
       const blockNumber = block && block.number || null;
       const chainId = store.getters['connection/chainId'];
       const coinbase = store.getters['connection/coinbase'];
@@ -1259,7 +1259,7 @@ const dataModule = {
           // if (total < 100) {
             // const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
             const logs = await provider.getLogs({ address: ENS_OLDETHREGISTRARCONTROLLER_ADDRESS, fromBlock, toBlock, topics });
-            console.log("logs: " + JSON.stringify(logs, null, 2));
+            // console.log("logs: " + JSON.stringify(logs, null, 2));
             await processLogs(fromBlock, toBlock, logs);
           // }
         } catch (e) {

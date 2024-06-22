@@ -1383,7 +1383,7 @@ const dataModule = {
             try {
               namehash = ethers.utils.namehash(name);
             } catch (e) {
-              console.log("Error namehash: " + name + " " + e.message);
+              console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
             }
             expiry = item.expires;
 
@@ -1394,7 +1394,7 @@ const dataModule = {
             try {
               namehash = ethers.utils.namehash(name);
             } catch (e) {
-              console.log("Error namehash: " + name + " " + e.message);
+              console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
             }
             expiry = item.expires;
 
@@ -1405,26 +1405,27 @@ const dataModule = {
             namehash = item.namehash;
             expiry = item.expiry;
             subdomain = item.subdomain;
-            console.log(JSON.stringify(item));
+            // console.log(JSON.stringify(item));
 
           } else {
             // console.log(JSON.stringify(item));
           }
 
-          if (name) {
+          if (name && namehash) {
             if (name in names) {
               // console.log("names[name]: " + JSON.stringify(names[name]));
-              console.log(name + " expiry updated from " + moment.unix(names[name].expiry).format() + " to " + moment.unix(expiry).format());
-              names[name].expiry = expiry;
+              // console.log(name + " expiry updated from " + moment.unix(names[name].expiry).format() + " to " + moment.unix(expiry).format());
+              names[name] = expiry;
             } else {
-              names[name] = {
-                name,
-                label,
-                labelhash,
-                namehash,
-                expiry,
-                subdomain,
-              };
+              names[name] = expiry;
+              // names[name] = {
+              //   // name,
+              //   // label,
+              //   // labelhash,
+              //   // namehash,
+              //   expiry,
+              //   // subdomain,
+              // };
             }
           }
 

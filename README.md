@@ -1,8 +1,10 @@
 ![](https://raw.githubusercontent.com/bokkypoobah/ChungoIntelligenceAgency/main/PornadoCash/freealexeypertsev.png)
 
-# Only for ENS (WIP)
+# Only for ENS
 
 https://bokkypoobah.github.io/onlyfens/
+
+**WIP** - If this dapp is not working as expected, please clear your LocalStorage and IndexedDB entries for this dapp and try again.
 
 <br />
 

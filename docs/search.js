@@ -422,14 +422,24 @@ const Search = {
           regex = new RegExp(/thequickbrowndogjumpsoverthelazyfox/, 'i');
         }
       }
+      // const filter = this.settings.filter && this.settings.filter.length > 0 ? this.settings.filter : null;
 
-      for (const [name, expiry] of Object.entries(this.names || {})) {
+      logInfo("Search", "filteredItems - start");
+      // for (const [name, expiry] of Object.entries(this.names || {})) {
+      for (const [name, expiry] of this.names) {
         let include = true;
         if (regex) {
           if (!(regex.test(name))) {
             include = false;
           }
         }
+        // TODO: Not significantly faster than regex
+        // if (name && filter) {
+        //   // if (!name.includes(filter)) {
+        //   if (name.indexOf(filter) == -1) {
+        //     include = false;
+        //   }
+        // }
         if (include) {
           results.push({
             name,
@@ -438,6 +448,7 @@ const Search = {
           });
         }
       }
+      logInfo("Search", "filteredItems - end");
       return results;
     },
     filteredItemsOld() {
@@ -713,7 +724,7 @@ const Search = {
 const searchModule = {
   namespaced: true,
   state: {
-    names: {},
+    names: [],
     sync: {
       section: null,
       total: null,
@@ -800,7 +811,6 @@ const searchModule = {
       const db = new Dexie(dbInfo.name);
       db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
 
       const oldETHRegistarController1Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER1_ABI);
       const oldETHRegistarController2Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER2_ABI);
@@ -967,10 +977,11 @@ const searchModule = {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       logInfo("dataModule", "actions.collateSearchDatabase BEGIN");
       let counter = 0;
-      const names = {};
+      const nameMap = {};
       const total = await db.registrations.count();
       context.commit('setSyncSection', { section: 'Collating Names', total });
-      await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(1000).each(e => {
+      // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10000).each(e => {
+      await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
         let label = null;
         let expiry = null;
         if (e.type == "NameRegistered") {
@@ -986,9 +997,9 @@ const searchModule = {
         } else {
           // console.log(JSON.stringify(e));
         }
-        names[label] = expiry;
+        nameMap[label] = expiry;
         if ((counter % 10000) == 0) {
-          context.commit('setSyncSection', { section: 'Collating: ' + e.label, total });
+          context.commit('setSyncSection', { section: e.label.substring(0, 30), total });
           context.commit('setSyncCompleted', counter);
         }
         counter++;
@@ -996,12 +1007,13 @@ const searchModule = {
         //   return false; // TODO: Does not work
         // }
       });
-      console.log("names: " + JSON.stringify(names, null, 2));
-      const nameArray = Array.from(names, ([name, expiry]) => ([ name, expiry ]));
-      console.log("nameArray: " + JSON.stringify(nameArray, null, 2));
-      
+      const names = [];
+      for (const [label, expiry] of Object.entries(nameMap)) {
+        names.push([label, expiry]);
+      }
+      // console.log("names: " + JSON.stringify(names, null, 2));
       context.commit('setState', { name: "names", data: names });
-      console.log("context.state.names: " + JSON.stringify(context.state.names, null, 2));
+      // console.log("context.state.names: " + JSON.stringify(context.state.names, null, 2));
       await context.dispatch('saveData', ['names']);
       logInfo("dataModule", "actions.collateSearchDatabase END");
     },

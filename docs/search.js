@@ -844,7 +844,7 @@ const searchModule = {
       const blockNumber = block && block.number || null;
       const chainId = store.getters['connection/chainId'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
-      // await context.dispatch('syncSearchDatabase', parameter);
+      await context.dispatch('syncSearchDatabase', parameter);
       if (!context.state.sync.halt) {
         await context.dispatch('collateSearchDatabase', parameter);
       }

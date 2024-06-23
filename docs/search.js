@@ -86,7 +86,8 @@ const Search = {
             <b-form-select size="sm" v-model="settings.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.top="'Yeah. Sort'"></b-form-select>
           </div>
           <div class="mt-0 pr-1">
-            <font size="-2" v-b-popover.hover.top="'# tokens / total tokens transferred'">{{ filteredSortedItems.length + '/' + totalNames }}</font>
+            <!-- <font size="-2" v-b-popover.hover.top="'# tokens / total tokens transferred'">{{ filteredSortedItems.length + '/' + totalNames }}</font> -->
+            <font size="-2" v-b-popover.hover.top="'# names'">{{ filteredSortedItems.length }}</font>
           </div>
           <div class="mt-0 pr-1">
             <b-pagination size="sm" v-model="settings.currentPage" @input="saveSettings" :total-rows="filteredSortedItems.length" :per-page="settings.pageSize" style="height: 0;"></b-pagination>
@@ -407,7 +408,8 @@ const Search = {
       //   result += Object.keys(data.tokenIds).length;
       // }
       // return result;
-      return Object.keys(this.names).length;
+      // TODO: return Object.keys(this.names).length;
+      return 3233717; // TODO: speed up for now
     },
     filteredItems() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
@@ -432,7 +434,8 @@ const Search = {
         if (include) {
           results.push({
             name,
-            expiry
+            expiry,
+            status: "primary",
           });
         }
       }

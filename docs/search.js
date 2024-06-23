@@ -785,7 +785,7 @@ const searchModule = {
       const blockNumber = block && block.number || null;
       const chainId = store.getters['connection/chainId'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
-      await context.dispatch('syncSearchDatabase', parameter);
+      // await context.dispatch('syncSearchDatabase', parameter);
       if (!context.state.sync.halt) {
         await context.dispatch('collateSearchDatabase', parameter);
       }
@@ -970,7 +970,7 @@ const searchModule = {
       const names = {};
       const total = await db.registrations.count();
       context.commit('setSyncSection', { section: 'Collating Names', total });
-      await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
+      await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(1000).each(e => {
         let label = null;
         let expiry = null;
         if (e.type == "NameRegistered") {
@@ -997,6 +997,9 @@ const searchModule = {
         // }
       });
       console.log("names: " + JSON.stringify(names, null, 2));
+      const nameArray = Array.from(names, ([name, expiry]) => ([ name, expiry ]));
+      console.log("nameArray: " + JSON.stringify(nameArray, null, 2));
+      
       context.commit('setState', { name: "names", data: names });
       console.log("context.state.names: " + JSON.stringify(context.state.names, null, 2));
       await context.dispatch('saveData', ['names']);

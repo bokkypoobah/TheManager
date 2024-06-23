@@ -762,7 +762,7 @@ const searchModule = {
       logInfo("searchModule", "actions.syncIt - options: " + JSON.stringify(options, null, 2));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const block = await provider.getBlock();
-      const confirmations = 100;
+      const confirmations = 1000;
       const blockNumber = block && block.number || null;
       const chainId = store.getters['connection/chainId'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
@@ -806,7 +806,7 @@ const searchModule = {
       let t = this;
       async function processLogs(fromBlock, toBlock, logs) {
         total = parseInt(total) + logs.length;
-        // TODO: context.commit('setSyncCompleted', total);
+        context.commit('setSyncCompleted', toBlock);
         logInfo("dataModule", "actions.syncSearchDatabase.processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", logs.length: " + logs.length + ", total: " + total);
         const records = [];
         for (const log of logs) {
@@ -912,7 +912,7 @@ const searchModule = {
             null,
             null
           ];
-          if (total < 10000000 && !store.getters['data/sync'].halt) {
+          if (total < 100000000 && !store.getters['search/sync'].halt) {
             const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
             await processLogs(fromBlock, toBlock, logs);
           }
@@ -925,11 +925,12 @@ const searchModule = {
       }
 
       logInfo("dataModule", "actions.syncSearchDatabase BEGIN");
-      // TODO: context.commit('setSyncSection', { section: 'NameRegistered Events', total: null });
+      context.commit('setSyncSection', { section: 'Rego+Renew Events', total: parameter.blockNumber });
 
       const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
       const latest = await db.registrations.where('[blockNumber+logIndex]').between([Dexie.minKey, Dexie.minKey],[Dexie.maxKey, Dexie.maxKey]).last();
       const startBlock = latest ? parseInt(latest.blockNumber) + 1: 0;
+      context.commit('setSyncCompleted', startBlock);
       logInfo("dataModule", "actions.syncSearchDatabase - startBlock: " + startBlock);
       await getLogs(startBlock, parameter.blockNumber, processLogs);
       logInfo("dataModule", "actions.syncSearchDatabase END");

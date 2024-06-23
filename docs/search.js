@@ -786,8 +786,12 @@ const searchModule = {
       const chainId = store.getters['connection/chainId'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
       await context.dispatch('syncSearchDatabase', parameter);
-      await context.dispatch('collateSearchDatabase', parameter);
+      if (!context.state.sync.halt) {
+        await context.dispatch('collateSearchDatabase', parameter);
+      }
       context.commit('setSyncSection', { section: null, total: null });
+      context.commit('setSyncHalt', false);
+      // context.commit('forceRefresh');
     },
 
     async syncSearchDatabase(context, parameter) {

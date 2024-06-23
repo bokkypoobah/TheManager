@@ -1061,11 +1061,11 @@ const searchModule = {
         } else {
           // console.log(JSON.stringify(e));
         }
-        if (ethers.utils.isValidName(label)) {
+        // if (ethers.utils.isValidName(label)) {
           nameMap[label] = expiry;
-        } else {
-          console.log("Invalid: '" + label + "' " + e.txHash);
-        }
+        // } else {
+        //   console.log("Invalid: '" + label + "' " + e.txHash);
+        // }
         if ((counter % 10000) == 0) {
           context.commit('setSyncSection', { section: e.label.substring(0, 30), total });
           context.commit('setSyncCompleted', counter);

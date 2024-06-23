@@ -123,7 +123,9 @@ const Search = {
             <!-- <b-avatar v-if="data.item.image" button rounded fluid size="7rem" :src="data.item.image"> -->
               <!-- <template v-if="selectedTraits[layer] && selectedTraits[layer][trait.value]" #badge><b-icon icon="check"></b-icon></template> -->
             <!-- </b-avatar> -->
-            <b-img button rounded fluid size="7rem" :src="'https://metadata.ens.domains/mainnet/' + data.item.contract + '/' + data.item.tokenId + '/image'">
+            <!-- <b-img button rounded fluid size="7rem" :src="'https://metadata.ens.domains/mainnet/' + data.item.contract + '/' + data.item.tokenId + '/image'">
+            </b-img> -->
+            <b-img button rounded width="100px;" :src="'https://metadata.ens.domains/mainnet/' + data.item.contract + '/' + data.item.tokenId + '/image'">
             </b-img>
           </template>
 
@@ -499,156 +501,6 @@ const Search = {
       logInfo("Search", "filteredItems - end");
       return results;
     },
-    filteredItemsOld() {
-      return [];
-      const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
-      let regex = null;
-      if (this.settings.filter != null && this.settings.filter.length > 0) {
-        try {
-          regex = new RegExp(this.settings.filter, 'i');
-        } catch (e) {
-          console.log("filteredItems - regex error: " + e.message);
-          regex = new RegExp(/thequickbrowndogjumpsoverthelazyfox/, 'i');
-        }
-      }
-
-      const graceFrom = moment().subtract(90, 'days').unix();
-      const expiry1m = moment().add(1, 'months').unix();
-      const expiry3m = moment().add(3, 'months').unix();
-      const expiry1y = moment().add(1, 'years').unix();
-      let dateFrom = null;
-      let dateTo = null;
-      if (this.settings.dateOption) {
-        if (this.settings.dateOption == "active") {
-          dateFrom = graceFrom;
-        } else if (this.settings.dateOption == "grace") {
-          dateFrom = graceFrom;
-          dateTo = moment().unix();
-        } else if (this.settings.dateOption == "expired") {
-          dateTo = moment().unix();
-        } else if (this.settings.dateOption == "expiry1m") {
-          dateFrom = graceFrom;
-          dateTo = expiry1m;
-        } else if (this.settings.dateOption == "expiry3m") {
-          dateFrom = graceFrom;
-          dateTo = expiry3m;
-        } else if (this.settings.dateOption == "expiry1y") {
-          dateFrom = graceFrom;
-          dateTo = expiry1y;
-        } else if (this.settings.dateOption == "expiry1yp") {
-          dateFrom = expiry1y;
-        }
-      }
-
-      const selectedAddressesMap = {};
-      for (const [address, addressData] of Object.entries(this.addresses)) {
-        if (address.substring(0, 2) == "0x" && addressData.process) {
-          selectedAddressesMap[address] = true;
-        }
-      }
-
-      for (const [contract, data] of Object.entries(this.tokens[this.chainId] || {})) {
-        for (const [tokenId, tokenData] of Object.entries(data.tokenIds)) {
-          const metadata = this.metadata[this.chainId] && this.metadata[this.chainId][contract] && this.metadata[this.chainId][contract][tokenId] || {};
-          const price = this.prices[this.chainId] && this.prices[this.chainId][contract] && this.prices[this.chainId][contract][tokenId] || {};
-          const info = this.tokenInfo[this.chainId] && this.tokenInfo[this.chainId][contract] && this.tokenInfo[this.chainId][contract][tokenId] || {};
-          if (metadata.name == null || metadata.name == "null") {
-            console.log("  metadata: " + JSON.stringify(metadata, null, 2));
-            console.log("  price: " + JSON.stringify(price, null, 2));
-            console.log("  info: " + JSON.stringify(info, null, 2));
-          }
-          let include = true;
-          if (this.settings.junkFilter) {
-            if (this.settings.junkFilter == 'junk' && !info.junk) {
-              include = false;
-            } else if (this.settings.junkFilter == 'excludejunk' && info.junk) {
-              include = false;
-            }
-          }
-          if (include && dateFrom) {
-            if (metadata.expiry < dateFrom) {
-              include = false;
-            }
-          }
-          if (include && dateTo) {
-            if (metadata.expiry > dateTo) {
-              include = false;
-            }
-          }
-          if (include && regex) {
-            const name = metadata.name || null;
-            if (name) {
-              label = name.replace(/\.eth$/, '');
-              if (!(regex.test(label))) {
-                include = false;
-              }
-            } else {
-              logInfo("Search", "filteredItems - missing name: " + JSON.stringify(metadata, null, 2));
-              include = false;
-            }
-          }
-          if (include) {
-            // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData));
-            let image = null;
-            if (metadata.image) {
-              if (metadata.image.substring(0, 12) == "ipfs://ipfs/") {
-                image = "https://ipfs.io/" + metadata.image.substring(7)
-              } else if (metadata.image.substring(0, 7) == "ipfs://") {
-                image = "https://ipfs.io/ipfs/" + metadata.image.substring(7);
-              } else {
-                image = metadata.image;
-              }
-            }
-            const owners = [];
-            if (data.type == "erc721") {
-              if (tokenData in selectedAddressesMap) {
-                owners.push({ owner: tokenData });
-              }
-            } else {
-              for (const [owner, count] of Object.entries(tokenData)) {
-                if (owner in selectedAddressesMap) {
-                  owners.push({ owner, count });
-                }
-              }
-            }
-            if (owners.length > 0) {
-              let status = "danger";
-              if (metadata.expiry) {
-                if (metadata.expiry < moment().unix()) {
-                  status = "danger";
-                } else if (metadata.expiry < expiry3m) {
-                  status = "warning";
-                } else if (metadata.expiry < expiry1y) {
-                  status = "primary";
-                } else {
-                  status = "success";
-                }
-              }
-              // console.log(metadata.name + " " + moment.unix(metadata.expiry).format() + " " + status);
-
-              results.push({
-                contract,
-                type: data.type,
-                junk: info && info.junk || false,
-                // favourite: data.favourite,
-                totalSupply: data.totalSupply,
-                tokenId,
-                owners,
-                name: metadata.name || null,
-                description: metadata.description || null,
-                expiry: metadata.expiry || undefined,
-                attributes: price.attributes || null,
-                status,
-                lastSale: price.lastSale,
-                price: price.price,
-                topBid: price.topBid,
-              });
-            }
-          }
-        }
-      }
-      return results;
-    },
     filteredSortedItems() {
       const results = this.filteredItems;
       if (this.settings.sortOption == 'expiryasc') {
@@ -664,8 +516,171 @@ const Search = {
     },
     pagedFilteredSortedItems() {
       logInfo("Search", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
-      return this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
+      const results = this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
+      const supplementedResults = [];
+      for (const result of results) {
+        const labelhash = ethers.utils.solidityKeccak256(["string"], [result.name]);
+        const labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
+        supplementedResults.push({
+          name: result.name,
+          expiry: result.expiry,
+          status: result.status,
+          contract: ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS,
+          tokenId: labelhashDecimals,
+        });
+      }
+      return supplementedResults;
     },
+    // filteredItemsOld() {
+    //   return [];
+    //   const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
+    //   let regex = null;
+    //   if (this.settings.filter != null && this.settings.filter.length > 0) {
+    //     try {
+    //       regex = new RegExp(this.settings.filter, 'i');
+    //     } catch (e) {
+    //       console.log("filteredItems - regex error: " + e.message);
+    //       regex = new RegExp(/thequickbrowndogjumpsoverthelazyfox/, 'i');
+    //     }
+    //   }
+    //
+    //   const graceFrom = moment().subtract(90, 'days').unix();
+    //   const expiry1m = moment().add(1, 'months').unix();
+    //   const expiry3m = moment().add(3, 'months').unix();
+    //   const expiry1y = moment().add(1, 'years').unix();
+    //   let dateFrom = null;
+    //   let dateTo = null;
+    //   if (this.settings.dateOption) {
+    //     if (this.settings.dateOption == "active") {
+    //       dateFrom = graceFrom;
+    //     } else if (this.settings.dateOption == "grace") {
+    //       dateFrom = graceFrom;
+    //       dateTo = moment().unix();
+    //     } else if (this.settings.dateOption == "expired") {
+    //       dateTo = moment().unix();
+    //     } else if (this.settings.dateOption == "expiry1m") {
+    //       dateFrom = graceFrom;
+    //       dateTo = expiry1m;
+    //     } else if (this.settings.dateOption == "expiry3m") {
+    //       dateFrom = graceFrom;
+    //       dateTo = expiry3m;
+    //     } else if (this.settings.dateOption == "expiry1y") {
+    //       dateFrom = graceFrom;
+    //       dateTo = expiry1y;
+    //     } else if (this.settings.dateOption == "expiry1yp") {
+    //       dateFrom = expiry1y;
+    //     }
+    //   }
+    //
+    //   const selectedAddressesMap = {};
+    //   for (const [address, addressData] of Object.entries(this.addresses)) {
+    //     if (address.substring(0, 2) == "0x" && addressData.process) {
+    //       selectedAddressesMap[address] = true;
+    //     }
+    //   }
+    //
+    //   for (const [contract, data] of Object.entries(this.tokens[this.chainId] || {})) {
+    //     for (const [tokenId, tokenData] of Object.entries(data.tokenIds)) {
+    //       const metadata = this.metadata[this.chainId] && this.metadata[this.chainId][contract] && this.metadata[this.chainId][contract][tokenId] || {};
+    //       const price = this.prices[this.chainId] && this.prices[this.chainId][contract] && this.prices[this.chainId][contract][tokenId] || {};
+    //       const info = this.tokenInfo[this.chainId] && this.tokenInfo[this.chainId][contract] && this.tokenInfo[this.chainId][contract][tokenId] || {};
+    //       if (metadata.name == null || metadata.name == "null") {
+    //         console.log("  metadata: " + JSON.stringify(metadata, null, 2));
+    //         console.log("  price: " + JSON.stringify(price, null, 2));
+    //         console.log("  info: " + JSON.stringify(info, null, 2));
+    //       }
+    //       let include = true;
+    //       if (this.settings.junkFilter) {
+    //         if (this.settings.junkFilter == 'junk' && !info.junk) {
+    //           include = false;
+    //         } else if (this.settings.junkFilter == 'excludejunk' && info.junk) {
+    //           include = false;
+    //         }
+    //       }
+    //       if (include && dateFrom) {
+    //         if (metadata.expiry < dateFrom) {
+    //           include = false;
+    //         }
+    //       }
+    //       if (include && dateTo) {
+    //         if (metadata.expiry > dateTo) {
+    //           include = false;
+    //         }
+    //       }
+    //       if (include && regex) {
+    //         const name = metadata.name || null;
+    //         if (name) {
+    //           label = name.replace(/\.eth$/, '');
+    //           if (!(regex.test(label))) {
+    //             include = false;
+    //           }
+    //         } else {
+    //           logInfo("Search", "filteredItems - missing name: " + JSON.stringify(metadata, null, 2));
+    //           include = false;
+    //         }
+    //       }
+    //       if (include) {
+    //         // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData));
+    //         let image = null;
+    //         if (metadata.image) {
+    //           if (metadata.image.substring(0, 12) == "ipfs://ipfs/") {
+    //             image = "https://ipfs.io/" + metadata.image.substring(7)
+    //           } else if (metadata.image.substring(0, 7) == "ipfs://") {
+    //             image = "https://ipfs.io/ipfs/" + metadata.image.substring(7);
+    //           } else {
+    //             image = metadata.image;
+    //           }
+    //         }
+    //         const owners = [];
+    //         if (data.type == "erc721") {
+    //           if (tokenData in selectedAddressesMap) {
+    //             owners.push({ owner: tokenData });
+    //           }
+    //         } else {
+    //           for (const [owner, count] of Object.entries(tokenData)) {
+    //             if (owner in selectedAddressesMap) {
+    //               owners.push({ owner, count });
+    //             }
+    //           }
+    //         }
+    //         if (owners.length > 0) {
+    //           let status = "danger";
+    //           if (metadata.expiry) {
+    //             if (metadata.expiry < moment().unix()) {
+    //               status = "danger";
+    //             } else if (metadata.expiry < expiry3m) {
+    //               status = "warning";
+    //             } else if (metadata.expiry < expiry1y) {
+    //               status = "primary";
+    //             } else {
+    //               status = "success";
+    //             }
+    //           }
+    //           // console.log(metadata.name + " " + moment.unix(metadata.expiry).format() + " " + status);
+    //
+    //           results.push({
+    //             contract,
+    //             type: data.type,
+    //             junk: info && info.junk || false,
+    //             // favourite: data.favourite,
+    //             totalSupply: data.totalSupply,
+    //             tokenId,
+    //             owners,
+    //             name: metadata.name || null,
+    //             description: metadata.description || null,
+    //             expiry: metadata.expiry || undefined,
+    //             attributes: price.attributes || null,
+    //             status,
+    //             lastSale: price.lastSale,
+    //             price: price.price,
+    //             topBid: price.topBid,
+    //           });
+    //         }
+    //       }
+    //     }
+    //   }
+    //   return results;
+    // },
 
   },
   methods: {

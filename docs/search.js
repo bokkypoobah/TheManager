@@ -899,37 +899,51 @@ const searchModule = {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarController1Interface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+              if (ethers.utils.isValidName(name)) {
+                eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+              }
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+              if (ethers.utils.isValidName(name)) {
+                eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+              }
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expires] = logData.args;
-              eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+              if (ethers.utils.isValidName(name)) {
+                eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+              }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER1_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+              if (ethers.utils.isValidName(name)) {
+                eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+              }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+              if (ethers.utils.isValidName(name)) {
+                eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+              }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+              if (ethers.utils.isValidName(name)) {
+                eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+              }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = ethRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expires] = logData.args;
-              eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+              if (ethers.utils.isValidName(name)) {
+                eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+              }
             } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
               const logData = nameWrapperInterface.parseLog(log);
@@ -946,7 +960,9 @@ const searchModule = {
               }
               const namehashDecimals = ethers.BigNumber.from(node).toString();
               const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
-              eventRecord = { type: "NameWrapped", /*namehash: node, name: nameString, */label, /*labelhash, subdomain, owner, fuses, */expiry: parseInt(expiry) };
+              if (ethers.utils.isValidName(label)) {
+                eventRecord = { type: "NameWrapped", /*namehash: node, name: nameString, */label, /*labelhash, subdomain, owner, fuses, */expiry: parseInt(expiry) };
+              }
               // console.log(JSON.stringify(eventRecord, null, 2));
             } else if (log.topics[0] == "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameUnwrapped (index_topic_1 bytes32 node, address owner)
@@ -1028,8 +1044,8 @@ const searchModule = {
       const nameMap = {};
       const total = await db.registrations.count();
       context.commit('setSyncSection', { section: 'Collating Names', total });
-      // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10000).each(e => {
-      await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
+      await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10).each(e => {
+      // await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
         let label = null;
         let expiry = null;
         if (e.type == "NameRegistered") {
@@ -1045,7 +1061,11 @@ const searchModule = {
         } else {
           // console.log(JSON.stringify(e));
         }
-        nameMap[label] = expiry;
+        if (ethers.utils.isValidName(label)) {
+          nameMap[label] = expiry;
+        } else {
+          console.log("Invalid: '" + label + "' " + e.txHash);
+        }
         if ((counter % 10000) == 0) {
           context.commit('setSyncSection', { section: e.label.substring(0, 30), total });
           context.commit('setSyncCompleted', counter);

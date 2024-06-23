@@ -103,7 +103,7 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "onlyfensdata080e",
+      name: "onlyfensdata080f",
       version: 1,
       schemaDefinition: {
         events: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,[type+blockNumber]',

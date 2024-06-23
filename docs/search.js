@@ -1044,8 +1044,8 @@ const searchModule = {
       const nameMap = {};
       const total = await db.registrations.count();
       context.commit('setSyncSection', { section: 'Collating Names', total });
-      await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10).each(e => {
-      // await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
+      // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10).each(e => {
+      await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
         let label = null;
         let expiry = null;
         if (e.type == "NameRegistered") {

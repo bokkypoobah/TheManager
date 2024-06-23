@@ -10,7 +10,7 @@ const Welcome = {
 
               <b-card-text>
                 <h5>Welcome</h5>
-                to <i>Only for ENS Portfolio Manager</i>. Status: <b>WIP</b>
+                to <i>Only for ENS</i>. Status: <b>WIP</b>
               </b-card-text>
 
               <b-card-text class="mt-3 mb-2">

@@ -408,8 +408,7 @@ const Search = {
       //   result += Object.keys(data.tokenIds).length;
       // }
       // return result;
-      // TODO: return Object.keys(this.names).length;
-      return 3233717; // TODO: speed up for now
+      return Object.keys(this.names).length;
     },
     filteredItems() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
@@ -984,13 +983,14 @@ const searchModule = {
           // console.log(JSON.stringify(e));
         }
         names[label] = expiry;
-        if ((counter % 100000) == 0) {
-          console.log(counter + " " + e.label)
-        }
         if ((counter % 10000) == 0) {
+          context.commit('setSyncSection', { section: 'Collating: ' + e.label, total });
           context.commit('setSyncCompleted', counter);
         }
         counter++;
+        // if (store.getters['search/sync'].halt) {
+        //   return false; // TODO: Does not work
+        // }
       });
       console.log("names: " + JSON.stringify(names, null, 2));
       context.commit('setState', { name: "names", data: names });

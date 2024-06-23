@@ -80,9 +80,6 @@ const Search = {
           </div>
           <div class="mt-0 flex-grow-1">
           </div>
-          <!-- <div class="mt-0 pr-1">
-            <b-button size="sm" :disabled="!coinbase" @click="newTransfer(null); " variant="link" v-b-popover.hover.top="'New Stealth Transfer'"><b-icon-caret-right shift-v="+1" font-scale="1.1"></b-icon-caret-right></b-button>
-          </div> -->
           <div class="mt-0 flex-grow-1">
           </div>
           <div class="mt-0 pr-1">
@@ -380,7 +377,7 @@ const Search = {
       return store.getters['config/chainInfo'];
     },
     sync() {
-      return store.getters['data/sync'];
+      return store.getters['search/sync'];
     },
     pageSizes() {
       return store.getters['config/pageSizes'];
@@ -630,10 +627,7 @@ const Search = {
       store.dispatch('search/syncIt', {});
     },
     async halt() {
-      store.dispatch('data/setSyncHalt', true);
-    },
-    newTransfer(stealthMetaAddress = null) {
-      store.dispatch('newTransfer/newTransfer', stealthMetaAddress);
+      store.dispatch('search/setSyncHalt', true);
     },
     getTokenType(address) {
       if (address == ADDRESS_ETHEREUMS) {
@@ -709,32 +703,33 @@ const searchModule = {
   namespaced: true,
   state: {
     names: {},
-    params: null,
-    executing: false,
-    executionQueue: [],
+    sync: {
+      section: null,
+      total: null,
+      completed: null,
+      halt: false,
+    },
   },
   getters: {
     names: state => state.names,
-    params: state => state.params,
-    executionQueue: state => state.executionQueue,
+    sync: state => state.sync,
   },
   mutations: {
     setState(state, info) {
-      logInfo("searchModule", "mutations.setState - info: " + JSON.stringify(info, null, 2));
+      // logInfo("searchModule", "mutations.setState - info: " + JSON.stringify(info, null, 2));
       Vue.set(state, info.name, info.data);
     },
-
-    deQueue(state) {
-      logDebug("searchModule", "deQueue(" + JSON.stringify(state.executionQueue) + ")");
-      state.executionQueue.shift();
+    setSyncSection(state, info) {
+      logInfo("searchModule", "mutations.setSyncSection info: " + JSON.stringify(info));
+      state.sync.section = info.section;
+      state.sync.total = info.total;
     },
-    updateParams(state, params) {
-      state.params = params;
-      logDebug("searchModule", "updateParams('" + params + "')")
+    setSyncCompleted(state, completed) {
+      logInfo("searchModule", "mutations.setSyncCompleted completed: " + completed + (state.sync.total ? ("/" + state.sync.total) : "") + " " + state.sync.section);
+      state.sync.completed = completed;
     },
-    updateExecuting(state, executing) {
-      state.executing = executing;
-      logDebug("searchModule", "updateExecuting(" + executing + ")")
+    setSyncHalt(state, halt) {
+      state.sync.halt = halt;
     },
   },
   actions: {
@@ -744,12 +739,10 @@ const searchModule = {
         const dbInfo = store.getters['data/db'];
         const db = new Dexie(dbInfo.name);
         db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
-        // const db0 = new Dexie(context.state.db.name);
-        // db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
         for (let type of ['names']) {
           const data = await db.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
-            logInfo("searchModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object));
+            // logInfo("searchModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object));
             context.commit('setState', { name: type, data: data[0].object });
           }
         }
@@ -768,6 +761,10 @@ const searchModule = {
       }
       db.close();
     },
+    async setSyncHalt(context, halt) {
+      logInfo("searchModule", "actions.setSyncHalt");
+      context.commit('setSyncHalt', halt);
+    },
 
     async syncIt(context, options) {
       logInfo("searchModule", "actions.syncIt - options: " + JSON.stringify(options, null, 2));
@@ -777,8 +774,9 @@ const searchModule = {
       const blockNumber = block && block.number || null;
       const chainId = store.getters['connection/chainId'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
-      // await context.dispatch('syncSearchDatabase', parameter);
+      await context.dispatch('syncSearchDatabase', parameter);
       await context.dispatch('collateSearchDatabase', parameter);
+      context.commit('setSyncSection', { section: null, total: null });
     },
 
     async syncSearchDatabase(context, parameter) {
@@ -954,6 +952,8 @@ const searchModule = {
       logInfo("dataModule", "actions.collateSearchDatabase BEGIN");
       let counter = 0;
       const names = {};
+      const total = await db.registrations.count();
+      context.commit('setSyncSection', { section: 'Collating Names', total });
       await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
         let label = null;
         let expiry = null;
@@ -973,6 +973,9 @@ const searchModule = {
         names[label] = expiry;
         if ((counter % 100000) == 0) {
           console.log(counter + " " + e.label)
+        }
+        if ((counter % 10000) == 0) {
+          context.commit('setSyncCompleted', counter);
         }
         counter++;
       });

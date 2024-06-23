@@ -23,6 +23,8 @@ https://bokkypoobah.github.io/onlyfens/
 ## Algorithm - Search (WIP)
 
 * Retrieve all ERC-721 ENS `NameRegistered` and `NameRenewed` and ERC-1155 ENS `NameWrapped` events
+  * Retrieving 4.3 million events takes ~ 40 minutes @ Jun 23 2024
+  * Collating 4.3 million events takes ~ 4 minutes @ Jun 23 2024
 * Use information above for initial search query results
 * Retrieve transfers and prices for search query results when requested
 

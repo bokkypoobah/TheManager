@@ -88,6 +88,14 @@ Note: Collating 4.3 million events takes ~ 4 minutes @ Jun 23 2024
 
 <br />
 
+### Search - With Details
+
+Click on the [Cloud-Download] icon to retrieve ownership, metadata and price details from the Reservoir API
+
+<kbd><img src="images/Search-WithDetails.png" /></kbd>
+
+<br />
+
 <br />
 
 Enjoy!

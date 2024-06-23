@@ -163,16 +163,11 @@ const Search = {
           </template>
 
           <template #cell(owner)="data">
-            <div v-for="(info, i) in data.item.owners"  v-bind:key="i" class="m-0 p-0">
-              <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerTokenPrefix + data.item.contract + '?a=' + info.owner + '#inventory'" target="_blank">
-                <font size="-1">
-                  {{ info.owner.substring(0, 10) + '...' + info.owner.slice(-8) }}
-                  <span v-if="data.item.type == 'erc1155'" class="small muted">
-                    {{ 'x' + info.count }}
-                  </span>
-                </font>
-              </b-link>
-            </div>
+            <b-link v-if="data.item.owner && chainInfo[chainId]" :href="chainInfo[chainId].explorerTokenPrefix + data.item.contract + '?a=' + data.item.owner + '#inventory'" target="_blank">
+              <font size="-1">
+                {{ data.item.owner.substring(0, 10) + '...' + data.item.owner.slice(-8) }}
+              </font>
+            </b-link>
           </template>
 
           <template #cell(prices)="data">
@@ -502,13 +497,31 @@ const Search = {
           const info = this.infos[name] || {};
           const wrapped = info.wrapped || false;
           const contract = wrapped ? ENS_NAMEWRAPPER_ADDRESS : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
-
+          let tokenId = null;
+          if (wrapped) {
+            try {
+              const namehash = ethers.utils.namehash(name + ".eth");
+              tokenId = ethers.BigNumber.from(namehash).toString();
+            } catch (e) {
+              console.log("Error namehash: " + name + " " + e.message);
+            }
+          } else {
+            const labelhash = ethers.utils.solidityKeccak256(["string"], [name]);
+            tokenId = ethers.BigNumber.from(labelhash).toString();
+          }
           results.push({
             name,
             expiry,
             status,
             wrapped,
             contract,
+            tokenId,
+            owner: info.owner || null,
+            created: info.created || null,
+            registered: info.registration || null,
+            lastSale: info.lastSale || {},
+            price: info.price || {},
+            topBid: info.topBid || {},
           });
         }
       }

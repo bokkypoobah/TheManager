@@ -688,6 +688,7 @@ const Search = {
   mounted() {
     logDebug("Search", "mounted() $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
+    store.dispatch('search/restoreState');
     if ('onlyfensSearchSettings' in localStorage) {
       const tempSettings = JSON.parse(localStorage.onlyfensSearchSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
@@ -707,15 +708,22 @@ const Search = {
 const searchModule = {
   namespaced: true,
   state: {
+    names: {},
     params: null,
     executing: false,
     executionQueue: [],
   },
   getters: {
+    names: state => state.names,
     params: state => state.params,
     executionQueue: state => state.executionQueue,
   },
   mutations: {
+    setState(state, info) {
+      logInfo("searchModule", "mutations.setState - info: " + JSON.stringify(info, null, 2));
+      Vue.set(state, info.name, info.data);
+    },
+
     deQueue(state) {
       logDebug("searchModule", "deQueue(" + JSON.stringify(state.executionQueue) + ")");
       state.executionQueue.shift();
@@ -730,6 +738,37 @@ const searchModule = {
     },
   },
   actions: {
+    async restoreState(context) {
+      logInfo("searchModule", "actions.restoreState");
+      if (Object.keys(context.state.names).length == 0) {
+        const dbInfo = store.getters['data/db'];
+        const db = new Dexie(dbInfo.name);
+        db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
+        // const db0 = new Dexie(context.state.db.name);
+        // db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+        for (let type of ['names']) {
+          const data = await db.cache.where("objectName").equals(type).toArray();
+          if (data.length == 1) {
+            logInfo("searchModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object));
+            context.commit('setState', { name: type, data: data[0].object });
+          }
+        }
+      }
+    },
+    async saveData(context, types) {
+      logInfo("searchModule", "actions.saveData - types: " + JSON.stringify(types));
+      const dbInfo = store.getters['data/db'];
+      const db = new Dexie(dbInfo.name);
+      db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
+      for (let type of types) {
+        await db.cache.put({ objectName: type, object: context.state[type] }).then(function() {
+        }).catch(function(error) {
+          console.log("error: " + error);
+        });
+      }
+      db.close();
+    },
+
     async syncIt(context, options) {
       logInfo("searchModule", "actions.syncIt - options: " + JSON.stringify(options, null, 2));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -738,7 +777,7 @@ const searchModule = {
       const blockNumber = block && block.number || null;
       const chainId = store.getters['connection/chainId'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
-      await context.dispatch('syncSearchDatabase', parameter);
+      // await context.dispatch('syncSearchDatabase', parameter);
       await context.dispatch('collateSearchDatabase', parameter);
     },
 
@@ -900,16 +939,9 @@ const searchModule = {
 
       const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
       const latest = await db.registrations.where('[blockNumber+logIndex]').between([Dexie.minKey, Dexie.minKey],[Dexie.maxKey, Dexie.maxKey]).last();
-      // const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-      // const startBlock = 0;
       const startBlock = latest ? parseInt(latest.blockNumber) + 1: 0;
       logInfo("dataModule", "actions.syncSearchDatabase - startBlock: " + startBlock);
       await getLogs(startBlock, parameter.blockNumber, processLogs);
-
-      // const fromBlock = 9456662;
-      // const toBlock = 9456764;
-      // await getLogs(fromBlock, toBlock, processLogs);
-
       logInfo("dataModule", "actions.syncSearchDatabase END");
     },
 
@@ -920,9 +952,6 @@ const searchModule = {
       db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       logInfo("dataModule", "actions.collateSearchDatabase BEGIN");
-
-
-      // db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => console.log(e.label));
       let counter = 0;
       const names = {};
       await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
@@ -947,91 +976,11 @@ const searchModule = {
         }
         counter++;
       });
-
-      // let rows = 0;
-      // let done = false;
-      // const DB_PROCESSING_BATCH_SIZE = 10000;
-      // const names = {};
-      // const tokens = {};
-      // do {
-      //   logInfo("dataModule", "actions.collateSearchDatabase - begin");
-      //   let data = await db.registrations.where('[label+blockNumber+logIndex]').between([Dexie.minKey, Dexie.minKey, Dexie.minKey],[Dexie.maxKey, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(DB_PROCESSING_BATCH_SIZE).toArray();
-      //   logInfo("dataModule", "actions.collateSearchDatabase - data.length: " + data.length + ", first[0..2]: " + JSON.stringify(data.slice(0, 3).map(e => e.blockNumber + '.' + e.logIndex )));
-      //   if (data.length > 0) {
-      //     logInfo("dataModule", "actions.collateSearchDatabase - data[0..2]: " + JSON.stringify(data.slice(0, 3), null, 2));
-      //   }
-      //   for (const item of data) {
-      //
-      //     // let name = null;
-      //     let label = null;
-      //     // let labelhash = null;
-      //     // let namehash = null;
-      //     let expiry = null;
-      //     let subdomain = null;
-      //
-      //     if (item.type == "NameRegistered") {
-      //       label = item.label;
-      //       // name = label + ".eth";
-      //       // labelhash = item.label;
-      //       // try {
-      //       //   namehash = ethers.utils.namehash(name);
-      //       // } catch (e) {
-      //       //   console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
-      //       // }
-      //       expiry = item.expires;
-      //
-      //     } else if (item.type == "NameRenewed") {
-      //       label = item.label;
-      //       // name = label + ".eth";
-      //       // labelhash = item.label;
-      //       // try {
-      //       //   namehash = ethers.utils.namehash(name);
-      //       // } catch (e) {
-      //       //   console.log("Error namehash: " + name + " " + item.txHash + " " + e.message);
-      //       // }
-      //       expiry = item.expires;
-      //
-      //     } else if (item.type == "NameWrapped") {
-      //       label = item.label;
-      //       // name = item.name;
-      //       // labelhash = item.labelhash;
-      //       // namehash = item.namehash;
-      //       expiry = item.expiry;
-      //       subdomain = item.subdomain;
-      //       // console.log(JSON.stringify(item));
-      //
-      //     } else {
-      //       // console.log(JSON.stringify(item));
-      //     }
-      //
-      //     if (label) {
-      //       if (label in names) {
-      //         // console.log("names[name]: " + JSON.stringify(names[name]));
-      //         // console.log(name + " expiry updated from " + moment.unix(names[name].expiry).format() + " to " + moment.unix(expiry).format());
-      //         names[label] = expiry;
-      //       } else {
-      //         names[label] = expiry;
-      //         // names[name] = {
-      //         //   // name,
-      //         //   // label,
-      //         //   // labelhash,
-      //         //   // namehash,
-      //         //   expiry,
-      //         //   // subdomain,
-      //         // };
-      //       }
-      //     }
-      //
-      //   }
-      //   rows = parseInt(rows) + data.length;
-      //   done = data.length < DB_PROCESSING_BATCH_SIZE;
-      // } while (!done);
       console.log("names: " + JSON.stringify(names, null, 2));
-      // console.log("tokens: " + JSON.stringify(tokens, null, 2));
       context.commit('setState', { name: "names", data: names });
+      console.log("context.state.names: " + JSON.stringify(context.state.names, null, 2));
       await context.dispatch('saveData', ['names']);
       logInfo("dataModule", "actions.collateSearchDatabase END");
     },
-
   },
 };

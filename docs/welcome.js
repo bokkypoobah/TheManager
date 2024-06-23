@@ -45,6 +45,14 @@ const Welcome = {
                 <ul>
                   <li>
                     Retrieve all ERC-721 ENS <i>NameRegistered</i> and <i>NameRenewed</i> and ERC-1155 ENS <i>NameWrapped</i> events
+                    <ul>
+                      <li>
+                        Retrieving 4.3 million events takes ~ 40 minutes @ Jun 23 2024
+                      </li>
+                      <li>
+                        Collating 4.3 million events takes ~ 4 minutes @ Jun 23 2024
+                      </li>
+                    </ul>
                   </li>
                   <li>
                     Use information above for initial search query results

@@ -68,6 +68,9 @@ const Search = {
           <div v-if="sync.section == null" class="mt-0 pr-1">
             <b-button size="sm" :disabled="!coinbase" @click="syncIt()" variant="link" v-b-popover.hover.top="'Retrieve ENS registration and renewal events'"><b-icon-arrow-repeat shift-v="+1" font-scale="1.2"></b-icon-arrow-repeat></b-button>
           </div>
+          <div v-if="sync.section == null" class="mt-0 pr-1">
+            <b-button size="sm" :disabled="!coinbase" @click="retrieveData()" variant="link" v-b-popover.hover.top="'Retrieve detailed ENS data for the searched names'"><b-icon-cloud-download shift-v="+1" font-scale="1.2"></b-icon-cloud-download></b-button>
+          </div>
           <div v-if="sync.section != null" class="mt-1" style="width: 300px;">
             <b-progress height="1.5rem" :max="sync.total" show-progress :animated="sync.section != null" :variant="sync.section != null ? 'success' : 'secondary'" v-b-popover.hover.top="'Click the button on the right to stop. This process can be continued later'">
               <b-progress-bar :value="sync.completed">
@@ -719,6 +722,11 @@ const Search = {
     async syncIt() {
       store.dispatch('search/syncIt', {});
     },
+    async retrieveData() {
+      const labels = this.filteredSortedItems.map(e => e.name);
+      console.log("labels: " + JSON.stringify(labels));
+      store.dispatch('search/retrieveData', labels);
+    },
     async halt() {
       store.dispatch('search/setSyncHalt', true);
     },
@@ -1099,6 +1107,9 @@ const searchModule = {
       // console.log("context.state.names: " + JSON.stringify(context.state.names, null, 2));
       await context.dispatch('saveData', ['names']);
       logInfo("dataModule", "actions.collateSearchDatabase END");
+    },
+    async retrieveData(context, labels) {
+      logInfo("dataModule", "actions.retrieveData: " + JSON.stringify(labels));
     },
   },
 };

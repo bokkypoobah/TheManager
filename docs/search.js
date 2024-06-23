@@ -629,14 +629,6 @@ const Search = {
     async halt() {
       store.dispatch('search/setSyncHalt', true);
     },
-    getTokenType(address) {
-      if (address == ADDRESS_ETHEREUMS) {
-        return "eth";
-      } else {
-        // TODO: ERC-20 & ERC-721
-        return address.substring(0, 10) + '...' + address.slice(-8);
-      }
-    },
     formatTimestamp(ts) {
       if (ts != null) {
         if (ts > 1000000000000n) {

@@ -68,6 +68,14 @@ This will take a few minutes.
 
 <kbd><img src="images/Names.png" /></kbd>
 
+### Search - Collation In Progress
+
+Note:
+* Retrieving 4.3 million events takes ~ 40 minutes @ Jun 23 2024
+* Collating 4.3 million events takes ~ 4 minutes @ Jun 23 2024
+
+<kbd><img src="images/Search-CollationInProgress.png" /></kbd>
+
 <br />
 
 <br />

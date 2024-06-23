@@ -796,6 +796,7 @@ const searchModule = {
   namespaced: true,
   state: {
     names: [],
+    infos: {},
     sync: {
       section: null,
       total: null,
@@ -805,6 +806,7 @@ const searchModule = {
   },
   getters: {
     names: state => state.names,
+    infos: state => state.infos,
     sync: state => state.sync,
   },
   mutations: {
@@ -832,10 +834,12 @@ const searchModule = {
         const dbInfo = store.getters['data/db'];
         const db = new Dexie(dbInfo.name);
         db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
-        for (let type of ['names']) {
+        for (let type of ['names', 'infos']) {
           const data = await db.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
-            // logInfo("searchModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object));
+            if (type == "infos") {
+              logInfo("searchModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object, null, 2));
+            }
             context.commit('setState', { name: type, data: data[0].object });
           }
         }
@@ -1110,6 +1114,101 @@ const searchModule = {
     },
     async retrieveData(context, labels) {
       logInfo("dataModule", "actions.retrieveData: " + JSON.stringify(labels));
+      const BATCHSIZE = 50;
+      const DELAYINMILLIS = 2000;
+      let completed = 0;
+      context.commit('setSyncSection', { section: 'Details', total: labels.length });
+      context.commit('setSyncCompleted', 0);
+      const infos = {};
+      for (let i = 0; i < labels.length && !context.state.sync.halt; i += BATCHSIZE) {
+        const batch = labels.slice(i, parseInt(i) + BATCHSIZE);
+        let continuation = null;
+        // console.log("batch: " + JSON.stringify(batch));
+        do {
+          let url = "https://api.reservoir.tools/tokens/v7?";
+          let separator = "";
+          const tokenIdToLabelMap = {};
+          for (let j = 0; j < batch.length; j++) {
+            const labelhash = ethers.utils.solidityKeccak256(["string"], [batch[j]]);
+            const labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
+            url = url + separator + "tokens=" + ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS + ":" + labelhashDecimals;
+            separator = "&";
+            tokenIdToLabelMap[labelhashDecimals] = batch[j];
+          }
+          url = url + (continuation != null ? "&continuation=" + continuation : '');
+          url = url + "&limit=100&includeAttributes=true&includeLastSale=true&includeTopBid=true";
+          console.log(url);
+          const data = await fetch(url).then(response => response.json());
+          continuation = data.continuation;
+          let i = 0;
+          for (token of data.tokens) {
+            const tokenData = parseReservoirTokenData(token);
+            const label = tokenIdToLabelMap[tokenData.tokenId];
+            infos[label] = { ...tokenData, wrapped: false };
+            completed++;
+            i++;
+          }
+          context.commit('setSyncCompleted', completed);
+          await delay(DELAYINMILLIS);
+        } while (continuation != null && !context.state.sync.halt);
+        console.log("infos: " + JSON.stringify(infos, null, 2));
+        context.commit('setState', { name: "infos", data: infos });
+        await context.dispatch('saveData', ['infos']);
+      }
+      context.commit('setSyncSection', { section: null, total: null });
+
+      const wrappedNames = [];
+      for (const [label, info] of Object.entries(infos)) {
+        if (info.owner == ENS_NAMEWRAPPER_ADDRESS) {
+          wrappedNames.push(label);
+        }
+      }
+      completed = 0;
+      context.commit('setSyncSection', { section: 'Wrapped Details', total: wrappedNames.length });
+      context.commit('setSyncCompleted', 0);
+      for (let i = 0; i < wrappedNames.length && !context.state.sync.halt; i += BATCHSIZE) {
+        const batch = wrappedNames.slice(i, parseInt(i) + BATCHSIZE);
+        let continuation = null;
+        // console.log("batch: " + JSON.stringify(batch));
+        do {
+          let url = "https://api.reservoir.tools/tokens/v7?";
+          let separator = "";
+          const tokenIdToLabelMap = {};
+          for (let j = 0; j < batch.length; j++) {
+            let namehash = null;
+            try {
+              namehash = ethers.utils.namehash(batch[j] + ".eth");
+              const namehashDecimals = ethers.BigNumber.from(namehash).toString();
+              url = url + separator + "tokens=" + ENS_NAMEWRAPPER_ADDRESS + ":" + namehashDecimals;
+              separator = "&";
+              tokenIdToLabelMap[namehashDecimals] = batch[j];
+            } catch (e) {
+              console.log("Error namehash: " + batch[j] + " " + e.message);
+            }
+          }
+          url = url + (continuation != null ? "&continuation=" + continuation : '');
+          url = url + "&limit=100&includeAttributes=true&includeLastSale=true&includeTopBid=true";
+          console.log(url);
+          const data = await fetch(url).then(response => response.json());
+          continuation = data.continuation;
+          let i = 0;
+          for (token of data.tokens) {
+            const tokenData = parseReservoirTokenData(token);
+            const label = tokenIdToLabelMap[tokenData.tokenId];
+            infos[label] = { ...tokenData, wrapped: true };
+            completed++;
+            i++;
+          }
+          context.commit('setSyncCompleted', completed);
+          await delay(DELAYINMILLIS);
+        } while (continuation != null && !context.state.sync.halt);
+        console.log("infos: " + JSON.stringify(infos, null, 2));
+        context.commit('setState', { name: "infos", data: infos });
+        await context.dispatch('saveData', ['infos']);
+      }
+      context.commit('setSyncSection', { section: null, total: null });
+      context.commit('setSyncHalt', false);
+      logInfo("dataModule", "actions.retrieveData END");
     },
   },
 };

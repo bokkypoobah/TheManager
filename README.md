@@ -78,6 +78,10 @@ Note:
 
 <kbd><img src="images/Search-CollationInProgress.png" /></kbd>
 
+### Search
+
+<kbd><img src="images/Search.png" /></kbd>
+
 <br />
 
 <br />

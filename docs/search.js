@@ -424,6 +424,34 @@ const Search = {
       }
       // const filter = this.settings.filter && this.settings.filter.length > 0 ? this.settings.filter : null;
 
+      const graceFrom = moment().subtract(90, 'days').unix();
+      const expiry1m = moment().add(1, 'months').unix();
+      const expiry3m = moment().add(3, 'months').unix();
+      const expiry1y = moment().add(1, 'years').unix();
+      let dateFrom = null;
+      let dateTo = null;
+      if (this.settings.dateOption) {
+        if (this.settings.dateOption == "active") {
+          dateFrom = graceFrom;
+        } else if (this.settings.dateOption == "grace") {
+          dateFrom = graceFrom;
+          dateTo = moment().unix();
+        } else if (this.settings.dateOption == "expired") {
+          dateTo = moment().unix();
+        } else if (this.settings.dateOption == "expiry1m") {
+          dateFrom = graceFrom;
+          dateTo = expiry1m;
+        } else if (this.settings.dateOption == "expiry3m") {
+          dateFrom = graceFrom;
+          dateTo = expiry3m;
+        } else if (this.settings.dateOption == "expiry1y") {
+          dateFrom = graceFrom;
+          dateTo = expiry1y;
+        } else if (this.settings.dateOption == "expiry1yp") {
+          dateFrom = expiry1y;
+        }
+      }
+
       logInfo("Search", "filteredItems - start");
       // for (const [name, expiry] of Object.entries(this.names || {})) {
       for (const [name, expiry] of this.names) {
@@ -440,11 +468,31 @@ const Search = {
         //     include = false;
         //   }
         // }
+        if (include && dateFrom) {
+          if (expiry < dateFrom) {
+            include = false;
+          }
+        }
+        if (include && dateTo) {
+          if (expiry > dateTo) {
+            include = false;
+          }
+        }
         if (include) {
+          let status = "danger";
+          if (expiry < moment().unix()) {
+            status = "danger";
+          } else if (expiry < expiry3m) {
+            status = "warning";
+          } else if (expiry < expiry1y) {
+            status = "primary";
+          } else {
+            status = "success";
+          }
           results.push({
             name,
             expiry,
-            status: "primary",
+            status,
           });
         }
       }

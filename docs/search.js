@@ -403,6 +403,9 @@ const Search = {
     names() {
       return store.getters['search/names'];
     },
+    infos() {
+      return store.getters['search/infos'];
+    },
     tokenInfo() {
       return store.getters['data/tokenInfo'];
     },
@@ -417,6 +420,7 @@ const Search = {
     },
     filteredItems() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
+      console.log("infos: " + JSON.stringify(this.infos, null, 2));
 
       let regex = null;
       if (this.settings.filter != null && this.settings.filter.length > 0) {
@@ -494,10 +498,17 @@ const Search = {
           } else {
             status = "success";
           }
+
+          const info = this.infos[name] || {};
+          const wrapped = info.wrapped || false;
+          const contract = wrapped ? ENS_NAMEWRAPPER_ADDRESS : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
+
           results.push({
             name,
             expiry,
             status,
+            wrapped,
+            contract,
           });
         }
       }
@@ -518,21 +529,22 @@ const Search = {
       return results;
     },
     pagedFilteredSortedItems() {
-      logInfo("Search", "pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
+      logInfo("Search", "pagedFilteredSortedItems - results[0..9]: " + JSON.stringify(this.filteredSortedItems.slice(0, 10), null, 2));
       const results = this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
-      const supplementedResults = [];
-      for (const result of results) {
-        const labelhash = ethers.utils.solidityKeccak256(["string"], [result.name]);
-        const labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
-        supplementedResults.push({
-          name: result.name,
-          expiry: result.expiry,
-          status: result.status,
-          contract: ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS,
-          tokenId: labelhashDecimals,
-        });
-      }
-      return supplementedResults;
+      // const supplementedResults = [];
+      // for (const result of results) {
+      //   const labelhash = ethers.utils.solidityKeccak256(["string"], [result.name]);
+      //   const labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
+      //   supplementedResults.push({
+      //     name: result.name,
+      //     expiry: result.expiry,
+      //     status: result.status,
+      //     contract: ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS,
+      //     tokenId: labelhashDecimals,
+      //   });
+      // }
+      // return supplementedResults;
+      return results;
     },
     // filteredItemsOld() {
     //   return [];
@@ -834,7 +846,7 @@ const searchModule = {
         const dbInfo = store.getters['data/db'];
         const db = new Dexie(dbInfo.name);
         db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
-        for (let type of ['names', 'infos']) {
+        for (let type of [ 'infos', 'names' ]) {
           const data = await db.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             if (type == "infos") {

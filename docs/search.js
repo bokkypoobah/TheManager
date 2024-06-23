@@ -395,29 +395,46 @@ const Search = {
       return store.getters['data/prices'];
     },
     names() {
-      return store.getters['data/names'];
-    },
-    tokenMetadata() {
-      return store.getters['data/tokenMetadata'];
+      return store.getters['search/names'];
     },
     tokenInfo() {
       return store.getters['data/tokenInfo'];
     },
 
     totalNames() {
-      let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
-      for (const [address, data] of Object.entries(this.tokens[this.chainId] || {})) {
-        result += Object.keys(data.tokenIds).length;
-      }
-      return result;
+      // let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
+      // for (const [address, data] of Object.entries(this.tokens[this.chainId] || {})) {
+      //   result += Object.keys(data.tokenIds).length;
+      // }
+      // return result;
+      return Object.keys(this.names).length;
     },
     filteredItems() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
+
+      let regex = null;
+      if (this.settings.filter != null && this.settings.filter.length > 0) {
+        try {
+          regex = new RegExp(this.settings.filter, 'i');
+        } catch (e) {
+          console.log("filteredItems - regex error: " + e.message);
+          regex = new RegExp(/thequickbrowndogjumpsoverthelazyfox/, 'i');
+        }
+      }
+
       for (const [name, expiry] of Object.entries(this.names || {})) {
-        results.push({
-          name,
-          expiry
-        });
+        let include = true;
+        if (regex) {
+          if (!(regex.test(name))) {
+            include = false;
+          }
+        }
+        if (include) {
+          results.push({
+            name,
+            expiry
+          });
+        }
       }
       return results;
     },

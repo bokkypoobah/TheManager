@@ -397,9 +397,6 @@ const Names = {
     contractMetadata() {
       return store.getters['data/contractMetadata'];
     },
-    tokenMetadata() {
-      return store.getters['data/tokenMetadata'];
-    },
     tokenInfo() {
       return store.getters['data/tokenInfo'];
     },

@@ -320,14 +320,19 @@ const promisify = (inner) =>
 
 
 function parseReservoirTokenData(info) {
-  console.log("info: " + JSON.stringify(info, null, 2));
+  // console.log("info: " + JSON.stringify(info, null, 2));
   const result = {};
   const token = info.token;
   const market = info.market;
   result.chainId = token.chainId;
   result.contract = ethers.utils.getAddress(token.contract);
   result.tokenId = token.tokenId;
-  result.owner = ethers.utils.getAddress(token.owner);
+  try {
+    result.owner = ethers.utils.getAddress(token.owner);
+  } catch (e) {
+    console.log("parseReservoirTokenData - ERROR: name: " + name + ", owner: " + token.owner + ", error: " + e.message + " info: " + JSON.stringify(info, null, 2));
+    result.owner = ADDRESS0;
+  }
   result.name = token.name;
   result.description = token.description;
   result.image = token.image;

@@ -634,7 +634,8 @@ const Names = {
     rowSelected(item) {
       logInfo("Names", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        store.dispatch('viewToken/viewToken', { contract: item[0].contract, tokenId: item[0].tokenId });
+        store.dispatch('viewName/viewName', { contract: item[0].contract, tokenId: item[0].tokenId });
+        // store.dispatch('viewToken/viewToken', { contract: item[0].contract, tokenId: item[0].tokenId });
         this.$refs.namesTable.clearSelected();
       }
     },

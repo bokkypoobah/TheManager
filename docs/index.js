@@ -10,6 +10,7 @@ Vue.component('new-address', NewAddress);
 Vue.component('sync-options', SyncOptions);
 Vue.component('view-address', ViewAddress);
 Vue.component('view-token', ViewToken);
+Vue.component('view-name', ViewName);
 // Vue.component('flat-pickr', VueFlatpickr);
 
 // hljs.registerLanguage('solidity', window.hljsDefineSolidity);
@@ -63,6 +64,7 @@ const store = new Vuex.Store({
     newAddress: newAddressModule,
     syncOptions: syncOptionsModule,
     viewAddress: viewAddressModule,
+    viewName: viewNameModule,
     viewToken: viewTokenModule,
     config: configModule,
     data: dataModule,

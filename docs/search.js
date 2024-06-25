@@ -868,9 +868,9 @@ const searchModule = {
         for (let type of [ 'infos', 'names' ]) {
           const data = await db.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
-            if (type == "infos") {
-              logInfo("searchModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object, null, 2));
-            }
+            // if (type == "infos") {
+            //   logInfo("searchModule", "actions.restoreState " + type + " => " + JSON.stringify(data[0].object, null, 2));
+            // }
             context.commit('setState', { name: type, data: data[0].object });
           }
         }
@@ -1091,6 +1091,142 @@ const searchModule = {
       logInfo("dataModule", "actions.syncSearchDatabase END");
     },
 
+    // async collateSearchDatabaseSqlite3WASMTesting(context, parameter) {
+    //   logInfo("dataModule", "actions.collateSearchDatabaseSqlite3WASMTesting: " + JSON.stringify(parameter));
+    //
+    //   globalThis.sqlite3InitModule().then(function(sqlite3) {
+    //     console.log('sqlite3 =', JSON.stringify(sqlite3));
+    //     console.log("Done initializing. Running demo...");
+    //     try {
+    //       const capi = sqlite3.capi/*C-style API*/,
+    //             oo = sqlite3.oo1/*high-level OO API*/;
+    //       console.log("sqlite3 version",capi.sqlite3_libversion(), capi.sqlite3_sourceid());
+    //
+    //       if ('OpfsDb' in oo) {
+    //         console.log("OpfsDb available");
+    //       } else {
+    //         console.log("OpfsDb NOT available");
+    //       }
+    //
+    //       if(sqlite3.capi.sqlite3_vfs_find("opfs")) {
+    //         console.log("Opfs vfs available");
+    //       } else {
+    //         console.log("Opfs vfs NOT available");
+    //       }
+    //       // Alternately:
+    //       // if(sqlite3.oo1.OpfsDb){ ... OPFS VFS is available ... }
+    //
+    //       const dbSql = new oo.DB("/mydb.sqlite3", 'ct');
+    //       console.log("transient dbSql: " + dbSql.filename);
+    //
+    //       console.log("Create a table...");
+    //       dbSql.exec("CREATE TABLE IF NOT EXISTS labels(name STRING NOT NULL PRIMARY KEY, expiry)");
+    //       //Equivalent:
+    //       // db.exec({
+    //       //   sql:"CREATE TABLE IF NOT EXISTS t(a,b)"
+    //       //   // ... numerous other options ...
+    //       // });
+    //       // const dbInfo = store.getters['data/db'];
+    //       // const db = new Dexie(dbInfo.name);
+    //       // db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
+    //       // const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //       // logInfo("dataModule", "actions.collateSearchDatabaseSqlite3WASMTesting BEGIN");
+    //       // let counter = 0;
+    //       // const nameMap = {};
+    //       // const total = await db.registrations.count();
+    //       // context.commit('setSyncSection', { section: 'Collating Names', total });
+    //       // // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10000).each(e => {
+    //       // await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
+    //       //   let label = null;
+    //       //   let expiry = null;
+    //       //   if (e.type == "NameRegistered") {
+    //       //     label = e.label;
+    //       //     expiry = e.expires;
+    //       //   } else if (e.type == "NameRenewed") {
+    //       //     label = e.label;
+    //       //     expiry = e.expires;
+    //       //   } else if (e.type == "NameWrapped") {
+    //       //     label = e.label;
+    //       //     expiry = e.expiry;
+    //       //     subdomain = e.subdomain;
+    //       //   } else {
+    //       //     // console.log(JSON.stringify(e));
+    //       //   }
+    //       //   console.log(label + " => " + expiry);
+    //       //   // if (ethers.utils.isValidName(label)) {
+    //       //     // nameMap[label] = expiry;
+    //       //   // } else {
+    //       //   //   console.log("Invalid: '" + label + "' " + e.txHash);
+    //       //   // }
+    //       //   if ((counter % 10000) == 0) {
+    //       //     context.commit('setSyncSection', { section: e.label.substring(0, 30), total });
+    //       //     context.commit('setSyncCompleted', counter);
+    //       //   }
+    //       //   counter++;
+    //       //   // if (store.getters['search/sync'].halt) {
+    //       //   //   return false; // TODO: Does not work
+    //       //   // }
+    //       // });
+    //
+    //
+    //     } catch(e) {
+    //       console.log("Exception: " + e.message);
+    //     }
+    //   });
+    //
+    //   // const dbInfo = store.getters['data/db'];
+    //   // const db = new Dexie(dbInfo.name);
+    //   // db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
+    //   // const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //   // logInfo("dataModule", "actions.collateSearchDatabaseSqlite3WASMTesting BEGIN");
+    //   // let counter = 0;
+    //   // const nameMap = {};
+    //   // const total = await db.registrations.count();
+    //   // context.commit('setSyncSection', { section: 'Collating Names', total });
+    //   // // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10000).each(e => {
+    //   // await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
+    //   //   let label = null;
+    //   //   let expiry = null;
+    //   //   if (e.type == "NameRegistered") {
+    //   //     label = e.label;
+    //   //     expiry = e.expires;
+    //   //   } else if (e.type == "NameRenewed") {
+    //   //     label = e.label;
+    //   //     expiry = e.expires;
+    //   //   } else if (e.type == "NameWrapped") {
+    //   //     label = e.label;
+    //   //     expiry = e.expiry;
+    //   //     subdomain = e.subdomain;
+    //   //   } else {
+    //   //     // console.log(JSON.stringify(e));
+    //   //   }
+    //   //   // if (ethers.utils.isValidName(label)) {
+    //   //     nameMap[label] = expiry;
+    //   //   // } else {
+    //   //   //   console.log("Invalid: '" + label + "' " + e.txHash);
+    //   //   // }
+    //   //   if ((counter % 10000) == 0) {
+    //   //     context.commit('setSyncSection', { section: e.label.substring(0, 30), total });
+    //   //     context.commit('setSyncCompleted', counter);
+    //   //   }
+    //   //   counter++;
+    //   //   // if (store.getters['search/sync'].halt) {
+    //   //   //   return false; // TODO: Does not work
+    //   //   // }
+    //   // });
+    //   // const names = [];
+    //   // for (const [label, expiry] of Object.entries(nameMap)) {
+    //   //   names.push([label, expiry]);
+    //   // }
+    //   // // console.log("names: " + JSON.stringify(names, null, 2));
+    //   // context.commit('setState', { name: "names", data: names });
+    //   // // console.log("context.state.names: " + JSON.stringify(context.state.names, null, 2));
+    //   // await context.dispatch('saveData', ['names']);
+    //
+    //
+    //   logInfo("dataModule", "actions.collateSearchDatabaseSqlite3WASMTesting END");
+    // },
+
     async collateSearchDatabase(context, parameter) {
       logInfo("dataModule", "actions.collateSearchDatabase: " + JSON.stringify(parameter));
       const dbInfo = store.getters['data/db'];
@@ -1143,6 +1279,7 @@ const searchModule = {
       await context.dispatch('saveData', ['names']);
       logInfo("dataModule", "actions.collateSearchDatabase END");
     },
+
     async retrieveData(context, labels) {
       logInfo("dataModule", "actions.retrieveData: " + JSON.stringify(labels));
       const BATCHSIZE = 50;

@@ -423,3 +423,54 @@ function decodeNameWrapperBytes(b) {
   }
   return parts;
 }
+
+
+// globalThis.sqlite3InitModule().then(function(sqlite3) {
+//   console.log('sqlite3 =', JSON.stringify(sqlite3));
+//   console.log("Done initializing. Running demo...");
+//   try {
+//
+//     const capi = sqlite3.capi/*C-style API*/,
+//           oo = sqlite3.oo1/*high-level OO API*/;
+//     console.log("sqlite3 version",capi.sqlite3_libversion(), capi.sqlite3_sourceid());
+//     const db = new oo.DB("/mydb.sqlite3",'ct');
+//     console.log("transient db =",db.filename);
+//
+//     console.log("Create a table...");
+//     db.exec("CREATE TABLE IF NOT EXISTS t(a,b)");
+//     //Equivalent:
+//     db.exec({
+//       sql:"CREATE TABLE IF NOT EXISTS t(a,b)"
+//       // ... numerous other options ...
+//     });
+//
+//     console.log("Insert some data using exec()...");
+//     let i;
+//     for( i = 20; i <= 25; ++i ){
+//       db.exec({
+//         sql: "insert into t(a,b) values (?,?)",
+//         // bind by parameter index...
+//         bind: [i, i*2]
+//       });
+//       db.exec({
+//         sql: "insert into t(a,b) values ($a,$b)",
+//         // bind by parameter name...
+//         bind: {$a: i * 10, $b: i * 20}
+//       });
+//     }
+//
+//     console.log("Query data with exec() using rowMode 'array'...");
+//     db.exec({
+//       sql: "select a from t order by a limit 3",
+//       rowMode: 'array', // 'array' (default), 'object', or 'stmt'
+//       callback: function(row){
+//         console.log("row ",++this.counter,"=",row);
+//       }.bind({counter: 0})
+//     });
+//
+//
+//     // demo1(sqlite3);
+//   }catch(e){
+//     error("Exception:",e.message);
+//   }
+// });

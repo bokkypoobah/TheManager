@@ -100,9 +100,18 @@ Click on the [Cloud-Download] icon to retrieve ownership, metadata and price det
 
 <hr />
 
-## ./scripts
+## ./scripts/01_scrapeData.js
 
 Execute `node 01_scrapeData.js` to in the [./scripts/](./scripts/) folder to create [./scripts/labels.json](./scripts/labels.json)
+
+Execution processing:
+
+<kbd><img src="images/ScrapingProcess.png" /></kbd>
+
+Execution output:
+
+<kbd><img src="images/ScrapingResult.png" /></kbd>
+
 
 <br />
 

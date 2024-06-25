@@ -527,6 +527,9 @@ const Search = {
             topBid: info.topBid || {},
           });
         }
+        if (results.length >= 10000) {
+          break;
+        }
       }
       logInfo("Search", "filteredItems - end");
       return results;

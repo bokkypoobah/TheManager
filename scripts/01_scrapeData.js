@@ -2,18 +2,14 @@
 // Script to scrape data from a local ethereum node
 //
 // Execute `npm install --save ethers@5.7` before first use
-// Testing `npm install --save ethers@6.13` before first use
-// Then execute `node 01_scrapeData.js`
+// Then execute `node 01_scrapeData.js` to create ../docs/labels.json
 //
 // Enjoy!
 // onlyfens.eth, Only for ENS © Bok Consulting Pty Ltd 2024, MIT license
 // ----------------------------------------------------------------------------
-
 var fs = require('fs');
 const util = require('util');
-// npm install --save ethers@5.7
 const { ethers } = require("ethers");
-
 
 // ENS: Old ETH Registrar Controller 1 deployed Apr-30-2019 03:54:13 AM +UTC
 const ENS_OLDETHREGISTRARCONTROLLER1_ADDRESS = "0xF0AD5cAd05e10572EfcEB849f6Ff0c68f9700455";
@@ -77,11 +73,15 @@ const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTR
 const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
 
 let total = 0;
+const labelsMap = {};
 
-async function processLogs(fromBlock, toBlock, logs) {
+async function processLogs(fromBlock, toBlock, logs, startTime) {
   const range = toBlock - fromBlock;
   total = parseInt(total) + logs.length;
-  console.log("processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", range: " + range + ", logs.length: " + logs.length + ", total: " + total);
+
+  const currentTime = new Date().getTime();
+  const elapsedMinutes = (currentTime - startTime) / 60 / 1000;
+  console.log(new Date().toLocaleTimeString() + " processLogs: " + fromBlock + " - " + toBlock + " = " + range + ", logs.length: " + logs.length + ", total: " + total + ", elapsedMinutes: " + elapsedMinutes.toFixed(2));
   for (const log of logs) {
     const contract = log.address;
     let eventRecord = null;
@@ -91,49 +91,49 @@ async function processLogs(fromBlock, toBlock, logs) {
       const logData = oldETHRegistarController1Interface.parseLog(log);
       const [name, label, owner, cost, expires] = logData.args;
       if (ethers.utils.isValidName(name)) {
-        eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+        eventRecord = { type: "NameRegistered", label: name, expiry: parseInt(expires) };
       }
     } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
       // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
       const logData = oldETHRegistarControllerInterface.parseLog(log);
       const [name, label, owner, cost, expires] = logData.args;
       if (ethers.utils.isValidName(name)) {
-        eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+        eventRecord = { type: "NameRegistered", label: name, expiry: parseInt(expires) };
       }
     } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
       // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
       const logData = oldETHRegistarControllerInterface.parseLog(log);
       const [name, label, owner, cost, expires] = logData.args;
       if (ethers.utils.isValidName(name)) {
-        eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expires: parseInt(expires) };
+        eventRecord = { type: "NameRegistered", label: name, expiry: parseInt(expires) };
       }
     } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER1_ADDRESS) {
       // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
       const logData = oldETHRegistarControllerInterface.parseLog(log);
       const [name, label, cost, expires] = logData.args;
       if (ethers.utils.isValidName(name)) {
-        eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+        eventRecord = { type: "NameRenewed", label: name, expiry: parseInt(expires) };
       }
     } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
       // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
       const logData = oldETHRegistarControllerInterface.parseLog(log);
       const [name, label, cost, expires] = logData.args;
       if (ethers.utils.isValidName(name)) {
-        eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+        eventRecord = { type: "NameRenewed", label: name, expiry: parseInt(expires) };
       }
     } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
       // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
       const logData = oldETHRegistarControllerInterface.parseLog(log);
       const [name, label, cost, expires] = logData.args;
       if (ethers.utils.isValidName(name)) {
-        eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+        eventRecord = { type: "NameRenewed", label: name, expiry: parseInt(expires) };
       }
     } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
       // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
       const logData = ethRegistarControllerInterface.parseLog(log);
       const [name, label, cost, expires] = logData.args;
       if (ethers.utils.isValidName(name)) {
-        eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expires: parseInt(expires) };
+        eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expires) };
       }
     } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
       // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
@@ -141,39 +141,26 @@ async function processLogs(fromBlock, toBlock, logs) {
       const [node, name, owner, fuses, expiry] = logData.args;
       let parts = decodeNameWrapperBytes(name);
       let nameString = parts.join(".");
-      // console.log("NameWrapper - nameString: " + nameString + ", expiry: " + expiry);
       let label = null;
-      // let labelhash = null;
-      // let labelhashDecimals = null;
-      // console.log("parts: " + JSON.stringify(parts));
       if (parts.length >= 2 && parts[parts.length - 1] == "eth" && ethers.utils.isValidName(nameString)) {
-        // parts = parts.splice(-1);
-        // console.log("parts: " + JSON.stringify(parts));
         label = parts.join(".").replace(/\.eth$/, '');
-        // label = parts[parts.length - 2];
-      //   labelhash = ethers.utils.solidityKeccak256(["string"], [label]);
-      //   labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
-      eventRecord = { type: "NameWrapped", /*namehash: node, name: nameString, */label, /*labelhash, subdomain, owner, fuses, */expiry: parseInt(expiry) };
+        eventRecord = { type: "NameWrapped", label, expiry: parseInt(expiry) };
       }
-      // const namehashDecimals = ethers.BigNumber.from(node).toString();
-      // const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
-      // console.log("subdomain: " + subdomain);
-      // if (ethers.utils.isValidName(label)) {
-      //   eventRecord = { type: "NameWrapped", /*namehash: node, name: nameString, */label, /*labelhash, subdomain, owner, fuses, */expiry: parseInt(expiry) };
-      // }
-      // console.log(JSON.stringify(eventRecord, null, 2));
     }
     if (eventRecord) {
-      console.log(JSON.stringify(eventRecord));
+      // console.log(JSON.stringify(eventRecord));
+      labelsMap[eventRecord.label] = eventRecord.expiry;
     }
   }
 }
 
-async function scrapeLog(provider, fromBlock, toBlock) {
+async function scrapeLog(provider, fromBlock, toBlock, startTime) {
   const range = toBlock - fromBlock;
   let divide = false;
   if (range <= 50000) {
-    console.log("scrapeLog - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", range: " + range);
+    // const currentTime = new Date().getTime();
+    // const elapsedMinutes = (currentTime - startTime) / 60 / 1000;
+    // console.log(new Date() + " scrapeLog :" + fromBlock + " - " + toBlock + " = " + range + ", elapsedMinutes: " + elapsedMinutes.toFixed(2));
     try {
       const topics = [
         [
@@ -184,8 +171,8 @@ async function scrapeLog(provider, fromBlock, toBlock) {
         ],
       ];
       const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-      console.log("logs: " + JSON.stringify(logs, null, 2));
-      await processLogs(fromBlock, toBlock, logs);
+      // console.log("logs: " + JSON.stringify(logs, null, 2));
+      await processLogs(fromBlock, toBlock, logs, startTime);
     } catch (e) {
       console.log("scrapeLog - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
       divide = true;
@@ -195,118 +182,37 @@ async function scrapeLog(provider, fromBlock, toBlock) {
   }
   if (divide) {
     const mid = parseInt((fromBlock + toBlock) / 2);
-    await scrapeLog(provider, fromBlock, mid);
-    await scrapeLog(provider, parseInt(mid) + 1, toBlock);
+    await scrapeLog(provider, fromBlock, mid, startTime);
+    await scrapeLog(provider, parseInt(mid) + 1, toBlock, startTime);
   }
 }
 
 async function doIt() {
   const provider = new ethers.providers.JsonRpcProvider(); // ethers.js 5.x
   // const provider = ethers.getDefaultProvider("http://localhost:8545/"); // ethers.js 6.x
-  // const signer = provider.getSigner()
   const blockNumber = await provider.getBlockNumber();
   console.log("blockNumber: " + blockNumber);
-  // const startBlock = 7666495; // older one
+  const startBlock = 7666495; // older one
   // const startBlock = 16925608; // NameWrapper
   const endBlock = blockNumber;
-  const startBlock = endBlock - 10000;
-  // const endBlock = startBlock + 100000;
+  const startTime = new Date().getTime();
+  await scrapeLog(provider, startBlock, endBlock, startTime);
 
-  // const startBlock = 20167298;
-  // const endBlock = 20167298;
-  // const startBlock = 17525788; // ceo.collections.eth
-  // const endBlock = 17525788;
+  // console.log("labelsMap: " + JSON.stringify(labelsMap, null, 2));
+  const labels = [];
+  for (const [label, expiry] of Object.entries(labelsMap)) {
+    labels.push([label, expiry]);
+  }
+  labels.sort((a, b) => {
+    return ('' + a[0]).localeCompare(b[0]);
+  });
+  // console.log("labels: " + JSON.stringify(labels));
 
-
-  await scrapeLog(provider, startBlock, endBlock);
-
-  // const tx = await provider.getTransaction("0x0277c0e10517f112bd7faab0680bba313902dcb2191389067426c06e1d05762f");
-  // const txReceipt = await provider.getTransactionReceipt("0x0277c0e10517f112bd7faab0680bba313902dcb2191389067426c06e1d05762f");
-  // console.log("tx: " + JSON.stringify(tx, null, 2));
-  // console.log("txReceipt: " + JSON.stringify(txReceipt, null, 2));
-
-  // const block = 20167298;
-  //
-  // const topics = [
-  //   [
-  //     // '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', // NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
-  //     // '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
-  //     '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
-  //   //   // '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4',
-  //   ],
-  //   // null,
-  //   // null,
-  //   // null
-  // ];
-  //
-  // const logs = await provider.getLogs({ address: null, fromBlock: block, toBlock: block, topics });
-  // console.log("logs: " + JSON.stringify(logs, null, 2));
-
-  // const cdboc = new ethers.Contract(CDBOCADDRESS, CDBOCABI, provider);
-  // const cdbocBuilder = new ethers.Contract(CDBOCBUILDERADDRESS, CDBOCBUILDERABI, provider);
-  //
-  // console.log("Hello");
-  // const data = [];
-  // for (const item of TXS.slice(0, 10000)) {
-  //   const txHash = item[0];
-  //   const txType = item[1];
-  //   if (txType == "Set Data") {
-  //     const tx = await provider.getTransaction(txHash);
-  //     console.log(txHash + " " + tx.data.substring(0, 100));
-  //     let decodedData = cdbocBuilder.interface.parseTransaction({ data: tx.data, value: tx.value });
-  //     // console.log(JSON.stringify(decodedData));
-  //     const txReceipt = await provider.getTransactionReceipt(txHash);
-  //     data.push({ tx, txReceipt, decodedData });
-  //   }
-  //   // console.log(tx.data);
-  //   // const block = await provider.getBlock(txReceipt.blockNumber);
-  //   // let decodedData = cdboc.interface.parseTransaction({ data: tx.data, value: tx.value });
-  //   // data.push({ tx, txReceipt, decodedData });
-  // }
-  //
-  // for (const item of data) {
-  //   console.log(item.tx.data.substring(0, 100));
-  // }
-  //
-  // // console.log("txHash\tlayer\ttuple#\tname\tmimeType\tdata");
-  // for (const item of data) {
-  //   const key = item.decodedData.args[0];
-  //   const imageData = item.decodedData.args[1];
-  //   let buffer = Buffer.from(imageData.substring(2), "hex");
-  //   let filename = "images/image_" + key + '.unknownformat';
-  //   console.log(key + " => " + imageData.substring(0, 100) + " " + filename);
-  //   fs.writeFile(filename, buffer, (err) => {
-  //     if (err) return console.error(err);
-  //     // console.log("File successfully written !");
-  //   });
-  // //   let tupleIndex = 0;
-  //   // for (const tuple of item.decodedData.args[1]) {
-  // //     // console.log(item.tx.hash + "\t" + item.decodedData.args[0] + "\t" + tupleIndex + "\t" + tuple[0] + "\t" + tuple[1] + "\t" + tuple[2].substring(0, 10) + "\t" + tuple[3] + "\t" + tuple[4]);
-  // //     const name = tuple[0].toLowerCase().replace(/['\/ @]/g, '');
-  // //     let buffer = Buffer.from(tuple[2].substring(2), "hex");
-  // //     let filename = "images/layer" + item.decodedData.args[0] + "-trait" + tupleIndex.toString().padStart(3, '0') + "-" + name + '.' + tuple[1].replace(/^.*\//, '');
-  // //     console.log('\n#### Layer ' + item.decodedData.args[0] + ' ' + LAYERNAMES[item.decodedData.args[0]] + ' Trait ' + tupleIndex.toString().padStart(3, '0') + ' ' + tuple[0]);
-  // //     fs.writeFile(filename, buffer, (err) => {
-  // //       if (err) return console.error(err);
-  // //       // console.log("File successfully written !");
-  // //     });
-  // //
-  // //     filename = "svgs/layer" + item.decodedData.args[0] + "-trait" + tupleIndex.toString().padStart(3, '0')+ "-" + name + ".svg"; // + tuple[1].replace(/^.*\//, '');
-  // //     // console.log('<kbd><img src="scripts/' + filename + '" width="150px" height="150px" style="image-rendering: pixelated !important;" /></kbd>'); //  + ' ' + buffer);
-  // //     console.log('<kbd><img src="scripts/' + filename + '" width="300px" height="300px" /></kbd>'); //  + ' ' + buffer);
-  // //     const base64 = buffer.toString('base64');
-  // //     const content = '<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-color:transparent;background-image:url(data:' + tuple[1] + ';base64,' +
-  // //       base64 + ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;"></svg>';
-  // //     fs.writeFile(filename, content, (err) => {
-  // //       if (err) return console.error(err);
-  // //       // console.log("File successfully written !");
-  // //     });
-  // //
-  // //     tupleIndex++;
-  //   // }
-  // }
+  const filename = "labels.json";
+  fs.writeFile(filename, "const LATESTBLOCK=" + endBlock + "; const LABELS=" + JSON.stringify(labels) + ";", (err) => {
+    if (err) return console.error(err);
+    console.log("Labels saved to: " + filename);
+  });
 }
 
 doIt();
-
-// console.log(process.cwd());

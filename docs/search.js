@@ -1061,23 +1061,32 @@ const searchModule = {
         }
       }
       async function getLogs(fromBlock, toBlock, processLogs) {
-        logInfo("dataModule", "actions.syncSearchDatabase.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock);
-        try {
-          const topics = [[
-              '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', // NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
-              '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
-              '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
-              // '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4',
-            ],
-            null,
-            null
-          ];
-          if (total < 100000000 && !store.getters['search/sync'].halt) {
-            const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-            await processLogs(fromBlock, toBlock, logs);
+        const range = toBlock - fromBlock;
+        let divide = false;
+        if (range <= 1000) {
+          logInfo("dataModule", "actions.syncSearchDatabase.getLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", range: " + range);
+          try {
+            const topics = [[
+                '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', // NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
+                '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
+                '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
+                // '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4',
+              ],
+              null,
+              null
+            ];
+            if (total < 100000000 && !store.getters['search/sync'].halt) {
+              const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+              await processLogs(fromBlock, toBlock, logs);
+            }
+          } catch (e) {
+            logInfo("dataModule", "actions.syncSearchDatabase.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
+            divide = true;
           }
-        } catch (e) {
-          logInfo("dataModule", "actions.syncSearchDatabase.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
+        } else {
+          divide = true;
+        }
+        if (divide) {
           const mid = parseInt((fromBlock + toBlock) / 2);
           await getLogs(fromBlock, mid, processLogs);
           await getLogs(parseInt(mid) + 1, toBlock, processLogs);

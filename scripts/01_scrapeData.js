@@ -65,9 +65,9 @@ async function processLogs(fromBlock, toBlock, logs) {
 
 async function scrapeLog(provider, fromBlock, toBlock) {
   const range = toBlock - fromBlock;
-  console.log("scrapeLog - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", range: " + range);
   let divide = false;
-  if (range < 50000) {
+  if (range <= 50000) {
+    console.log("scrapeLog - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", range: " + range);
     try {
       const topics = [[
           '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', // NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
@@ -100,8 +100,8 @@ async function doIt() {
   const blockNumber = await provider.getBlockNumber();
   console.log("blockNumber: " + blockNumber);
   const startBlock = 7666495;
-  // TODO: const endBlock = blockNumber;
-  const endBlock = startBlock + 100000;
+  const endBlock = blockNumber;
+  // const endBlock = startBlock + 100000;
 
   await scrapeLog(provider, startBlock, endBlock);
 

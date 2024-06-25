@@ -102,4 +102,4 @@ Click on the [Cloud-Download] icon to retrieve ownership, metadata and price det
 
 Enjoy!
 
-© Bok Consulting Pty Ltd 2024, MIT license
+onlyfens.eth, Only for ENS © Bok Consulting Pty Ltd 2024, MIT license

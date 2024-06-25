@@ -93,7 +93,7 @@ const Search = {
           </div>
           <div class="mt-0 pr-1">
             <!-- <font size="-2" v-b-popover.hover.top="'# tokens / total tokens transferred'">{{ filteredSortedItems.length + '/' + totalNames }}</font> -->
-            <font size="-2" v-b-popover.hover.top="'# names'">{{ filteredSortedItems.length }}</font>
+            <font size="-2" v-b-popover.hover.top="'# names. Max 10,000'">{{ filteredSortedItems.length }}</font>
           </div>
           <div class="mt-0 pr-1">
             <b-pagination size="sm" v-model="settings.currentPage" @input="saveSettings" :total-rows="filteredSortedItems.length" :per-page="settings.pageSize" style="height: 0;"></b-pagination>
@@ -459,79 +459,81 @@ const Search = {
         }
       }
 
-      logInfo("Search", "filteredItems - start");
-      // for (const [name, expiry] of Object.entries(this.names || {})) {
-      for (const [name, expiry] of this.names) {
-        let include = true;
-        if (regex) {
-          if (!(regex.test(name))) {
-            include = false;
-          }
-        }
-        // TODO: Not significantly faster than regex
-        // if (name && filter) {
-        //   // if (!name.includes(filter)) {
-        //   if (name.indexOf(filter) == -1) {
-        //     include = false;
-        //   }
-        // }
-        if (include && dateFrom) {
-          if (expiry < dateFrom) {
-            include = false;
-          }
-        }
-        if (include && dateTo) {
-          if (expiry > dateTo) {
-            include = false;
-          }
-        }
-        if (include) {
-          let status = "danger";
-          if (expiry < moment().unix()) {
-            status = "danger";
-          } else if (expiry < expiry3m) {
-            status = "warning";
-          } else if (expiry < expiry1y) {
-            status = "primary";
-          } else {
-            status = "success";
-          }
-
-          const info = this.infos[name] || {};
-          const wrapped = info.wrapped || false;
-          const contract = wrapped ? ENS_NAMEWRAPPER_ADDRESS : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
-          let tokenId = null;
-          if (wrapped) {
-            try {
-              const namehash = ethers.utils.namehash(name + ".eth");
-              tokenId = ethers.BigNumber.from(namehash).toString();
-            } catch (e) {
-              console.log("Error namehash: " + name + " " + e.message);
+      if (this.settings.filter != null && this.settings.filter.length >= 3) {
+        logInfo("Search", "filteredItems - start");
+        // for (const [name, expiry] of Object.entries(this.names || {})) {
+        for (const [name, expiry] of this.names) {
+          let include = true;
+          if (regex) {
+            if (!(regex.test(name))) {
+              include = false;
             }
-          } else {
-            const labelhash = ethers.utils.solidityKeccak256(["string"], [name]);
-            tokenId = ethers.BigNumber.from(labelhash).toString();
           }
-          results.push({
-            name,
-            expiry,
-            status,
-            wrapped,
-            contract,
-            tokenId,
-            owner: info.owner || null,
-            created: info.created || null,
-            registered: info.registration || null,
-            lastSale: info.lastSale || {},
-            price: info.price || {},
-            topBid: info.topBid || {},
-          });
+          // TODO: Not significantly faster than regex
+          // if (name && filter) {
+          //   // if (!name.includes(filter)) {
+          //   if (name.indexOf(filter) == -1) {
+          //     include = false;
+          //   }
+          // }
+          if (include && dateFrom) {
+            if (expiry < dateFrom) {
+              include = false;
+            }
+          }
+          if (include && dateTo) {
+            if (expiry > dateTo) {
+              include = false;
+            }
+          }
+          if (include) {
+            let status = "danger";
+            if (expiry < moment().unix()) {
+              status = "danger";
+            } else if (expiry < expiry3m) {
+              status = "warning";
+            } else if (expiry < expiry1y) {
+              status = "primary";
+            } else {
+              status = "success";
+            }
+
+            const info = this.infos[name] || {};
+            const wrapped = info.wrapped || false;
+            const contract = wrapped ? ENS_NAMEWRAPPER_ADDRESS : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
+            let tokenId = null;
+            if (wrapped) {
+              try {
+                const namehash = ethers.utils.namehash(name + ".eth");
+                tokenId = ethers.BigNumber.from(namehash).toString();
+              } catch (e) {
+                console.log("Error namehash: " + name + " " + e.message);
+              }
+            } else {
+              const labelhash = ethers.utils.solidityKeccak256(["string"], [name]);
+              tokenId = ethers.BigNumber.from(labelhash).toString();
+            }
+            results.push({
+              name,
+              expiry,
+              status,
+              wrapped,
+              contract,
+              tokenId,
+              owner: info.owner || null,
+              created: info.created || null,
+              registered: info.registration || null,
+              lastSale: info.lastSale || {},
+              price: info.price || {},
+              topBid: info.topBid || {},
+            });
+          }
+          if (results.length >= 10000) {
+            break;
+          }
         }
-        if (results.length >= 10000) {
-          break;
-        }
+        logInfo("Search", "filteredItems - end");
       }
-      logInfo("Search", "filteredItems - end");
       return results;
     },
     filteredSortedItems() {

@@ -208,7 +208,7 @@ async function doIt() {
   });
   // console.log("labels: " + JSON.stringify(labels));
 
-  const filename = "labels.json";
+  const filename = "labels.js";
   fs.writeFile(filename, "const LATESTBLOCK=" + endBlock + "; const LABELS=" + JSON.stringify(labels) + ";", (err) => {
     if (err) return console.error(err);
     console.log("Labels saved to: " + filename);

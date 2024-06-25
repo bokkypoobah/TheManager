@@ -57,8 +57,10 @@ const ENS_NAMEWRAPPER_ABI = [{"inputs":[{"internalType":"contract ENS","name":"_
 let total = 0;
 
 async function processLogs(fromBlock, toBlock, logs) {
+  const range = toBlock - fromBlock;
   total = parseInt(total) + logs.length;
-  console.log("processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", logs.length: " + logs.length + ", total: " + total);
+  console.log("processLogs - fromBlock: " + fromBlock + ", toBlock: " + toBlock + ", range: " + range + ", logs.length: " + logs.length + ", total: " + total);
+
 }
 
 async function scrapeLog(provider, fromBlock, toBlock) {
@@ -98,7 +100,8 @@ async function doIt() {
   const blockNumber = await provider.getBlockNumber();
   console.log("blockNumber: " + blockNumber);
   const startBlock = 7666495;
-  const endBlock = blockNumber;
+  // TODO: const endBlock = blockNumber;
+  const endBlock = startBlock + 100000;
 
   await scrapeLog(provider, startBlock, endBlock);
 

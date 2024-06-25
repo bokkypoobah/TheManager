@@ -157,7 +157,7 @@ async function processLogs(fromBlock, toBlock, logs, startTime) {
 async function scrapeLog(provider, fromBlock, toBlock, startTime) {
   const range = toBlock - fromBlock;
   let divide = false;
-  if (range <= 50000) {
+  if (range <= 5000) {
     // const currentTime = new Date().getTime();
     // const elapsedMinutes = (currentTime - startTime) / 60 / 1000;
     // console.log(new Date() + " scrapeLog :" + fromBlock + " - " + toBlock + " = " + range + ", elapsedMinutes: " + elapsedMinutes.toFixed(2));

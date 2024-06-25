@@ -98,6 +98,14 @@ Click on the [Cloud-Download] icon to retrieve ownership, metadata and price det
 
 <br />
 
+<hr />
+
+## ./scripts
+
+Execute `node 01_scrapeData.js` to in the [./scripts/](./scripts/) folder to create [./scripts/labels.json](./scripts/labels.json)
+
+<br />
+
 <br />
 
 Enjoy!

@@ -7,7 +7,7 @@ const Search = {
 
         <div class="d-flex flex-wrap m-0 p-0">
           <div class="mt-0 pr-1" style="width: 200px;">
-            <b-form-input type="text" size="sm" v-model.trim="settings.filter" @change="saveSettings" debounce="2400" v-b-popover.hover.top="'Regex filter by name. Min 3 characters'" placeholder="🔍 name regex"></b-form-input>
+            <b-form-input type="text" size="sm" v-model.trim="settings.filter" @change="saveSettings" debounce="2400" v-b-popover.hover.top="'Regex filter by name. '" placeholder="🔍 name regex, min 3 chars"></b-form-input>
           </div>
           <div class="mt-0 pr-1">
             <b-form-select size="sm" v-model="settings.dateOption" @change="saveSettings" :options="dateOptions"></b-form-select>
@@ -908,9 +908,9 @@ const searchModule = {
       const chainId = store.getters['connection/chainId'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
       await context.dispatch('syncSearchDatabase', parameter);
-      if (!context.state.sync.halt) {
+      // if (!context.state.sync.halt) {
         await context.dispatch('collateSearchDatabase', parameter);
-      }
+      // }
       context.commit('setSyncSection', { section: null, total: null });
       context.commit('setSyncHalt', false);
       // context.commit('forceRefresh');
@@ -963,49 +963,49 @@ const searchModule = {
               const logData = oldETHRegistarController1Interface.parseLog(log);
               const [name, label, owner, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER1_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = ethRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
@@ -1014,38 +1014,31 @@ const searchModule = {
               let parts = decodeNameWrapperBytes(name);
               let nameString = parts.join(".");
               let label = null;
-              let labelhash = null;
-              let labelhashDecimals = null;
-              if (parts.length >= 2 && parts[parts.length - 1] == "eth") {
-                label = parts[parts.length - 2];
-                labelhash = ethers.utils.solidityKeccak256(["string"], [label]);
-                labelhashDecimals = ethers.BigNumber.from(labelhash).toString();
+              if (parts.length >= 2 && parts[parts.length - 1] == "eth" && ethers.utils.isValidName(nameString)) {
+                label = parts.join(".").replace(/\.eth$/, '');
               }
-              const namehashDecimals = ethers.BigNumber.from(node).toString();
               const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
               if (ethers.utils.isValidName(label)) {
                 eventRecord = { type: EVENTTYPE_NAMEWRAPPED, label, expiry: parseInt(expiry) };
+                // if (subdomain) {
+                //   console.log("With subdomain: " + nameString + " & " + JSON.stringify(eventRecord, null, 2));
+                // }
               }
-              // console.log(JSON.stringify(eventRecord, null, 2));
-            } else if (log.topics[0] == "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4" && contract == ENS_NAMEWRAPPER_ADDRESS) {
-              // NameUnwrapped (index_topic_1 bytes32 node, address owner)
-              const logData = nameWrapperInterface.parseLog(log);
-              const [node, owner] = logData.args;
-              eventRecord = { type: EVENTTYPE_NAMEUNWRAPPED, namehash: node };
+            // } else if (log.topics[0] == "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4" && contract == ENS_NAMEWRAPPER_ADDRESS) {
+            //   // NameUnwrapped (index_topic_1 bytes32 node, address owner)
+            //   const logData = nameWrapperInterface.parseLog(log);
+            //   const [node, owner] = logData.args;
+            //   eventRecord = { type: EVENTTYPE_NAMEUNWRAPPED, namehash: node };
             } else {
               if (!(contract in IGNORE_CONTRACTS)) {
                 console.log("NOT HANDLED: " + JSON.stringify(log));
               }
             }
-            // if (eventRecord && (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS || contract == ENS_NAMEWRAPPER_ADDRESS)) {
             if (eventRecord) {
               records.push( {
-                // chainId: parameter.chainId,
                 blockNumber: parseInt(log.blockNumber),
                 logIndex: parseInt(log.logIndex),
-                // txIndex: parseInt(log.transactionIndex),
                 txHash: log.transactionHash,
-                // contract,
                 ...eventRecord,
                 confirmations: parameter.blockNumber - log.blockNumber,
               });
@@ -1108,142 +1101,6 @@ const searchModule = {
       await getLogs(startBlock, parameter.blockNumber, processLogs);
       logInfo("dataModule", "actions.syncSearchDatabase END");
     },
-
-    // async collateSearchDatabaseSqlite3WASMTesting(context, parameter) {
-    //   logInfo("dataModule", "actions.collateSearchDatabaseSqlite3WASMTesting: " + JSON.stringify(parameter));
-    //
-    //   globalThis.sqlite3InitModule().then(function(sqlite3) {
-    //     console.log('sqlite3 =', JSON.stringify(sqlite3));
-    //     console.log("Done initializing. Running demo...");
-    //     try {
-    //       const capi = sqlite3.capi/*C-style API*/,
-    //             oo = sqlite3.oo1/*high-level OO API*/;
-    //       console.log("sqlite3 version",capi.sqlite3_libversion(), capi.sqlite3_sourceid());
-    //
-    //       if ('OpfsDb' in oo) {
-    //         console.log("OpfsDb available");
-    //       } else {
-    //         console.log("OpfsDb NOT available");
-    //       }
-    //
-    //       if(sqlite3.capi.sqlite3_vfs_find("opfs")) {
-    //         console.log("Opfs vfs available");
-    //       } else {
-    //         console.log("Opfs vfs NOT available");
-    //       }
-    //       // Alternately:
-    //       // if(sqlite3.oo1.OpfsDb){ ... OPFS VFS is available ... }
-    //
-    //       const dbSql = new oo.DB("/mydb.sqlite3", 'ct');
-    //       console.log("transient dbSql: " + dbSql.filename);
-    //
-    //       console.log("Create a table...");
-    //       dbSql.exec("CREATE TABLE IF NOT EXISTS labels(name STRING NOT NULL PRIMARY KEY, expiry)");
-    //       //Equivalent:
-    //       // db.exec({
-    //       //   sql:"CREATE TABLE IF NOT EXISTS t(a,b)"
-    //       //   // ... numerous other options ...
-    //       // });
-    //       // const dbInfo = store.getters['data/db'];
-    //       // const db = new Dexie(dbInfo.name);
-    //       // db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
-    //       // const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //       // logInfo("dataModule", "actions.collateSearchDatabaseSqlite3WASMTesting BEGIN");
-    //       // let counter = 0;
-    //       // const nameMap = {};
-    //       // const total = await db.registrations.count();
-    //       // context.commit('setSyncSection', { section: 'Collating Names', total });
-    //       // // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10000).each(e => {
-    //       // await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
-    //       //   let label = null;
-    //       //   let expiry = null;
-    //       //   if (e.type == "NameRegistered") {
-    //       //     label = e.label;
-    //       //     expiry = e.expires;
-    //       //   } else if (e.type == "NameRenewed") {
-    //       //     label = e.label;
-    //       //     expiry = e.expires;
-    //       //   } else if (e.type == "NameWrapped") {
-    //       //     label = e.label;
-    //       //     expiry = e.expiry;
-    //       //     subdomain = e.subdomain;
-    //       //   } else {
-    //       //     // console.log(JSON.stringify(e));
-    //       //   }
-    //       //   console.log(label + " => " + expiry);
-    //       //   // if (ethers.utils.isValidName(label)) {
-    //       //     // nameMap[label] = expiry;
-    //       //   // } else {
-    //       //   //   console.log("Invalid: '" + label + "' " + e.txHash);
-    //       //   // }
-    //       //   if ((counter % 10000) == 0) {
-    //       //     context.commit('setSyncSection', { section: e.label.substring(0, 30), total });
-    //       //     context.commit('setSyncCompleted', counter);
-    //       //   }
-    //       //   counter++;
-    //       //   // if (store.getters['search/sync'].halt) {
-    //       //   //   return false; // TODO: Does not work
-    //       //   // }
-    //       // });
-    //
-    //
-    //     } catch(e) {
-    //       console.log("Exception: " + e.message);
-    //     }
-    //   });
-    //
-    //   // const dbInfo = store.getters['data/db'];
-    //   // const db = new Dexie(dbInfo.name);
-    //   // db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
-    //   // const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //   // logInfo("dataModule", "actions.collateSearchDatabaseSqlite3WASMTesting BEGIN");
-    //   // let counter = 0;
-    //   // const nameMap = {};
-    //   // const total = await db.registrations.count();
-    //   // context.commit('setSyncSection', { section: 'Collating Names', total });
-    //   // // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10000).each(e => {
-    //   // await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
-    //   //   let label = null;
-    //   //   let expiry = null;
-    //   //   if (e.type == "NameRegistered") {
-    //   //     label = e.label;
-    //   //     expiry = e.expires;
-    //   //   } else if (e.type == "NameRenewed") {
-    //   //     label = e.label;
-    //   //     expiry = e.expires;
-    //   //   } else if (e.type == "NameWrapped") {
-    //   //     label = e.label;
-    //   //     expiry = e.expiry;
-    //   //     subdomain = e.subdomain;
-    //   //   } else {
-    //   //     // console.log(JSON.stringify(e));
-    //   //   }
-    //   //   // if (ethers.utils.isValidName(label)) {
-    //   //     nameMap[label] = expiry;
-    //   //   // } else {
-    //   //   //   console.log("Invalid: '" + label + "' " + e.txHash);
-    //   //   // }
-    //   //   if ((counter % 10000) == 0) {
-    //   //     context.commit('setSyncSection', { section: e.label.substring(0, 30), total });
-    //   //     context.commit('setSyncCompleted', counter);
-    //   //   }
-    //   //   counter++;
-    //   //   // if (store.getters['search/sync'].halt) {
-    //   //   //   return false; // TODO: Does not work
-    //   //   // }
-    //   // });
-    //   // const names = [];
-    //   // for (const [label, expiry] of Object.entries(nameMap)) {
-    //   //   names.push([label, expiry]);
-    //   // }
-    //   // // console.log("names: " + JSON.stringify(names, null, 2));
-    //   // context.commit('setState', { name: "names", data: names });
-    //   // // console.log("context.state.names: " + JSON.stringify(context.state.names, null, 2));
-    //   // await context.dispatch('saveData', ['names']);
-    //
-    //
-    //   logInfo("dataModule", "actions.collateSearchDatabaseSqlite3WASMTesting END");
-    // },
 
     async collateSearchDatabase(context, parameter) {
       logInfo("dataModule", "actions.collateSearchDatabase: " + JSON.stringify(parameter));

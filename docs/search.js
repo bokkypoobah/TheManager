@@ -92,8 +92,8 @@ const Search = {
             <b-form-select size="sm" v-model="settings.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.top="'Yeah. Sort'"></b-form-select>
           </div>
           <div class="mt-0 pr-1">
-            <!-- <font size="-2" v-b-popover.hover.top="'# tokens / total tokens transferred'">{{ filteredSortedItems.length + '/' + totalNames }}</font> -->
-            <font size="-2" v-b-popover.hover.top="'# names. Max 10,000'">{{ filteredSortedItems.length }}</font>
+            <font size="-2" v-b-popover.hover.top="'# tokens / total tokens transferred'">{{ filteredSortedItems.length + '/' + totalNames }}</font>
+            <!-- <font size="-2" v-b-popover.hover.top="'# names. Max 10,000'">{{ filteredSortedItems.length }}</font> -->
           </div>
           <div class="mt-0 pr-1">
             <b-pagination size="sm" v-model="settings.currentPage" @input="saveSettings" :total-rows="filteredSortedItems.length" :per-page="settings.pageSize" style="height: 0;"></b-pagination>
@@ -410,15 +410,12 @@ const Search = {
 
     totalNames() {
       // let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
-      // for (const [address, data] of Object.entries(this.tokens[this.chainId] || {})) {
-      //   result += Object.keys(data.tokenIds).length;
-      // }
-      // return result;
-      return Object.keys(this.names).length;
+      return this.names.length;
     },
     filteredItems() {
-      const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
-      console.log("infos: " + JSON.stringify(this.infos, null, 2));
+      // const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
+      const results = [];
+      // console.log("infos: " + JSON.stringify(this.infos, null, 2));
 
       let regex = null;
       if (this.settings.filter != null && this.settings.filter.length > 0) {
@@ -1066,6 +1063,7 @@ const searchModule = {
               null
             ];
             if (total < 100000000 && !store.getters['search/sync'].halt) {
+            // if (total < 1000 && !store.getters['search/sync'].halt) {
               const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
               await processLogs(fromBlock, toBlock, logs);
             }
@@ -1107,12 +1105,26 @@ const searchModule = {
       db.version(dbInfo.version).stores(dbInfo.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       logInfo("dataModule", "actions.collateSearchDatabase BEGIN");
+
+      const data = await db.cache.where("objectName").equals("nameMap").toArray();
+      let savedLatestBlockNumber = 0;
+      let nameMap = {};
+      if (data.length == 1) {
+        nameMap = data[0].object.nameMap;
+        savedLatestBlockNumber = data[0].object.latestBlockNumber;
+        // logInfo("dataModule", "actions.collateSearchDatabase - savedLatestBlockNumber: " + savedLatestBlockNumber + ", nameMap: " + JSON.stringify(data[0].object));
+        logInfo("dataModule", "actions.collateSearchDatabase - savedLatestBlockNumber: " + savedLatestBlockNumber);
+      }
+
       let counter = 0;
-      const nameMap = {};
       const total = await db.registrations.count();
       context.commit('setSyncSection', { section: 'Collating Names', total });
+      let latestBlockNumber = 0;
       // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10000).each(e => {
-      await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
+      // await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
+      await db.registrations.where('[blockNumber+logIndex]').aboveOrEqual([savedLatestBlockNumber, Dexie.minKey]).each(e => {
+        // console.log("blockNumber: " + e.blockNumber + ": " + e.label);
+        latestBlockNumber = e.blockNumber;
         let label = null;
         let expiry = null;
         if (e.type == EVENTTYPE_NAMEREGISTERED) {
@@ -1128,27 +1140,25 @@ const searchModule = {
         } else {
           // console.log(JSON.stringify(e));
         }
-        // if (ethers.utils.isValidName(label)) {
-          nameMap[label] = expiry;
-        // } else {
-        //   console.log("Invalid: '" + label + "' " + e.txHash);
-        // }
+        nameMap[label] = expiry;
         if ((counter % 10000) == 0) {
           context.commit('setSyncSection', { section: e.label.substring(0, 30), total });
           context.commit('setSyncCompleted', counter);
         }
         counter++;
-        // if (store.getters['search/sync'].halt) {
-        //   return false; // TODO: Does not work
-        // }
+      });
+      if (latestBlockNumber > (parameter.blockNumber - parameter.confirmations)) {
+        latestBlockNumber = parameter.blockNumber - parameter.confirmations;
+      }
+      await db.cache.put({ objectName: "nameMap", object: { nameMap, latestBlockNumber } }).then(function() {
+      }).catch(function(error) {
+        console.log("error: " + error);
       });
       const names = [];
       for (const [label, expiry] of Object.entries(nameMap)) {
         names.push([label, expiry]);
       }
-      // console.log("names: " + JSON.stringify(names, null, 2));
       context.commit('setState', { name: "names", data: names });
-      // console.log("context.state.names: " + JSON.stringify(context.state.names, null, 2));
       await context.dispatch('saveData', ['names']);
       logInfo("dataModule", "actions.collateSearchDatabase END");
     },

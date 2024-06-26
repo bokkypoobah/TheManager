@@ -92,7 +92,7 @@ const Search = {
             <b-form-select size="sm" v-model="settings.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.top="'Yeah. Sort'"></b-form-select>
           </div>
           <div class="mt-0 pr-1">
-            <font size="-2" v-b-popover.hover.top="'# tokens / total tokens transferred'">{{ filteredSortedItems.length + '/' + totalNames }}</font>
+            <font size="-2" v-b-popover.hover.top="'# names / total names'">{{ filteredSortedItems.length + '/' + totalNames }}</font>
             <!-- <font size="-2" v-b-popover.hover.top="'# names. Max 10,000'">{{ filteredSortedItems.length }}</font> -->
           </div>
           <div class="mt-0 pr-1">

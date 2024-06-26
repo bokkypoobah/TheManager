@@ -7,7 +7,7 @@ const Search = {
 
         <div class="d-flex flex-wrap m-0 p-0">
           <div class="mt-0 pr-1" style="width: 200px;">
-            <b-form-input type="text" size="sm" v-model.trim="settings.filter" @change="saveSettings" debounce="2400" v-b-popover.hover.top="'Regex filter by name'" placeholder="🔍 name regex"></b-form-input>
+            <b-form-input type="text" size="sm" v-model.trim="settings.filter" @change="saveSettings" debounce="2400" v-b-popover.hover.top="'Regex filter by name. Min 3 characters'" placeholder="🔍 name regex"></b-form-input>
           </div>
           <div class="mt-0 pr-1">
             <b-form-select size="sm" v-model="settings.dateOption" @change="saveSettings" :options="dateOptions"></b-form-select>
@@ -963,49 +963,49 @@ const searchModule = {
               const logData = oldETHRegistarController1Interface.parseLog(log);
               const [name, label, owner, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, owner, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: "NameRegistered", label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMEREGISTERED, label: name, /*labelhash: label, owner, cost: cost.toString(), */expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER1_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER2_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_OLDETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = oldETHRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae" && contract == ENS_ETHREGISTRARCONTROLLER_ADDRESS) {
               // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
               const logData = ethRegistarControllerInterface.parseLog(log);
               const [name, label, cost, expiry] = logData.args;
               if (ethers.utils.isValidName(name)) {
-                eventRecord = { type: "NameRenewed", label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMERENEWED, label: name, /*labelhash: label, cost: cost.toString(), */expiry: parseInt(expiry) };
               }
             } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
@@ -1024,18 +1024,18 @@ const searchModule = {
               const namehashDecimals = ethers.BigNumber.from(node).toString();
               const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
               if (ethers.utils.isValidName(label)) {
-                eventRecord = { type: "NameWrapped", /*namehash: node, name: nameString, */label, /*labelhash, subdomain, owner, fuses, */expiry: parseInt(expiry) };
+                eventRecord = { type: EVENTTYPE_NAMEWRAPPED, label, expiry: parseInt(expiry) };
               }
               // console.log(JSON.stringify(eventRecord, null, 2));
             } else if (log.topics[0] == "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4" && contract == ENS_NAMEWRAPPER_ADDRESS) {
               // NameUnwrapped (index_topic_1 bytes32 node, address owner)
               const logData = nameWrapperInterface.parseLog(log);
               const [node, owner] = logData.args;
-              eventRecord = { type: "NameUnwrapped", namehash: node/*, owner*/ };
-            } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340" && contract == "0x2411C98CC59D88e13Cc9CbFc576F7D40828aC47c") {
-              console.log("IGNORING: " + JSON.stringify(log));
+              eventRecord = { type: EVENTTYPE_NAMEUNWRAPPED, namehash: node };
             } else {
-              console.log("NOT HANDLED: " + JSON.stringify(log));
+              if (!(contract in IGNORE_CONTRACTS)) {
+                console.log("NOT HANDLED: " + JSON.stringify(log));
+              }
             }
             // if (eventRecord && (contract == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS || contract == ENS_NAMEWRAPPER_ADDRESS)) {
             if (eventRecord) {
@@ -1070,7 +1070,7 @@ const searchModule = {
                 '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f', // NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
                 '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
                 '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
-                // '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4',
+                // '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4', // NameUnwrapped (index_topic_1 bytes32 node, address owner)
               ],
               null,
               null
@@ -1098,6 +1098,10 @@ const searchModule = {
 
       const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
       const latest = await db.registrations.where('[blockNumber+logIndex]').between([Dexie.minKey, Dexie.minKey],[Dexie.maxKey, Dexie.maxKey]).last();
+      // const startBlock = ENS_OLDETHREGISTRARCONTROLLER1_DEPLOYMENTBLOCKNUMBER;
+      // const startBlock = ENS_OLDETHREGISTRARCONTROLLER2_DEPLOYMENTBLOCKNUMBER;
+      // const startBlock = ENS_OLDETHREGISTRARCONTROLLER_DEPLOYMENTBLOCKNUMBER;
+      // const startBlock = ENS_NAMEWRAPPER_DEPLOYMENTBLOCKNUMBER;
       const startBlock = latest ? parseInt(latest.blockNumber) + 1: 0;
       context.commit('setSyncCompleted', startBlock);
       logInfo("dataModule", "actions.syncSearchDatabase - startBlock: " + startBlock);
@@ -1256,13 +1260,13 @@ const searchModule = {
       await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
         let label = null;
         let expiry = null;
-        if (e.type == "NameRegistered") {
+        if (e.type == EVENTTYPE_NAMEREGISTERED) {
           label = e.label;
           expiry = e.expiry;
-        } else if (e.type == "NameRenewed") {
+        } else if (e.type == EVENTTYPE_NAMERENEWED) {
           label = e.label;
           expiry = e.expiry;
-        } else if (e.type == "NameWrapped") {
+        } else if (e.type == EVENTTYPE_NAMEWRAPPED) {
           label = e.label;
           expiry = e.expiry;
           subdomain = e.subdomain;

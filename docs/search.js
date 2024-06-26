@@ -1117,9 +1117,9 @@ const searchModule = {
       }
 
       let counter = 0;
-      const total = await db.registrations.count();
-      context.commit('setSyncSection', { section: 'Collating Names', total });
       let latestBlockNumber = 0;
+      const total = await db.registrations.where('[blockNumber+logIndex]').aboveOrEqual([savedLatestBlockNumber, Dexie.minKey]).count();
+      context.commit('setSyncSection', { section: 'Collating Names', total });
       // await db.registrations.orderBy('[label+blockNumber+logIndex]').limit(10000).each(e => {
       // await db.registrations.orderBy('[label+blockNumber+logIndex]').each(e => {
       await db.registrations.where('[blockNumber+logIndex]').aboveOrEqual([savedLatestBlockNumber, Dexie.minKey]).each(e => {

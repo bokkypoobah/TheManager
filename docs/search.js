@@ -140,7 +140,7 @@ const Search = {
               <span v-if="data.item.name">
                 <font size="-1">
                   <b-badge :variant="data.item.status">
-                    {{ data.item.name }}
+                    {{ data.item.name + '.eth' }}
                   </b-badge>
                 </font>
               </span>

@@ -908,9 +908,6 @@ const searchModule = {
       const chainId = store.getters['connection/chainId'];
       const parameter = { chainId, blockNumber, confirmations, ...options };
       await context.dispatch('syncSearchDatabase', parameter);
-      // if (!context.state.sync.halt) {
-        await context.dispatch('collateSearchDatabase', parameter);
-      // }
       context.commit('setSyncSection', { section: null, total: null });
       context.commit('setSyncHalt', false);
       // context.commit('forceRefresh');
@@ -1099,6 +1096,7 @@ const searchModule = {
       context.commit('setSyncCompleted', startBlock);
       logInfo("dataModule", "actions.syncSearchDatabase - startBlock: " + startBlock);
       await getLogs(startBlock, parameter.blockNumber, processLogs);
+      await context.dispatch('collateSearchDatabase', { startBlock, endBlock: parameter.blockNumber, ...parameter });
       logInfo("dataModule", "actions.syncSearchDatabase END");
     },
 

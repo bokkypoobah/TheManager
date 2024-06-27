@@ -512,18 +512,18 @@ function processENSEventLogs(logs) {
           // NameRegistered (index_topic_1 uint256 id, index_topic_2 address owner, uint256 expires)
           const logData = ethBaseRegistarImplementationInterface.parseLog(log);
           const [labelhash, owner, expires] = logData.args;
-          eventRecord = { type: "EVENTTYPE_NAMEREGISTERED", labelhash: labelhash.toHexString(), owner, expires: parseInt(expires) };
+          eventRecord = { type: "NameRegistered", labelhash: labelhash.toHexString(), owner, expires: parseInt(expires) };
         } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f") {
           // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
           const logData = oldETHRegistarControllerInterface.parseLog(log);
           const [name, label, owner, cost, expires] = logData.args;
-          eventRecord = { type: "EVENTTYPE_NAMEREGISTERED", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
+          eventRecord = { type: "NameRegistered", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
         } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae") {
           // ERC-721 NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
           const logData = oldETHRegistarControllerInterface.parseLog(log);
           const [name, label, cost, expiry] = logData.args;
           if (ethers.utils.isValidName(name)) {
-            eventRecord = { type: "EVENTTYPE_NAMERENEWED", label: name, cost: cost.toString(), expiry: parseInt(expiry) };
+            eventRecord = { type: "NameRenewed", label: name, cost: cost.toString(), expiry: parseInt(expiry) };
           }
         } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340") {
           // ERC-1155 NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
@@ -537,7 +537,7 @@ function processENSEventLogs(logs) {
           }
           // const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
           if (ethers.utils.isValidName(label)) {
-            eventRecord = { type: "EVENTTYPE_NAMEWRAPPED", label, owner, fuses, expiry: parseInt(expiry) };
+            eventRecord = { type: "NameWrapped", label, owner, fuses, expiry: parseInt(expiry) };
             // if (subdomain) {
             //   console.log("With subdomain: " + nameString + " & " + JSON.stringify(eventRecord, null, 2));
             // }
@@ -546,7 +546,7 @@ function processENSEventLogs(logs) {
           // ERC-1155 NameUnwrapped (index_topic_1 bytes32 node, address owner)
           const logData = nameWrapperInterface.parseLog(log);
           const [node, owner] = logData.args;
-          eventRecord = { type: "EVENTTYPE_NAMEUNWRAPPED", node, owner };
+          eventRecord = { type: "NameUnwrapped", node, owner };
 
         } else if (log.topics[0] == "0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0") {
           // NewResolver (index_topic_1 bytes32 node, address resolver)

@@ -63,10 +63,14 @@ const ViewName = {
             </template>
             <template #cell(when)="data">
               <span v-if="data.item.timestamp">
-                {{ formatTimestamp(data.item.timestamp) }}
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerTxPrefix + data.item.txHash" target="_blank">
+                  {{ formatTimestamp(data.item.timestamp) }}
+                </b-link>
               </span>
               <span v-else>
-                {{ data.item.blockNumber + ':' + data.item.txIndex + ':' + data.item.logIndex }}
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerTxPrefix + data.item.txHash" target="_blank">
+                  {{ data.item.blockNumber + ':' + data.item.txIndex + ':' + data.item.logIndex }}
+                </b-link>
               </span>
             </template>
             <template #cell(txHash)="data">
@@ -196,13 +200,12 @@ const ViewName = {
         "stealthMetaAddress": { variant: "success", name: "My Stealth Meta-Address" },
       },
       eventFields: [
-        { key: 'number', label: '#', sortable: false, thStyle: 'width: 3%;', tdClass: 'text-truncate' },
-        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
-        { key: 'txHash', label: 'Tx Hash', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-truncate' },
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-truncate' },
         { key: 'logIndex', label: 'LogIndex', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
-        { key: 'contract', label: 'Contract', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
+        { key: 'contract', label: 'Contract', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-truncate' },
         { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 40%;' /*, tdClass: 'text-truncate' */ },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 50%;' /*, tdClass: 'text-truncate' */ },
       ],
     }
   },

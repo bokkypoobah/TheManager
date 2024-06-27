@@ -409,12 +409,12 @@ const Search = {
     },
 
     totalNames() {
-      // let result = (store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0;
-      return this.names.length;
+      let result = (store.getters['search/forceRefresh'] % 2) == 0 ? this.names.length : this.names.length;
+      return result;
     },
     filteredItems() {
-      // const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
-      const results = [];
+      const results = (store.getters['search/forceRefresh'] % 2) == 0 ? [] : [];
+      // const results = [];
       // console.log("infos: " + JSON.stringify(this.infos, null, 2));
 
       let regex = null;
@@ -499,7 +499,7 @@ const Search = {
 
             const info = this.infos[name] || {};
             const wrapped = info.wrapped || false;
-            const contract = wrapped ? ENS_NAMEWRAPPER_ADDRESS : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
+            const contract = (wrapped || subdomain) ? ENS_NAMEWRAPPER_ADDRESS : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
             let tokenId = null;
             if (wrapped || subdomain) {
               try {
@@ -839,11 +839,13 @@ const searchModule = {
       completed: null,
       halt: false,
     },
+    forceRefresh: 0,
   },
   getters: {
     names: state => state.names,
     infos: state => state.infos,
     sync: state => state.sync,
+    forceRefresh: state => state.forceRefresh,
   },
   mutations: {
     setState(state, info) {
@@ -861,6 +863,10 @@ const searchModule = {
     },
     setSyncHalt(state, halt) {
       state.sync.halt = halt;
+    },
+    forceRefresh(state) {
+      Vue.set(state, 'forceRefresh', parseInt(state.forceRefresh) + 1);
+      logInfo("searchModule", "mutations.forceRefresh: " + state.forceRefresh);
     },
   },
   actions: {
@@ -1221,13 +1227,18 @@ const searchModule = {
           wrappedNames.push(label);
         }
       }
+      for (const label of labels) {
+        if (label.indexOf(".") >= 0) {
+          wrappedNames.push(label);
+        }
+      }
       completed = 0;
       context.commit('setSyncSection', { section: 'Wrapped Details', total: wrappedNames.length });
       context.commit('setSyncCompleted', 0);
       for (let i = 0; i < wrappedNames.length && !context.state.sync.halt; i += BATCHSIZE) {
         const batch = wrappedNames.slice(i, parseInt(i) + BATCHSIZE);
         let continuation = null;
-        // console.log("batch: " + JSON.stringify(batch));
+        console.log("batch: " + JSON.stringify(batch));
         do {
           let url = "https://api.reservoir.tools/tokens/v7?";
           let separator = "";
@@ -1252,6 +1263,7 @@ const searchModule = {
           let i = 0;
           for (token of data.tokens) {
             const tokenData = parseReservoirTokenData(token);
+            // console.log("tokenData: " + JSON.stringify(tokenData, null, 2));
             const label = tokenIdToLabelMap[tokenData.tokenId];
             infos[label] = { ...tokenData, wrapped: true };
             completed++;
@@ -1260,12 +1272,13 @@ const searchModule = {
           context.commit('setSyncCompleted', completed);
           await delay(DELAYINMILLIS);
         } while (continuation != null && !context.state.sync.halt);
-        console.log("infos: " + JSON.stringify(infos, null, 2));
+        // console.log("infos: " + JSON.stringify(infos, null, 2));
         context.commit('setState', { name: "infos", data: infos });
         await context.dispatch('saveData', ['infos']);
       }
       context.commit('setSyncSection', { section: null, total: null });
       context.commit('setSyncHalt', false);
+      context.commit('forceRefresh');
       logInfo("dataModule", "actions.retrieveData END");
     },
   },

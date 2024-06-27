@@ -1,7 +1,7 @@
 const ViewName = {
   template: `
     <div>
-      <b-modal ref="viewname" v-model="show" hide-footer header-class="m-0 px-3 py-2" body-bg-variant="light" size="lg">
+      <b-modal ref="viewname" v-model="show" hide-footer header-class="m-0 px-3 py-2" body-bg-variant="light" size="xl">
         <template #modal-title>View Name</template>
 
         <b-form-group label="Contract:" label-for="token-contract" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -49,18 +49,58 @@ const ViewName = {
 
         </b-form-group>
 
-        <font size="-2">
-          <pre>
-{{ filteredSortedItems }}
-          </pre>
-        </font>
-
         <b-form-group label="Attributes:" label-for="token-image" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-row v-for="(attribute, i) in attributes"  v-bind:key="i" class="m-0 p-0">
             <b-col cols="3" class="m-0 px-2 text-right"><font size="-3">{{ attribute.trait_type }}</font></b-col>
             <b-col cols="9" class="m-0 px-2"><b><font size="-2">{{ ["Created", "Registration", "Expiry"].includes(attribute.trait_type) ? formatTimestamp(attribute.value) : attribute.value }}</font></b></b-col>
           </b-row>
         </b-form-group>
+
+        <font size="-2">
+          <b-table small fixed striped responsive hover :fields="eventFields" :items="filteredSortedItems" show-empty head-variant="light" class="m-0 mt-1">
+            <template #cell(number)="data">
+              {{ parseInt(data.index) }}
+            </template>
+            <template #cell(when)="data">
+              {{ data.item.blockNumber + ':' + data.item.txIndex + ':' + data.item.logIndex }}
+            </template>
+            <template #cell(txHash)="data">
+              {{ data.item.txHash.substring(0, 10) + '...' + data.item.txHash.slice(-8) }}
+            </template>
+            <template #cell(contract)="data">
+              {{ data.item.contract.substring(0, 10) + '...' + data.item.contract.slice(-8) }}
+            </template>
+            <template #cell(info)="data">
+              <span v-if="data.item.type == 'Transfer'">
+                From: {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }} To: {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
+              </span>
+              <span v-else-if="data.item.type == 'NewOwner'">
+                Owner: {{ data.item.owner.substring(0, 10) + '...' + data.item.owner.slice(-8) }}
+              </span>
+              <span v-else-if="data.item.type == 'NewResolver'">
+                Resolver: {{ data.item.resolver.substring(0, 10) + '...' + data.item.resolver.slice(-8) }}
+              </span>
+              <span v-else-if="data.item.type == 'NameRegistered'">
+                Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ data.item.expires }}
+              </span>
+              <span v-else-if="data.item.type == 'NameRenewed'">
+                Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ data.item.expiry }}
+              </span>
+              <span v-else-if="data.item.type == 'TextChanged'">
+                Key: {{ data.item.key }} Value: {{ data.item.value }}
+              </span>
+              <span v-else-if="data.item.type == 'AddrChanged'">
+                a: {{ data.item.a }}
+              </span>
+              <span v-else-if="data.item.type == 'AddressChanged'">
+                coinType: {{ data.item.coinType }} newAddress: {{ data.item.newAddress }}
+              </span>
+              <span v-else>
+                {{ data.item }}
+              </span>
+            </template>
+          </b-table>
+        </font>
 
         <b-form-group label="" label-for="token-refreshtokenmetadata" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-button size="sm" @click="refreshTokenMetadata();" variant="link" v-b-popover.hover.top="'Refresh Token Metadata'"><b-icon-arrow-repeat shift-v="+1" font-scale="1.1" variant="primary"></b-icon-arrow-repeat></b-button>
@@ -81,6 +121,14 @@ const ViewName = {
         "stealthAddress": { variant: "dark", name: "My Stealth Address" },
         "stealthMetaAddress": { variant: "success", name: "My Stealth Meta-Address" },
       },
+      eventFields: [
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
+        { key: 'txHash', label: 'Tx Hash', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
+        { key: 'contract', label: 'Contract', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
+        { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-truncate' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 40%;' /*, tdClass: 'text-truncate' */ },
+      ],
     }
   },
   computed: {
@@ -108,9 +156,9 @@ const ViewName = {
     events() {
       return store.getters['viewName/events'];
     },
-    tokens() {
-      return store.getters['data/tokens'];
-    },
+    // tokens() {
+    //   return store.getters['data/tokens'];
+    // },
     prices() {
       return store.getters['data/prices'];
     },

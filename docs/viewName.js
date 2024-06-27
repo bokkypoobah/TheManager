@@ -396,6 +396,36 @@ const viewNameModule = {
         logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
       }
 
+      // // 2nd parameter with tokenId
+      //
+      // const erc721TokenIdDecimals = ethers.BigNumber.from(erc721TokenId).toString();
+      // console.log("erc721TokenIdDecimals: " + erc721TokenIdDecimals + " " + erc721TokenId);
+      // const erc1155TokenIdDecimals = ethers.BigNumber.from(erc1155TokenId).toString();
+      // console.log("erc1155TokenIdDecimals: " + erc1155TokenIdDecimals + " " + erc1155TokenId);
+      //
+      // try {
+      //   const topics = [
+      //     '0x6ada868dd3058cf77a48a74489fd7963688e5464b2b0fa957ace976243270e92', // ReverseClaimed (index_topic_1 address addr, index_topic_2 bytes32 node)
+      //     "0x000000000000000000000000A2113f1E9A66c3B0A75BB466bbBfeEeC987ac92e",
+      //     // [ erc721TokenId, erc1155TokenId ],
+      //     // erc1155TokenId,
+      //   ];
+      //   console.log("topics: " + JSON.stringify(topics, null, 2));
+      //   const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+      //   console.log("logs: " + JSON.stringify(logs, null, 2));
+      //   // await processLogs(fromBlock, toBlock, logs);
+      //   const results = processENSEventLogs(logs);
+      // } catch (e) {
+      //   logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
+      // }
+      //
+      // // 0x13c293ab26f380f6555b301eecbae5dc67ce5ce322670655f3396abf2983a145
+      // const reverseAddress = "a2113f1e9a66c3b0a75bb466bbbfeeec987ac92e.addr.reverse";
+      // const namehash = ethers.utils.namehash(reverseAddress);
+      // console.log("reverseAddress: " + reverseAddress + ", namehash: " + namehash);
+      // // reverseAddress: a2113f1e9a66c3b0a75bb466bbbfeeec987ac92e.addr.reverse, namehash: 0x7d75f26ebf4147fc33aef5d5d6ae97e7a8e0f8985a40d73bb2ddacdd1e5e3ce0
+
+
       // await context.commit('updateTransfers', info);
     },
     async loadTransfers(context, info) {

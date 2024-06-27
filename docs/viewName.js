@@ -113,7 +113,13 @@ const ViewName = {
                   </b-link>
               </span>
               <span v-else-if="data.item.type == 'NameRegistered'">
-                Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ formatTimestamp(data.item.expires) }}
+                <span v-if="data.item.label">
+                  Label: {{ data.item.label }}
+                </span>
+                <span v-if="data.item.label">
+                  Cost: {{ formatETH(data.item.cost) + ' ETH' }}
+                </span>
+                Expiry: {{ formatTimestamp(data.item.expires) }}
               </span>
               <span v-else-if="data.item.type == 'NameRenewed'">
                 Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ formatTimestamp(data.item.expiry) }}

@@ -333,12 +333,13 @@ const viewNameModule = {
         if (!(event.blockNumber in state.events)) {
           Vue.set(state.events, event.blockNumber, {});
         }
-        if (!(event.logIndex in state.events[event.blockNumber])) {
-          Vue.set(state.events[event.blockNumber], event.logIndex, {});
+        if (!(event.txIndex in state.events[event.blockNumber])) {
+          Vue.set(state.events[event.blockNumber], event.txIndex, {});
         }
-        Vue.set(state.events[event.blockNumber], event.logIndex, {
+        Vue.set(state.events[event.blockNumber][event.txIndex], event.logIndex, {
           ...event,
           blockNumber: undefined,
+          txIndex: undefined,
           logIndex: undefined,
         });
       }
@@ -405,6 +406,8 @@ const viewNameModule = {
       const erc1155TokenId = ethers.utils.namehash(info.label + ".eth");
       const fromBlock = 0;
       const toBlock = blockNumber;
+
+      // ENS Events
       try {
         const topics = [[
             '0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9', // NameRegistered (index_topic_1 uint256 id, index_topic_2 address owner, uint256 expires)
@@ -427,12 +430,99 @@ const viewNameModule = {
           [ erc721TokenId, erc1155TokenId ],
           null
         ];
-        // console.log("topics: " + JSON.stringify(topics, null, 2));
         const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
-        // console.log("logs: " + JSON.stringify(logs, null, 2));
-        // await processLogs(fromBlock, toBlock, logs);
         const events = processENSEventLogs(logs);
         await context.commit('addEvents', events);
+      } catch (e) {
+        logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
+      }
+
+      // ERC-721 Transfers
+      try {
+        const topics = [[
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', // Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
+          ],
+          null,
+          null,
+          erc721TokenId,
+        ];
+        const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
+        const events = processENSEventLogs(logs);
+        await context.commit('addEvents', events);
+      } catch (e) {
+        logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
+      }
+
+      // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
+      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, accountAs32Bytes, null ],
+      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, null, accountAs32Bytes ],
+
+      // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
+      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, accountAs32Bytes, null ],
+      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, null, accountAs32Bytes ],
+
+      const selectedAddresses = [];
+      for (const [address, addressData] of Object.entries(store.getters['data/addresses'] || {})) {
+        if (address.substring(0, 2) == "0x" && addressData.process) {
+          selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
+        }
+      }
+      console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
+
+      const erc1155TokenIdDecimals = ethers.BigNumber.from(erc1155TokenId).toString();
+
+      // ERC-1155 Transfers To My Account
+      try {
+        const topics = [[
+            '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', // TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
+            '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', // TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
+          ],
+          null,
+          null,
+          selectedAddresses,
+        ];
+        const logs = await provider.getLogs({ address: ENS_NAMEWRAPPER_ADDRESS, fromBlock, toBlock, topics });
+        const events = processENSEventLogs(logs);
+
+        const selectedEvents = [];
+        for (const event of events) {
+          if (event.type == "TransferSingle" && event.tokenId == erc1155TokenIdDecimals) {
+            // console.log("event: " + JSON.stringify(event, null, 2));
+            selectedEvents.push(event);
+          } else if (event.type == "TransferBatch") {
+            // TODO: Handle this
+          }
+        }
+
+        await context.commit('addEvents', selectedEvents);
+      } catch (e) {
+        logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
+      }
+
+      // ERC-1155 Transfers From My Account
+      try {
+        const topics = [[
+            '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', // TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
+            '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', // TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
+          ],
+          null,
+          selectedAddresses,
+        ];
+        const logs = await provider.getLogs({ address: ENS_NAMEWRAPPER_ADDRESS, fromBlock, toBlock, topics });
+        const events = processENSEventLogs(logs);
+
+        const selectedEvents = [];
+        for (const event of events) {
+          // console.log("event.tokenId: " + event.tokenId + " vs " + erc1155TokenIdDecimals);
+          if (event.type == "TransferSingle" && event.tokenId == erc1155TokenIdDecimals) {
+            // console.log("event: " + JSON.stringify(event, null, 2));
+            selectedEvents.push(event);
+          } else if (event.type == "TransferBatch") {
+            // TODO: Handle this
+          }
+        }
+
+        await context.commit('addEvents', selectedEvents);
       } catch (e) {
         logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
       }

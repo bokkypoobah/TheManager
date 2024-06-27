@@ -489,10 +489,13 @@ const VALID_ENS_CONTRACTS = {
   "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85": true,
   "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": true,
   "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63": true,
+  "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85": true,
 };
 
 function processENSEventLogs(logs) {
   // console.log("processENSEventLogs - logs: " + JSON.stringify(logs, null, 2));
+  const erc721Interface = new ethers.utils.Interface(ERC721ABI);
+  const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
   // const oldETHRegistarController1Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER1_ABI);
   // const oldETHRegistarController2Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER2_ABI);
   const ethBaseRegistarImplementationInterface = new ethers.utils.Interface(ENS_BASEREGISTRARIMPLEMENTATION_ABI);
@@ -508,7 +511,26 @@ function processENSEventLogs(logs) {
       const contract = log.address;
       let eventRecord = null;
       if (contract in VALID_ENS_CONTRACTS) {
-        if (log.topics[0] == "0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9") {
+        if (log.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") {
+          // Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
+          const logData = ethBaseRegistarImplementationInterface.parseLog(log);
+          const [from, to, tokenId] = logData.args;
+          eventRecord = { type: "Transfer", from, to, tokenId: tokenId.toString() };
+
+        } else if (log.topics[0] == "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") {
+          // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
+          const logData = erc1155Interface.parseLog(log);
+          const [operator, from, to, id, value] = logData.args;
+          tokenId = ethers.BigNumber.from(id).toString();
+          eventRecord = { type: "TransferSingle", operator, from, to, tokenId, value: value.toString(), eventType: "erc1155" };
+        } else if (log.topics[0] == "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb") {
+          // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
+          const logData = erc1155Interface.parseLog(log);
+          const [operator, from, to, ids, values] = logData.args;
+          const tokenIds = ids.map(e => ethers.BigNumber.from(e).toString());
+          eventRecord = { type: "TransferBatch", operator, from, to, tokenIds, values: values.map(e => e.toString()), eventType: "erc1155" };
+
+        } else if (log.topics[0] == "0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9") {
           // NameRegistered (index_topic_1 uint256 id, index_topic_2 address owner, uint256 expires)
           const logData = ethBaseRegistarImplementationInterface.parseLog(log);
           const [labelhash, owner, expires] = logData.args;
@@ -604,6 +626,6 @@ function processENSEventLogs(logs) {
       }
     }
   }
-  console.log("processENSEventLogs - records: " + JSON.stringify(records, null, 2));
+  // console.log("processENSEventLogs - records: " + JSON.stringify(records, null, 2));
   return records;
 }

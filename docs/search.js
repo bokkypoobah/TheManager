@@ -414,8 +414,6 @@ const Search = {
     },
     filteredItems() {
       const results = (store.getters['search/forceRefresh'] % 2) == 0 ? [] : [];
-      // const results = [];
-      // console.log("infos: " + JSON.stringify(this.infos, null, 2));
 
       let regex = null;
       if (this.settings.filter != null && this.settings.filter.length > 0) {
@@ -458,7 +456,6 @@ const Search = {
 
       if (this.settings.filter != null && this.settings.filter.length >= 3) {
         logInfo("Search", "filteredItems - start");
-        // for (const [name, expiry] of Object.entries(this.names || {})) {
         for (const [name, expiryNumber] of this.names) {
           const expiry = expiryNumber > 100000000000 ? parseInt(expiryNumber / 1000) : expiryNumber;
           const subdomain = expiryNumber > 100000000000 ? (expiryNumber % 1000) > 0 : false;
@@ -567,157 +564,6 @@ const Search = {
       // return supplementedResults;
       return results;
     },
-    // filteredItemsOld() {
-    //   return [];
-    //   const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
-    //   let regex = null;
-    //   if (this.settings.filter != null && this.settings.filter.length > 0) {
-    //     try {
-    //       regex = new RegExp(this.settings.filter, 'i');
-    //     } catch (e) {
-    //       console.log("filteredItems - regex error: " + e.message);
-    //       regex = new RegExp(/thequickbrowndogjumpsoverthelazyfox/, 'i');
-    //     }
-    //   }
-    //
-    //   const graceFrom = moment().subtract(90, 'days').unix();
-    //   const expiry1m = moment().add(1, 'months').unix();
-    //   const expiry3m = moment().add(3, 'months').unix();
-    //   const expiry1y = moment().add(1, 'years').unix();
-    //   let dateFrom = null;
-    //   let dateTo = null;
-    //   if (this.settings.dateOption) {
-    //     if (this.settings.dateOption == "active") {
-    //       dateFrom = graceFrom;
-    //     } else if (this.settings.dateOption == "grace") {
-    //       dateFrom = graceFrom;
-    //       dateTo = moment().unix();
-    //     } else if (this.settings.dateOption == "expired") {
-    //       dateTo = moment().unix();
-    //     } else if (this.settings.dateOption == "expiry1m") {
-    //       dateFrom = graceFrom;
-    //       dateTo = expiry1m;
-    //     } else if (this.settings.dateOption == "expiry3m") {
-    //       dateFrom = graceFrom;
-    //       dateTo = expiry3m;
-    //     } else if (this.settings.dateOption == "expiry1y") {
-    //       dateFrom = graceFrom;
-    //       dateTo = expiry1y;
-    //     } else if (this.settings.dateOption == "expiry1yp") {
-    //       dateFrom = expiry1y;
-    //     }
-    //   }
-    //
-    //   const selectedAddressesMap = {};
-    //   for (const [address, addressData] of Object.entries(this.addresses)) {
-    //     if (address.substring(0, 2) == "0x" && addressData.process) {
-    //       selectedAddressesMap[address] = true;
-    //     }
-    //   }
-    //
-    //   for (const [contract, data] of Object.entries(this.tokens[this.chainId] || {})) {
-    //     for (const [tokenId, tokenData] of Object.entries(data.tokenIds)) {
-    //       const metadata = this.metadata[this.chainId] && this.metadata[this.chainId][contract] && this.metadata[this.chainId][contract][tokenId] || {};
-    //       const price = this.prices[this.chainId] && this.prices[this.chainId][contract] && this.prices[this.chainId][contract][tokenId] || {};
-    //       const info = this.tokenInfo[this.chainId] && this.tokenInfo[this.chainId][contract] && this.tokenInfo[this.chainId][contract][tokenId] || {};
-    //       if (metadata.name == null || metadata.name == "null") {
-    //         console.log("  metadata: " + JSON.stringify(metadata, null, 2));
-    //         console.log("  price: " + JSON.stringify(price, null, 2));
-    //         console.log("  info: " + JSON.stringify(info, null, 2));
-    //       }
-    //       let include = true;
-    //       if (this.settings.junkFilter) {
-    //         if (this.settings.junkFilter == 'junk' && !info.junk) {
-    //           include = false;
-    //         } else if (this.settings.junkFilter == 'excludejunk' && info.junk) {
-    //           include = false;
-    //         }
-    //       }
-    //       if (include && dateFrom) {
-    //         if (metadata.expiry < dateFrom) {
-    //           include = false;
-    //         }
-    //       }
-    //       if (include && dateTo) {
-    //         if (metadata.expiry > dateTo) {
-    //           include = false;
-    //         }
-    //       }
-    //       if (include && regex) {
-    //         const name = metadata.name || null;
-    //         if (name) {
-    //           label = name.replace(/\.eth$/, '');
-    //           if (!(regex.test(label))) {
-    //             include = false;
-    //           }
-    //         } else {
-    //           logInfo("Search", "filteredItems - missing name: " + JSON.stringify(metadata, null, 2));
-    //           include = false;
-    //         }
-    //       }
-    //       if (include) {
-    //         // console.log(contract + "/" + tokenId + " => " + JSON.stringify(tokenData));
-    //         let image = null;
-    //         if (metadata.image) {
-    //           if (metadata.image.substring(0, 12) == "ipfs://ipfs/") {
-    //             image = "https://ipfs.io/" + metadata.image.substring(7)
-    //           } else if (metadata.image.substring(0, 7) == "ipfs://") {
-    //             image = "https://ipfs.io/ipfs/" + metadata.image.substring(7);
-    //           } else {
-    //             image = metadata.image;
-    //           }
-    //         }
-    //         const owners = [];
-    //         if (data.type == "erc721") {
-    //           if (tokenData in selectedAddressesMap) {
-    //             owners.push({ owner: tokenData });
-    //           }
-    //         } else {
-    //           for (const [owner, count] of Object.entries(tokenData)) {
-    //             if (owner in selectedAddressesMap) {
-    //               owners.push({ owner, count });
-    //             }
-    //           }
-    //         }
-    //         if (owners.length > 0) {
-    //           let status = "danger";
-    //           if (metadata.expiry) {
-    //             if (metadata.expiry < moment().unix()) {
-    //               status = "danger";
-    //             } else if (metadata.expiry < expiry3m) {
-    //               status = "warning";
-    //             } else if (metadata.expiry < expiry1y) {
-    //               status = "primary";
-    //             } else {
-    //               status = "success";
-    //             }
-    //           }
-    //           // console.log(metadata.name + " " + moment.unix(metadata.expiry).format() + " " + status);
-    //
-    //           results.push({
-    //             contract,
-    //             type: data.type,
-    //             junk: info && info.junk || false,
-    //             // favourite: data.favourite,
-    //             totalSupply: data.totalSupply,
-    //             tokenId,
-    //             owners,
-    //             name: metadata.name || null,
-    //             description: metadata.description || null,
-    //             expiry: metadata.expiry || undefined,
-    //             attributes: price.attributes || null,
-    //             status,
-    //             lastSale: price.lastSale,
-    //             price: price.price,
-    //             topBid: price.topBid,
-    //           });
-    //         }
-    //       }
-    //     }
-    //   }
-    //   return results;
-    // },
-
   },
   methods: {
     toggleTokenJunk(token) {

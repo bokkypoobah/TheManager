@@ -75,6 +75,10 @@ This will take a few minutes.
 
 <kbd><img src="images/Names.png" /></kbd>
 
+### View Names
+
+<kbd><img src="images/ViewName.png" /></kbd>
+
 ### Search - Registration And Renewal Event Retrieval
 
 Note: Retrieving 4.3 million events takes ~ 40 minutes @ Jun 23 2024

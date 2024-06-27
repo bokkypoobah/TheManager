@@ -181,55 +181,6 @@ const ViewToken = {
     copyToClipboard(str) {
       navigator.clipboard.writeText(str);
     },
-    async revealSpendingPrivateKey() {
-      function computeStealthKey(ephemeralPublicKey, viewingPrivateKey, spendingPrivateKey) {
-        const result = {};
-        result.sharedSecret = nobleCurves.secp256k1.getSharedSecret(viewingPrivateKey.substring(2), ephemeralPublicKey.substring(2), false);
-        result.hashedSharedSecret = ethers.utils.keccak256(result.sharedSecret.slice(1));
-        const stealthPrivateKeyNumber = (BigInt(spendingPrivateKey) + BigInt(result.hashedSharedSecret)) % BigInt(SECP256K1_N);
-        const stealthPrivateKeyString = stealthPrivateKeyNumber.toString(16);
-        result.stealthPrivateKey = "0x" + stealthPrivateKeyString.padStart(64, '0');
-        result.stealthPublicKey = "0x" +  nobleCurves.secp256k1.ProjectivePoint.fromPrivateKey(stealthPrivateKeyNumber).toHex(false);
-        result.stealthAddress = ethers.utils.computeAddress(result.stealthPublicKey);
-        return result;
-      }
-
-      logInfo("ViewToken", "methods.revealSpendingPrivateKey BEGIN");
-      const stealthTransfer = this.stealthTransfers && this.stealthTransfers.length > 0 && this.stealthTransfers[0] || {};
-      const linkedToStealthMetaAddress = this.linkedTo && this.linkedTo.stealthMetaAddress || null;
-      const stealthMetaAddressData = linkedToStealthMetaAddress && this.addresses[linkedToStealthMetaAddress] || {};
-      const phraseInHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(stealthMetaAddressData.phrase));
-      const signature = await ethereum.request({
-        method: 'personal_sign',
-        params: [phraseInHex, this.coinbase],
-      });
-      const signature1 = signature.slice(2, 66);
-      const signature2 = signature.slice(66, 130);
-      // Hash "v" and "r" values using SHA-256
-      const hashedV = ethers.utils.sha256("0x" + signature1);
-      const hashedR = ethers.utils.sha256("0x" + signature2);
-      const n = ethers.BigNumber.from(SECP256K1_N);
-      // Calculate the private keys by taking the hash values modulo the curve order
-      const privateKey1 = ethers.BigNumber.from(hashedV).mod(n);
-      const privateKey2 = ethers.BigNumber.from(hashedR).mod(n);
-      const keyPair1 = new ethers.Wallet(privateKey1.toHexString());
-      const keyPair2 = new ethers.Wallet(privateKey2.toHexString());
-      const spendingPrivateKey = keyPair1.privateKey;
-      const viewingPrivateKey = keyPair2.privateKey;
-      const spendingPublicKey = ethers.utils.computePublicKey(keyPair1.privateKey, true);
-      const viewingPublicKey = ethers.utils.computePublicKey(keyPair2.privateKey, true);
-      const computedStealthKey = computeStealthKey(stealthTransfer.ephemeralPublicKey, viewingPrivateKey, spendingPrivateKey);
-      const stealthPrivateKey = computedStealthKey.stealthPrivateKey;
-      Vue.set(this, 'stealthPrivateKey', stealthPrivateKey);
-    },
-    getTokenType(address) {
-      if (address == ADDRESS_ETHEREUMS) {
-        return "eth";
-      } else {
-        // TODO: ERC-20 & ERC-721
-        return address.substring(0, 10) + '...' + address.slice(-8);
-      }
-    },
     formatETH(e, precision = 0) {
       try {
         if (precision == 0) {

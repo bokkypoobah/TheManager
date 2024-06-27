@@ -119,6 +119,7 @@ Execution output:
 
 <kbd><img src="images/ScrapingResult.png" /></kbd>
 
+Note: Tested loading labels.json in the web browser and it took too long to load, so not using this at the moment.
 
 <br />
 

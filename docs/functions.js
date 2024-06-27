@@ -475,9 +475,49 @@ function decodeNameWrapperBytes(b) {
 //   }
 // });
 
+// ENS: Old ETH Registrar Controller 1 @ 0xF0AD5cAd05e10572EfcEB849f6Ff0c68f9700455 deployed Apr-30-2019 03:54:13 AM +UTC
+// ENS: Old ETH Registrar Controller 2 @ 0xB22c1C159d12461EA124b0deb4b5b93020E6Ad16 deployed Nov-04-2019 12:43:55 AM +UTC
+// ENS: Old ETH Registrar Controller @ 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5 deployed Jan-30-2020 12:56:38 AM +UTC
+// ENS: ETH Registrar Controller @ 0x253553366Da8546fC250F225fe3d25d0C782303b deployed Mar-28-2023 11:44:59 AM +UTC
+
+const VALID_ENS_CONTRACTS = {
+  "0xF0AD5cAd05e10572EfcEB849f6Ff0c68f9700455": true,
+  "0xB22c1C159d12461EA124b0deb4b5b93020E6Ad16": true,
+  "0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5": true,
+  "0x253553366Da8546fC250F225fe3d25d0C782303b": true,
+  "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401": true,
+};
 
 function processENSEventLogs(logs) {
-  console.log("processENSEventLogs - logs: " + JSON.stringify(logs, null, 2));
-  const results = [];
-  return results;
+  // console.log("processENSEventLogs - logs: " + JSON.stringify(logs, null, 2));
+  // const oldETHRegistarController1Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER1_ABI);
+  // const oldETHRegistarController2Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER2_ABI);
+  // const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
+  const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
+  const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
+
+  const records = [];
+  for (const log of logs) {
+    if (!log.removed) {
+      // console.log("processENSEventLogs - log: " + JSON.stringify(log));
+      const contract = log.address;
+      if (contract in VALID_ENS_CONTRACTS) {
+        if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f") {
+          console.log("NameRegistered: " + JSON.stringify(log));
+        } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae") {
+          console.log("NameRenewed: " + JSON.stringify(log));
+        } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340") {
+          console.log("NameWrapped: " + JSON.stringify(log));
+        } else if (log.topics[0] == "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4") {
+          console.log("NameUnwrapped: " + JSON.stringify(log));
+        } else {
+          console.log("processENSEventLogs - VALID CONTRACT UNHANDLED log: " + JSON.stringify(log));
+        }
+
+      } else {
+        console.log("processENSEventLogs - INVALID log: " + JSON.stringify(log));
+      }
+    }
+  }
+  return records;
 }

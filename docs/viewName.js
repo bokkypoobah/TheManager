@@ -261,42 +261,6 @@ const ViewName = {
       }, 5000);
 
       // // alert("Request sent and will data will be auto-refreshed in 5 seconds. Manually refresh the locally cached token metadata if required")
-
-
-      // const url = "https://api.reservoir.tools/tokens/v7?tokens=" + this.contract + "%3A" + this.tokenId + "&includeAttributes=true";
-      // console.log("url: " + url);
-      // const data = await fetch(url).then(response => response.json());
-      // // console.log("data: " + JSON.stringify(data, null, 2));
-      // if (data.tokens.length > 0) {
-      //   const tokenData = data.tokens[0].token;
-      //   console.log("tokenData: " + JSON.stringify(tokenData, null, 2));
-      //   // const base64 = await imageUrlToBase64(tokenData.image);
-      //   // const attributes = tokenData.attributes.map(e => ({ trait_type: e.key, value: e.value }));
-      //   // attributes.sort((a, b) => {
-      //   //   return ('' + a.trait_type).localeCompare(b.trait_type);
-      //   // });
-      //   // const address = ethers.utils.getAddress(tokenData.contract);
-      //   // let expiry = undefined;
-      //   // if (address == ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS) {
-      //   //   const expiryRecord = attributes.filter(e => e.trait_type == "Expiration Date");
-      //   //   console.log("expiryRecord: " + JSON.stringify(expiryRecord, null, 2));
-      //   //   expiry = expiryRecord.length == 1 && expiryRecord[0].value || null;
-      //   // }
-      //   // const metadata = {
-      //   //   chainId: tokenData.chainId,
-      //   //   contract: this.contract,
-      //   //   tokenId: tokenData.tokenId,
-      //   //   expiry,
-      //   //   name: tokenData.name,
-      //   //   description: tokenData.description,
-      //   //   image: tokenData.image,
-      //   //   attributes,
-      //   //   // image: base64,
-      //   // };
-      //   // console.log("metadata: " + JSON.stringify(metadata, null, 2));
-      //   // store.dispatch('data/addTokenMetadata', metadata);
-      //   // store.dispatch('data/saveData', ['tokenMetadata']);
-      // }
     },
 
     async deleteAddress(account) {
@@ -329,80 +293,42 @@ const ViewName = {
 const viewNameModule = {
   namespaced: true,
   state: {
+    label: null,
     contract: null,
     tokenId: null,
-
-    linkedTo: {
-      address: null,
-      stealthMetaAddress: null,
-    },
-    type: null,
-    mine: null,
-    favourite: null,
-    name: null,
-    notes: null,
-    source: null,
     show: false,
   },
   getters: {
+    label: state => state.label,
     contract: state => state.contract,
     tokenId: state => state.tokenId,
-
-    linkedTo: state => state.linkedTo,
-    type: state => state.type,
-    mine: state => state.mine,
-    favourite: state => state.favourite,
-    name: state => state.name,
-    notes: state => state.notes,
-    source: state => state.source,
-    stealthTransfers: state => state.stealthTransfers,
     show: state => state.show,
   },
   mutations: {
     viewName(state, info) {
       logInfo("viewNameModule", "mutations.viewName - info: " + JSON.stringify(info));
-
-      // const data = store.getters['data/addresses'][address] || {};
+      state.label = info.label;
       state.contract = info.contract;
       state.tokenId = info.tokenId;
-      // state.linkedTo = data.linkedTo || { address: null, stealthMetaAddress: null };
-      // state.type = data.type;
-      // state.mine = data.mine;
-      // state.favourite = data.favourite;
-      // state.name = data.name;
-      // state.notes = data.notes;
-      // state.source = data.source;
-      // const stealthTransfers = [];
-      // if (data.type == "stealthAddress") {
-      //   const transfers = store.getters['data/transfers'][store.getters['connection/chainId']] || {};
-      //   for (const [blockNumber, logIndexes] of Object.entries(transfers)) {
-      //     for (const [logIndex, item] of Object.entries(logIndexes)) {
-      //       if (item.schemeId == 0 && item.stealthAddress == address) {
-      //         stealthTransfers.push(item);
-      //       }
-      //     }
-      //   }
-      // }
-      // Vue.set(state, 'stealthTransfers', stealthTransfers);
       state.show = true;
       logInfo("viewNameModule", "mutations.viewName - state: " + JSON.stringify(state));
     },
-    setMine(state, mine) {
-      logInfo("viewNameModule", "mutations.setMine - mine: " + mine);
-      state.mine = mine;
-    },
-    setFavourite(state, favourite) {
-      logInfo("viewNameModule", "mutations.setFavourite - favourite: " + favourite);
-      state.favourite = favourite;
-    },
-    setName(state, name) {
-      logInfo("viewNameModule", "mutations.setName - name: " + name);
-      state.name = name;
-    },
-    setNotes(state, notes) {
-      logInfo("viewNameModule", "mutations.setNotes - notes: " + notes);
-      state.notes = notes;
-    },
+    // setMine(state, mine) {
+    //   logInfo("viewNameModule", "mutations.setMine - mine: " + mine);
+    //   state.mine = mine;
+    // },
+    // setFavourite(state, favourite) {
+    //   logInfo("viewNameModule", "mutations.setFavourite - favourite: " + favourite);
+    //   state.favourite = favourite;
+    // },
+    // setName(state, name) {
+    //   logInfo("viewNameModule", "mutations.setName - name: " + name);
+    //   state.name = name;
+    // },
+    // setNotes(state, notes) {
+    //   logInfo("viewNameModule", "mutations.setNotes - notes: " + notes);
+    //   state.notes = notes;
+    // },
     setShow(state, show) {
       state.show = show;
     },
@@ -411,27 +337,53 @@ const viewNameModule = {
     async viewName(context, info) {
       logInfo("viewNameModule", "actions.viewName - info: " + JSON.stringify(info));
       await context.commit('viewName', info);
+      await context.dispatch('loadENSEvents', info);
+      await context.dispatch('loadTransfers', info);
     },
-    async setMine(context, mine) {
-      logInfo("viewNameModule", "actions.setMine - mine: " + mine);
-      await context.commit('setMine', mine);
+    async loadENSEvents(context, info) {
+      logInfo("viewNameModule", "actions.loadENSEvents - info: " + JSON.stringify(info));
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      // await context.commit('updateTransfers', info);
     },
-    async setFavourite(context, favourite) {
-      logInfo("viewNameModule", "actions.setFavourite - favourite: " + favourite);
-      await context.commit('setFavourite', favourite);
+    async loadTransfers(context, info) {
+      logInfo("viewNameModule", "actions.loadTransfers - info: " + JSON.stringify(info));
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      // ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
+      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', accountAs32Bytes, null ],
+      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', null, accountAs32Bytes ],
+
+      // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
+      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, accountAs32Bytes, null ],
+      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, null, accountAs32Bytes ],
+
+      // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
+      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, accountAs32Bytes, null ],
+      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, null, accountAs32Bytes ],
+
+      // await context.commit('updateTransfers', info);
     },
-    async setName(context, name) {
-      logInfo("viewNameModule", "actions.setName - name: " + name);
-      await context.commit('setName', name);
-    },
-    async setNotes(context, notes) {
-      logInfo("viewNameModule", "actions.setNotes - notes: " + notes);
-      await context.commit('setNotes', notes);
-    },
-    async setSource(context, source) {
-      logInfo("viewNameModule", "actions.setSource - source: " + source);
-      await context.commit('setSource', source);
-    },
+    // async setMine(context, mine) {
+    //   logInfo("viewNameModule", "actions.setMine - mine: " + mine);
+    //   await context.commit('setMine', mine);
+    // },
+    // async setFavourite(context, favourite) {
+    //   logInfo("viewNameModule", "actions.setFavourite - favourite: " + favourite);
+    //   await context.commit('setFavourite', favourite);
+    // },
+    // async setName(context, name) {
+    //   logInfo("viewNameModule", "actions.setName - name: " + name);
+    //   await context.commit('setName', name);
+    // },
+    // async setNotes(context, notes) {
+    //   logInfo("viewNameModule", "actions.setNotes - notes: " + notes);
+    //   await context.commit('setNotes', notes);
+    // },
+    // async setSource(context, source) {
+    //   logInfo("viewNameModule", "actions.setSource - source: " + source);
+    //   await context.commit('setSource', source);
+    // },
     async setShow(context, show) {
       await context.commit('setShow', show);
     },

@@ -474,3 +474,10 @@ function decodeNameWrapperBytes(b) {
 //     error("Exception:",e.message);
 //   }
 // });
+
+
+function processENSEventLogs(logs) {
+  console.log("processENSEventLogs - logs: " + JSON.stringify(logs, null, 2));
+  const results = [];
+  return results;
+}

@@ -363,6 +363,10 @@ const viewNameModule = {
       //   [ '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', namehash, null ],
       // NameUnwrapped (index_topic_1 bytes32 node, address owner) 0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4
 
+      // ENS_REGISTRYWITHFALLBACK 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e
+      // NewResolver (index_topic_1 bytes32 node, address resolver) 0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0
+      // NewOwner (index_topic_1 bytes32 node, index_topic_2 bytes32 label, address owner) 0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82
+
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const block = await provider.getBlock();
       const blockNumber = block && block.number || null;
@@ -377,6 +381,8 @@ const viewNameModule = {
             '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae', // NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
             '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340', // NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
             '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4', // NameUnwrapped (index_topic_1 bytes32 node, address owner)
+            '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0', // NewResolver (index_topic_1 bytes32 node, address resolver)
+            '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82', // NewOwner (index_topic_1 bytes32 node, index_topic_2 bytes32 label, address owner)
           ],
           [ erc721TokenId, erc1155TokenId ],
           null

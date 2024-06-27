@@ -487,6 +487,7 @@ const VALID_ENS_CONTRACTS = {
   "0x253553366Da8546fC250F225fe3d25d0C782303b": true,
   "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401": true,
   "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85": true,
+  "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": true,
 };
 
 function processENSEventLogs(logs) {
@@ -497,6 +498,7 @@ function processENSEventLogs(logs) {
   const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
   // const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
   const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
+  const registryWithFallbackInterface = new ethers.utils.Interface(ENS_REGISTRYWITHFALLBACK_ABI);
 
   const records = [];
   for (const log of logs) {
@@ -543,6 +545,18 @@ function processENSEventLogs(logs) {
           const logData = nameWrapperInterface.parseLog(log);
           const [node, owner] = logData.args;
           eventRecord = { type: "EVENTTYPE_NAMEUNWRAPPED", node, owner };
+        } else if (log.topics[0] == "0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0") {
+          // NewResolver (index_topic_1 bytes32 node, address resolver)
+          const logData = registryWithFallbackInterface.parseLog(log);
+          const [node, resolver] = logData.args;
+          eventRecord = { type: "NewResolver", node, resolver };
+
+        } else if (log.topics[0] == "0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82") {
+          // NewOwner (index_topic_1 bytes32 node, index_topic_2 bytes32 label, address owner)
+          const logData = registryWithFallbackInterface.parseLog(log);
+          const [node, label, owner] = logData.args;
+          eventRecord = { type: "NewOwner", node, label, owner };
+
         } else {
           console.log("processENSEventLogs - VALID CONTRACT UNHANDLED log: " + JSON.stringify(log));
         }
@@ -558,7 +572,7 @@ function processENSEventLogs(logs) {
           });
         }
       } else {
-        console.log("processENSEventLogs - INVALID log: " + JSON.stringify(log));
+        console.log("processENSEventLogs - INVALID CONTRACT log: " + JSON.stringify(log));
       }
     }
   }

@@ -486,38 +486,82 @@ const VALID_ENS_CONTRACTS = {
   "0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5": true,
   "0x253553366Da8546fC250F225fe3d25d0C782303b": true,
   "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401": true,
+  "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85": true,
 };
 
 function processENSEventLogs(logs) {
   // console.log("processENSEventLogs - logs: " + JSON.stringify(logs, null, 2));
   // const oldETHRegistarController1Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER1_ABI);
   // const oldETHRegistarController2Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER2_ABI);
-  // const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
-  const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
+  const ethBaseRegistarImplementationInterface = new ethers.utils.Interface(ENS_BASEREGISTRARIMPLEMENTATION_ABI);
+  const oldETHRegistarControllerInterface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER_ABI);
+  // const ethRegistarControllerInterface = new ethers.utils.Interface(ENS_ETHREGISTRARCONTROLLER_ABI);
   const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
 
   const records = [];
   for (const log of logs) {
     if (!log.removed) {
-      // console.log("processENSEventLogs - log: " + JSON.stringify(log));
       const contract = log.address;
+      let eventRecord = null;
       if (contract in VALID_ENS_CONTRACTS) {
-        if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f") {
-          console.log("NameRegistered: " + JSON.stringify(log));
+        if (log.topics[0] == "0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9") {
+          // NameRegistered (index_topic_1 uint256 id, index_topic_2 address owner, uint256 expires)
+          const logData = ethBaseRegistarImplementationInterface.parseLog(log);
+          const [labelhash, owner, expires] = logData.args;
+          eventRecord = { type: "EVENTTYPE_NAMEREGISTERED", labelhash: labelhash.toHexString(), owner, expires: parseInt(expires) };
+        } else if (log.topics[0] == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f") {
+          // ERC-721 NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 cost, uint256 expires)
+          const logData = oldETHRegistarControllerInterface.parseLog(log);
+          const [name, label, owner, cost, expires] = logData.args;
+          eventRecord = { type: "EVENTTYPE_NAMEREGISTERED", label: name, labelhash: label, owner, cost: cost.toString(), expires: parseInt(expires) };
         } else if (log.topics[0] == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae") {
-          console.log("NameRenewed: " + JSON.stringify(log));
+          // ERC-721 NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)
+          const logData = oldETHRegistarControllerInterface.parseLog(log);
+          const [name, label, cost, expiry] = logData.args;
+          if (ethers.utils.isValidName(name)) {
+            eventRecord = { type: "EVENTTYPE_NAMERENEWED", label: name, cost: cost.toString(), expiry: parseInt(expiry) };
+          }
         } else if (log.topics[0] == "0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340") {
-          console.log("NameWrapped: " + JSON.stringify(log));
+          // ERC-1155 NameWrapped (index_topic_1 bytes32 node, bytes name, address owner, uint32 fuses, uint64 expiry)
+          const logData = nameWrapperInterface.parseLog(log);
+          const [node, name, owner, fuses, expiry] = logData.args;
+          let parts = decodeNameWrapperBytes(name);
+          let nameString = parts.join(".");
+          let label = null;
+          if (parts.length >= 2 && parts[parts.length - 1] == "eth" && ethers.utils.isValidName(nameString)) {
+            label = parts.join(".").replace(/\.eth$/, '');
+          }
+          // const subdomain = parts.length >= 3 && parts[parts.length - 3] || null;
+          if (ethers.utils.isValidName(label)) {
+            eventRecord = { type: "EVENTTYPE_NAMEWRAPPED", label, owner, fuses, expiry: parseInt(expiry) };
+            // if (subdomain) {
+            //   console.log("With subdomain: " + nameString + " & " + JSON.stringify(eventRecord, null, 2));
+            // }
+          }
         } else if (log.topics[0] == "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4") {
-          console.log("NameUnwrapped: " + JSON.stringify(log));
+          // ERC-1155 NameUnwrapped (index_topic_1 bytes32 node, address owner)
+          const logData = nameWrapperInterface.parseLog(log);
+          const [node, owner] = logData.args;
+          eventRecord = { type: "EVENTTYPE_NAMEUNWRAPPED", node, owner };
         } else {
           console.log("processENSEventLogs - VALID CONTRACT UNHANDLED log: " + JSON.stringify(log));
         }
-
+        if (eventRecord) {
+          records.push( {
+            chainId: log.chainId,
+            blockNumber: parseInt(log.blockNumber),
+            logIndex: parseInt(log.logIndex),
+            txIndex: parseInt(log.transactionIndex),
+            txHash: log.transactionHash,
+            contract,
+            ...eventRecord,
+          });
+        }
       } else {
         console.log("processENSEventLogs - INVALID log: " + JSON.stringify(log));
       }
     }
   }
+  console.log("processENSEventLogs - records: " + JSON.stringify(records, null, 2));
   return records;
 }

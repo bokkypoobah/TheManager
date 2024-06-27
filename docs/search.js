@@ -459,7 +459,9 @@ const Search = {
       if (this.settings.filter != null && this.settings.filter.length >= 3) {
         logInfo("Search", "filteredItems - start");
         // for (const [name, expiry] of Object.entries(this.names || {})) {
-        for (const [name, expiry] of this.names) {
+        for (const [name, expiryNumber] of this.names) {
+          const expiry = expiryNumber > 100000000000 ? parseInt(expiryNumber / 1000) : expiryNumber;
+          const subdomain = expiryNumber > 100000000000 ? (expiryNumber % 1000) > 0 : false;
           let include = true;
           if (regex) {
             if (!(regex.test(name))) {
@@ -499,7 +501,7 @@ const Search = {
             const wrapped = info.wrapped || false;
             const contract = wrapped ? ENS_NAMEWRAPPER_ADDRESS : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
             let tokenId = null;
-            if (wrapped) {
+            if (wrapped || subdomain) {
               try {
                 const namehash = ethers.utils.namehash(name + ".eth");
                 tokenId = ethers.BigNumber.from(namehash).toString();
@@ -517,6 +519,7 @@ const Search = {
               wrapped,
               contract,
               tokenId,
+              subdomain,
               owner: info.owner || null,
               created: info.created || null,
               registered: info.registration || null,
@@ -1129,14 +1132,18 @@ const searchModule = {
         let expiry = null;
         if (e.type == EVENTTYPE_NAMEREGISTERED) {
           label = e.label;
-          expiry = e.expiry;
+          expiry = e.expiry * 1000;
         } else if (e.type == EVENTTYPE_NAMERENEWED) {
           label = e.label;
-          expiry = e.expiry;
+          expiry = e.expiry * 1000;
         } else if (e.type == EVENTTYPE_NAMEWRAPPED) {
           label = e.label;
           expiry = e.expiry;
-          subdomain = e.subdomain;
+          if (label.indexOf(".") >= 0) {
+            expiry = e.expiry * 1000 + 1;
+          } else {
+            expiry = e.expiry * 1000;
+          }
         } else {
           // console.log(JSON.stringify(e));
         }

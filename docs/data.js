@@ -371,6 +371,15 @@ const dataModule = {
       context.commit('addPrice', info);
       await context.dispatch('saveData', ['prices']);
     },
+    async addTimestamp(context, info) {
+      logInfo("dataModule", "actions.addTimestamp - info: " + JSON.stringify(info, null, 2));
+      context.commit('addTimestamp', info);
+      // await context.dispatch('saveData', ['timestamps']);
+    },
+    async saveTimestamps(context) {
+      logInfo("dataModule", "actions.saveTimestamps");
+      await context.dispatch('saveData', ['timestamps']);
+    },
 
     async deleteAddress(context, account) {
       await context.commit('deleteAddress', account);

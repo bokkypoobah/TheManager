@@ -156,6 +156,9 @@ const ViewName = {
     addresses() {
       return store.getters['data/addresses'];
     },
+    timestamps() {
+      return store.getters['data/timestamps'];
+    },
     contract() {
       return store.getters['viewName/contract'];
     },
@@ -459,7 +462,7 @@ const viewNameModule = {
       // logInfo("viewNameModule", "actions.viewName - info: " + JSON.stringify(info));
       await context.commit('viewName', info);
       await context.dispatch('loadENSEvents', info);
-      // await context.dispatch('loadTransfers', info);
+      await context.dispatch('loadTimestamps', info);
     },
     async loadENSEvents(context, info) {
       logInfo("viewNameModule", "actions.loadENSEvents - info: " + JSON.stringify(info));
@@ -648,23 +651,26 @@ const viewNameModule = {
 
       // await context.commit('updateTransfers', info);
     },
-    async loadTransfers(context, info) {
-      logInfo("viewNameModule", "actions.loadTransfers - info: " + JSON.stringify(info));
+    async loadTimestamps(context, info) {
+      logInfo("viewNameModule", "actions.loadTimestamps - info: " + JSON.stringify(info));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-      // ERC-721 Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 id)
-      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', accountAs32Bytes, null ],
-      // [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', null, accountAs32Bytes ],
-
-      // ERC-1155 TransferSingle (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256 id, uint256 value)
-      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, accountAs32Bytes, null ],
-      // [ '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62', null, null, accountAs32Bytes ],
-
-      // ERC-1155 TransferBatch (index_topic_1 address operator, index_topic_2 address from, index_topic_3 address to, uint256[] ids, uint256[] values)
-      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, accountAs32Bytes, null ],
-      // [ '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb', null, null, accountAs32Bytes ],
-
-      // await context.commit('updateTransfers', info);
+      const timestamps = store.getters['data/timestamps'][store.getters['connection/chainId']];
+      const blockNumbers = Object.keys(context.state.events);
+      let modified = false;
+      for (const blockNumber of blockNumbers) {
+        if (!(blockNumber in timestamps)) {
+          const block = await provider.getBlock(parseInt(blockNumber));
+          store.dispatch('data/addTimestamp', {
+            chainId: store.getters['connection/chainId'],
+            blockNumber,
+            timestamp: block.timestamp,
+          });
+          modified = true;
+        }
+      }
+      if (modified) {
+        store.dispatch('data/saveTimestamps');
+      }
     },
     // async setMine(context, mine) {
     //   logInfo("viewNameModule", "actions.setMine - mine: " + mine);

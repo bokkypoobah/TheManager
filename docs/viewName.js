@@ -51,7 +51,7 @@ const ViewName = {
 
         <font size="-2">
           <pre>
-{{ JSON.stringify(events, null, 2) }}
+{{ filteredSortedItems }}
           </pre>
         </font>
 
@@ -187,6 +187,38 @@ const ViewName = {
         store.dispatch('viewName/setShow', show);
       },
     },
+    filteredItems() {
+      const results = [];
+      for (const [blockNumber, blockData] of Object.entries(this.events)) {
+        for (const [txIndex, txData] of Object.entries(blockData)) {
+          for (const [logIndex, event] of Object.entries(txData)) {
+            // console.log(blockNumber + "/" + txIndex + "/" + logIndex + " => " + JSON.stringify(event, null, 2));
+            results.push({
+              ...event,
+              blockNumber,
+              txIndex,
+              logIndex,
+            });
+          }
+        }
+      }
+
+      logInfo("Search", "filteredItems - results[0..9]: " + JSON.stringify(results.slice(0, 10), null, 2));
+      return results;
+    },
+    filteredSortedItems() {
+      const results = this.filteredItems;
+      results.sort((a, b) => {
+        if (a.blockNumber == b.blockNumber) {
+          return b.logIndex - a.logIndex;
+        } else {
+          return b.blockNumber - a.blockNumber;
+        }
+      });
+      logInfo("Search", "filteredSortedItems - results[0..9]: " + JSON.stringify(results.slice(0, 10), null, 2));
+      return results;
+    },
+
   },
   methods: {
     copyToClipboard(str) {
@@ -328,7 +360,7 @@ const viewNameModule = {
       // logInfo("viewNameModule", "mutations.viewName - state: " + JSON.stringify(state));
     },
     addEvents(state, events) {
-      logInfo("viewNameModule", "mutations.addEvents - events: " + JSON.stringify(events));
+      // logInfo("viewNameModule", "mutations.addEvents - events: " + JSON.stringify(events));
       for (const event of events) {
         if (!(event.blockNumber in state.events)) {
           Vue.set(state.events, event.blockNumber, {});
@@ -343,7 +375,7 @@ const viewNameModule = {
           logIndex: undefined,
         });
       }
-      logInfo("viewNameModule", "mutations.addEvents - state.events: " + JSON.stringify(state.events, null, 2));
+      // logInfo("viewNameModule", "mutations.addEvents - state.events: " + JSON.stringify(state.events, null, 2));
     },
     // setMine(state, mine) {
     //   logInfo("viewNameModule", "mutations.setMine - mine: " + mine);
@@ -467,7 +499,7 @@ const viewNameModule = {
           selectedAddresses.push('0x000000000000000000000000' + address.substring(2, 42).toLowerCase());
         }
       }
-      console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
+      // console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
 
       const erc1155TokenIdDecimals = ethers.BigNumber.from(erc1155TokenId).toString();
 

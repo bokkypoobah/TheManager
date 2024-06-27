@@ -48,6 +48,13 @@ const ViewName = {
           </b-img> -->
 
         </b-form-group>
+
+        <font size="-2">
+          <pre>
+{{ JSON.stringify(events, null, 2) }}
+          </pre>
+        </font>
+
         <b-form-group label="Attributes:" label-for="token-image" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-row v-for="(attribute, i) in attributes"  v-bind:key="i" class="m-0 p-0">
             <b-col cols="3" class="m-0 px-2 text-right"><font size="-3">{{ attribute.trait_type }}</font></b-col>
@@ -62,6 +69,7 @@ const ViewName = {
         <b-form-group v-if="false" label="" label-for="token-delete" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-button size="sm" @click="deleteAddress(contract);" variant="link" v-b-popover.hover.top="'Delete address ' + contract.substring(0, 10) + '...' + contract.slice(-8) + '?'"><b-icon-trash shift-v="+1" font-scale="1.1" variant="danger"></b-icon-trash></b-button>
         </b-form-group>
+
       </b-modal>
     </div>
   `,
@@ -96,6 +104,9 @@ const ViewName = {
     },
     tokenId() {
       return store.getters['viewName/tokenId'];
+    },
+    events() {
+      return store.getters['viewName/events'];
     },
     tokens() {
       return store.getters['data/tokens'];
@@ -296,7 +307,7 @@ const viewNameModule = {
     label: null,
     contract: null,
     tokenId: null,
-    events: [],
+    events: {},
     show: false,
   },
   getters: {
@@ -312,13 +323,26 @@ const viewNameModule = {
       state.label = info.label;
       state.contract = info.contract;
       state.tokenId = info.tokenId;
-      state.events = [];
+      state.events = {};
       state.show = true;
       // logInfo("viewNameModule", "mutations.viewName - state: " + JSON.stringify(state));
     },
-    setEvents(state, events) {
-      logInfo("viewNameModule", "mutations.setEvents - events: " + JSON.stringify(events));
-      state.events = events;
+    addEvents(state, events) {
+      logInfo("viewNameModule", "mutations.addEvents - events: " + JSON.stringify(events));
+      for (const event of events) {
+        if (!(event.blockNumber in state.events)) {
+          Vue.set(state.events, event.blockNumber, {});
+        }
+        if (!(event.logIndex in state.events[event.blockNumber])) {
+          Vue.set(state.events[event.blockNumber], event.logIndex, {});
+        }
+        Vue.set(state.events[event.blockNumber], event.logIndex, {
+          ...event,
+          blockNumber: undefined,
+          logIndex: undefined,
+        });
+      }
+      logInfo("viewNameModule", "mutations.addEvents - state.events: " + JSON.stringify(state.events, null, 2));
     },
     // setMine(state, mine) {
     //   logInfo("viewNameModule", "mutations.setMine - mine: " + mine);
@@ -408,7 +432,7 @@ const viewNameModule = {
         // console.log("logs: " + JSON.stringify(logs, null, 2));
         // await processLogs(fromBlock, toBlock, logs);
         const events = processENSEventLogs(logs);
-        await context.commit('setEvents', events);
+        await context.commit('addEvents', events);
       } catch (e) {
         logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
       }

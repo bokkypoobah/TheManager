@@ -62,47 +62,106 @@ const ViewName = {
               {{ parseInt(data.index) }}
             </template>
             <template #cell(when)="data">
-              {{ data.item.blockNumber + ':' + data.item.txIndex + ':' + data.item.logIndex }}
+              <span v-if="data.item.timestamp">
+                {{ formatTimestamp(data.item.timestamp) }}
+              </span>
+              <span v-else>
+                {{ data.item.blockNumber + ':' + data.item.txIndex + ':' + data.item.logIndex }}
+              </span>
             </template>
             <template #cell(txHash)="data">
-              {{ data.item.txHash.substring(0, 10) + '...' + data.item.txHash.slice(-8) }}
+              <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerTxPrefix + data.item.txHash" target="_blank">
+                {{ data.item.txHash.substring(0, 10) + '...' + data.item.txHash.slice(-8) }}
+              </b-link>
             </template>
             <template #cell(contract)="data">
-              {{ data.item.contract.substring(0, 10) + '...' + data.item.contract.slice(-8) }}
+              <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.contract" target="_blank">
+                {{ data.item.contract.substring(0, 10) + '...' + data.item.contract.slice(-8) }}
+              </b-link>
             </template>
             <template #cell(info)="data">
               <span v-if="data.item.type == 'Transfer'">
-                From: {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }} To: {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
+                From:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.from" target="_blank">
+                    {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }}
+                  </b-link>
+                To:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.to" target="_blank">
+                    {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
+                  </b-link>
               </span>
               <span v-else-if="data.item.type == 'TransferSingle'">
-                From: {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }} To: {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
+                From:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.from" target="_blank">
+                    {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }}
+                  </b-link>
+                To:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.to" target="_blank">
+                    {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
+                  </b-link>
               </span>
               <span v-else-if="data.item.type == 'NewOwner'">
-                Owner: {{ data.item.owner.substring(0, 10) + '...' + data.item.owner.slice(-8) }}
+                Owner:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.owner" target="_blank">
+                    {{ data.item.owner.substring(0, 10) + '...' + data.item.owner.slice(-8) }}
+                  </b-link>
               </span>
               <span v-else-if="data.item.type == 'NewResolver'">
-                Resolver: {{ data.item.resolver.substring(0, 10) + '...' + data.item.resolver.slice(-8) }}
+                Resolver:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.resolver" target="_blank">
+                    {{ data.item.resolver.substring(0, 10) + '...' + data.item.resolver.slice(-8) }}
+                  </b-link>
               </span>
               <span v-else-if="data.item.type == 'NameRegistered'">
-                Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ data.item.expires }}
+                Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ formatTimestamp(data.item.expires) }}
               </span>
               <span v-else-if="data.item.type == 'NameRenewed'">
-                Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ data.item.expiry }}
+                Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ formatTimestamp(data.item.expiry) }}
               </span>
               <span v-else-if="data.item.type == 'TextChanged'">
-                Key: {{ data.item.key }} Value: {{ data.item.value }}
+                Key: {{ data.item.key }}
+                <span v-if="data.item.key == 'avatar'">
+                  Value:
+                    <b-link :href="data.item.value" target="_blank">
+                      {{ data.item.value }}
+                    </b-link>
+                </span>
+                <span v-else>
+                  Value: {{ data.item.value }}
+                </span>
               </span>
               <span v-else-if="data.item.type == 'AddrChanged'">
-                a: {{ data.item.a }}
+                a:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.a" target="_blank">
+                  {{ data.item.a }}
+                  </b-link>
               </span>
               <span v-else-if="data.item.type == 'AddressChanged'">
-                coinType: {{ data.item.coinType }} newAddress: {{ data.item.newAddress }}
+                coinType: {{ data.item.coinType }}
+                <span v-if="data.item.coinType == '60'">
+                  newAddress:
+                    <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.newAddress" target="_blank">
+                      {{ data.item.newAddress }}
+                    </b-link>
+                </span>
+                <span v-else>
+                  newAddress: {{ data.item.newAddress }}
+                </span>
               </span>
               <span v-else-if="data.item.type == 'NameWrapped'">
-                label: {{ data.item.label }} owner: {{ data.item.owner }} fuses: {{ data.item.fuses }} expiry: {{ data.item.expiry }}
+                label: {{ data.item.label }}
+                owner:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.owner" target="_blank">
+                    {{ data.item.owner }}
+                  </b-link>
+                fuses: {{ data.item.fuses }}
+                expiry: {{ formatTimestamp(data.item.expiry) }}
               </span>
               <span v-else-if="data.item.type == 'NameUnwrapped'">
-                owner: {{ data.item.owner }}
+                owner:
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.owner" target="_blank">
+                    {{ data.item.owner }}
+                  </b-link>
               </span>
               <span v-else>
                 {{ data.item }}
@@ -131,11 +190,12 @@ const ViewName = {
         "stealthMetaAddress": { variant: "success", name: "My Stealth Meta-Address" },
       },
       eventFields: [
-        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 3%;', tdClass: 'text-truncate' },
         { key: 'when', label: 'When', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
-        { key: 'txHash', label: 'Tx Hash', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
+        { key: 'txHash', label: 'Tx Hash', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-truncate' },
+        { key: 'logIndex', label: 'LogIndex', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
         { key: 'contract', label: 'Contract', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
-        { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-truncate' },
+        { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-truncate' },
         { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 40%;' /*, tdClass: 'text-truncate' */ },
       ],
     }
@@ -248,16 +308,19 @@ const ViewName = {
       },
     },
     filteredItems() {
+      const timestamps = this.timestamps[this.chainId] || {};
       const results = [];
       for (const [blockNumber, blockData] of Object.entries(this.events)) {
         for (const [txIndex, txData] of Object.entries(blockData)) {
           for (const [logIndex, event] of Object.entries(txData)) {
+            const timestamp = timestamps[blockNumber] || null;
             // console.log(blockNumber + "/" + txIndex + "/" + logIndex + " => " + JSON.stringify(event, null, 2));
             results.push({
               ...event,
               blockNumber,
               txIndex,
               logIndex,
+              timestamp,
             });
           }
         }

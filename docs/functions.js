@@ -490,6 +490,7 @@ const VALID_ENS_CONTRACTS = {
   "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": true,
   "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63": true,
   "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85": true,
+  "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41": true,
 };
 
 function processENSEventLogs(logs) {

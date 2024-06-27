@@ -74,6 +74,9 @@ const ViewName = {
               <span v-if="data.item.type == 'Transfer'">
                 From: {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }} To: {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
               </span>
+              <span v-else-if="data.item.type == 'TransferSingle'">
+                From: {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }} To: {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
+              </span>
               <span v-else-if="data.item.type == 'NewOwner'">
                 Owner: {{ data.item.owner.substring(0, 10) + '...' + data.item.owner.slice(-8) }}
               </span>
@@ -94,6 +97,12 @@ const ViewName = {
               </span>
               <span v-else-if="data.item.type == 'AddressChanged'">
                 coinType: {{ data.item.coinType }} newAddress: {{ data.item.newAddress }}
+              </span>
+              <span v-else-if="data.item.type == 'NameWrapped'">
+                label: {{ data.item.label }} owner: {{ data.item.owner }} fuses: {{ data.item.fuses }} expiry: {{ data.item.expiry }}
+              </span>
+              <span v-else-if="data.item.type == 'NameUnwrapped'">
+                owner: {{ data.item.owner }}
               </span>
               <span v-else>
                 {{ data.item }}

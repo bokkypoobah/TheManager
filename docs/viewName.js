@@ -296,12 +296,14 @@ const viewNameModule = {
     label: null,
     contract: null,
     tokenId: null,
+    events: [],
     show: false,
   },
   getters: {
     label: state => state.label,
     contract: state => state.contract,
     tokenId: state => state.tokenId,
+    events: state => state.events,
     show: state => state.show,
   },
   mutations: {
@@ -310,8 +312,13 @@ const viewNameModule = {
       state.label = info.label;
       state.contract = info.contract;
       state.tokenId = info.tokenId;
+      state.events = [];
       state.show = true;
       // logInfo("viewNameModule", "mutations.viewName - state: " + JSON.stringify(state));
+    },
+    setEvents(state, events) {
+      logInfo("viewNameModule", "mutations.setEvents - events: " + JSON.stringify(events));
+      state.events = events;
     },
     // setMine(state, mine) {
     //   logInfo("viewNameModule", "mutations.setMine - mine: " + mine);
@@ -400,7 +407,8 @@ const viewNameModule = {
         const logs = await provider.getLogs({ address: null, fromBlock, toBlock, topics });
         // console.log("logs: " + JSON.stringify(logs, null, 2));
         // await processLogs(fromBlock, toBlock, logs);
-        const results = processENSEventLogs(logs);
+        const events = processENSEventLogs(logs);
+        await context.commit('setEvents', events);
       } catch (e) {
         logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
       }

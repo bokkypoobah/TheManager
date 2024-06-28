@@ -97,36 +97,32 @@ const ViewName = {
             </template>
             <template #cell(info)="data">
               <span v-if="data.item.type == 'Transfer'">
-                From:
-                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.from" target="_blank">
-                    {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }}
-                  </b-link>
-                To:
-                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.to" target="_blank">
-                    {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
-                  </b-link>
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.from" target="_blank">
+                  {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }}
+                </b-link>
+                to
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.to" target="_blank">
+                  {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
+                </b-link>
               </span>
               <span v-else-if="data.item.type == 'TransferSingle'">
-                From:
-                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.from" target="_blank">
-                    {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }}
-                  </b-link>
-                To:
-                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.to" target="_blank">
-                    {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
-                  </b-link>
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.from" target="_blank">
+                  {{ data.item.from.substring(0, 10) + '...' + data.item.from.slice(-8) }}
+                </b-link>
+                to
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.to" target="_blank">
+                  {{ data.item.to.substring(0, 10) + '...' + data.item.to.slice(-8) }}
+                </b-link>
               </span>
               <span v-else-if="data.item.type == 'NewOwner'">
-                Owner:
-                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.owner" target="_blank">
-                    {{ data.item.owner.substring(0, 10) + '...' + data.item.owner.slice(-8) }}
-                  </b-link>
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.owner" target="_blank">
+                  {{ data.item.owner.substring(0, 10) + '...' + data.item.owner.slice(-8) }}
+                </b-link>
               </span>
               <span v-else-if="data.item.type == 'NewResolver'">
-                Resolver:
-                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.resolver" target="_blank">
-                    {{ data.item.resolver.substring(0, 10) + '...' + data.item.resolver.slice(-8) }}
-                  </b-link>
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.resolver" target="_blank">
+                  {{ data.item.resolver.substring(0, 10) + '...' + data.item.resolver.slice(-8) }}
+                </b-link>
               </span>
               <span v-else-if="data.item.type == 'NameRegistered'">
                 <span v-if="data.item.label">
@@ -141,13 +137,13 @@ const ViewName = {
                 Label: {{ data.item.label }} Cost: {{ formatETH(data.item.cost) + ' ETH' }} Expiry: {{ formatTimestamp(data.item.expiry) }}
               </span>
               <span v-else-if="data.item.type == 'TextChanged'">
-                Key: {{ data.item.key }}
+                "{{ data.item.key }}":
                 <span v-if="data.item.key == 'avatar'">
                   <span v-if="data.item.value">
-                    Value:
-                      <b-link :href="data.item.value" target="_blank">
-                        {{ data.item.value }}
-                      </b-link>
+                    "<b-link :href="data.item.value" target="_blank">{{ data.item.value }}</b-link>"
+                  </span>
+                  <span v-else>
+                    ?
                   </span>
                 </span>
                 <span v-else>
@@ -157,25 +153,23 @@ const ViewName = {
                 </span>
               </span>
               <span v-else-if="data.item.type == 'AddrChanged'">
-                a:
-                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.a" target="_blank">
+                <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.a" target="_blank">
                   {{ data.item.a }}
-                  </b-link>
+                </b-link>
               </span>
               <span v-else-if="data.item.type == 'AddressChanged'">
                 coinType: {{ data.item.coinType }}
                 <span v-if="data.item.coinType == '60'">
-                  newAddress:
-                    <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.newAddress" target="_blank">
-                      {{ data.item.newAddress }}
-                    </b-link>
+                  <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.newAddress" target="_blank">
+                    {{ data.item.newAddress }}
+                  </b-link>
                 </span>
                 <span v-else>
-                  newAddress: {{ data.item.newAddress }}
+                  {{ data.item.newAddress }}
                 </span>
               </span>
               <span v-else-if="data.item.type == 'ContenthashChanged'">
-                hash: {{ data.item.hash }}
+                {{ data.item.hash }}
               </span>
               <span v-else-if="data.item.type == 'NameWrapped'">
                 label: {{ data.item.label }}
@@ -801,21 +795,13 @@ const viewNameModule = {
             return b.blockNumber - a.blockNumber;
           }
         });
-        // console.log("eventList AFTER: " + JSON.stringify(eventList, null, 2));
         const erc721Transfers = eventList.filter(e => e.type == "Transfer");
-        // console.log("erc721Transfers: " + JSON.stringify(erc721Transfers, null, 2));
         const erc721Owner = erc721Transfers.length > 0 ? erc721Transfers[0].to : null;
-        // console.log("erc721Owner: " + erc721Owner);
         const wrapped = erc721Owner == ENS_NAMEWRAPPER_ADDRESS;
-        // console.log("wrapped: " + wrapped);
         const erc1155Transfers = wrapped ? eventList.filter(e => e.type == "TransferSingle" || e.type == "TransferBatch") : [];
-        // console.log("erc1155Transfers: " + JSON.stringify(erc1155Transfers, null, 2));
         // TODO: Handle TransferBatch
         const erc1155Owner = erc1155Transfers.length > 0 ? erc1155Transfers[0].to : null;
-        // console.log("erc1155Owner: " + erc1155Owner);
         const image = "https://metadata.ens.domains/mainnet/" + (wrapped ? ENS_NAMEWRAPPER_ADDRESS + "/" + erc1155TokenIdDecimals : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS + "/" + erc721TokenIdDecimals) + "/image";
-        // console.log("image: " + image);
-
         await context.commit('setInfo', {
           wrapped,
           owner: wrapped ? erc1155Owner : erc721Owner,
@@ -833,7 +819,6 @@ const viewNameModule = {
             const decodedData = publicResolver2Interface.parseTransaction({ data: tx.data, value: tx.value });
             if (decodedData.functionFragment.name == "setText") {
               const decodedFunctionArgs = publicResolver2Interface.decodeFunctionData("setText", tx.data);
-              // console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
               await context.commit('setTextValue', {
                 chainId: store.getters['connection/chainId'],
                 blockNumber: event.blockNumber,
@@ -851,7 +836,6 @@ const viewNameModule = {
                   const decodedArrayData = publicResolver2Interface.parseTransaction({ data: data2, value: tx.value });
                   if (decodedArrayData.functionFragment.name == "setText") {
                     const decodedFunctionArgs1 = publicResolver2Interface.decodeFunctionData("setText", data2);
-                    // console.log("decodedFunctionArgs1 - setText: " + JSON.stringify(decodedFunctionArgs1, null, 2));
                     await context.commit('setTextValue', {
                       chainId: store.getters['connection/chainId'],
                       blockNumber: event.blockNumber,

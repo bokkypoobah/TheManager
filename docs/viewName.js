@@ -788,6 +788,33 @@ const viewNameModule = {
           image,
         });
 
+        const publicResolver2Interface = new ethers.utils.Interface(ENS_PUBLICRESOLVER2_ABI);
+        for (const event of eventList) {
+          if (event.contract == ENS_PUBLICRESOLVER2_ADDRESS && event.type == "TextChanged") {
+            // console.log("event: " + JSON.stringify(event, null, 2));
+            const tx = await provider.getTransaction(event.txHash);
+            // console.log("tx: " + JSON.stringify(tx, null, 2));
+            const decodedData = publicResolver2Interface.parseTransaction({ data: tx.data, value: tx.value });
+            // console.log("decodedData: " + JSON.stringify(decodedData, null, 2));
+            if (decodedData.functionFragment.name == "setText") {
+              // console.log("setText - args: " + JSON.stringify(decodedData.args, null, 2));
+              const decodedFunctionArgs = publicResolver2Interface.decodeFunctionData("setText", tx.data);
+              console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
+            } else if (decodedData.functionFragment.name == "multicall") {
+              console.log(event.txHash);
+              // console.log("multicall - decodedData: " + JSON.stringify(decodedData, null, 2));
+              const decodedFunctionArgs = publicResolver2Interface.decodeFunctionData("multicall", tx.data);
+              console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
+
+              // const decodedInput = ethers.utils.defaultAbiCoder.decode(
+              //   ['bytes[]'],
+              //   test[0],
+              // );
+
+            }
+          }
+        }
+
         // // 2nd parameter with tokenId
         //
         // const erc721TokenIdDecimals = ethers.BigNumber.from(erc721TokenId).toString();

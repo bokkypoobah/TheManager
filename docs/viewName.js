@@ -549,6 +549,12 @@ const viewNameModule = {
       state.info = info;
       // logInfo("viewNameModule", "mutations.setInfo - state.events: " + JSON.stringify(state.events, null, 2));
     },
+    setTextValue(state, info) {
+      logInfo("viewNameModule", "mutations.setTextValue - info: " + JSON.stringify(info, null, 2));
+      // TODO: Find correct event and update the value field
+      // state.info = info;
+      // logInfo("viewNameModule", "mutations.setTextValue - state.events: " + JSON.stringify(state.events, null, 2));
+    },
     // setMine(state, mine) {
     //   logInfo("viewNameModule", "mutations.setMine - mine: " + mine);
     //   state.mine = mine;
@@ -791,38 +797,41 @@ const viewNameModule = {
         const publicResolver2Interface = new ethers.utils.Interface(ENS_PUBLICRESOLVER2_ABI);
         for (const event of eventList) {
           if (event.contract == ENS_PUBLICRESOLVER2_ADDRESS && event.type == "TextChanged") {
-            // console.log("event: " + JSON.stringify(event, null, 2));
             const tx = await provider.getTransaction(event.txHash);
-            // console.log("tx: " + JSON.stringify(tx, null, 2));
             const decodedData = publicResolver2Interface.parseTransaction({ data: tx.data, value: tx.value });
-            // console.log("decodedData: " + JSON.stringify(decodedData, null, 2));
             if (decodedData.functionFragment.name == "setText") {
-              // console.log("setText - args: " + JSON.stringify(decodedData.args, null, 2));
               const decodedFunctionArgs = publicResolver2Interface.decodeFunctionData("setText", tx.data);
               // console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
+              await context.commit('setTextValue', {
+                chainId: store.getters['connection/chainId'],
+                blockNumber: event.blockNumber,
+                txIndex: event.txIndex,
+                txHash: event.txHash,
+                labelhash: decodedFunctionArgs[0],
+                key: decodedFunctionArgs[1],
+                value: decodedFunctionArgs[2],
+              });
+
             } else if (decodedData.functionFragment.name == "multicall") {
-              // console.log(event.txHash);
-              // console.log("multicall - decodedData: " + JSON.stringify(decodedData, null, 2));
               const decodedFunctionArgs = publicResolver2Interface.decodeFunctionData("multicall", tx.data);
-              // console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
               for (const data1 of decodedFunctionArgs) {
-                // console.log("data1: " + data1);
                 for (const data2 of data1) {
                   const decodedArrayData = publicResolver2Interface.parseTransaction({ data: data2, value: tx.value });
-                  // console.log("decodedArrayData: " + JSON.stringify(decodedArrayData, null, 2));
                   if (decodedArrayData.functionFragment.name == "setText") {
-                    // console.log("setText - args: " + JSON.stringify(decodedData.args, null, 2));
                     const decodedFunctionArgs1 = publicResolver2Interface.decodeFunctionData("setText", data2);
-                    console.log("decodedFunctionArgs1 - setText: " + JSON.stringify(decodedFunctionArgs1, null, 2));
+                    // console.log("decodedFunctionArgs1 - setText: " + JSON.stringify(decodedFunctionArgs1, null, 2));
+                    await context.commit('setTextValue', {
+                      chainId: store.getters['connection/chainId'],
+                      blockNumber: event.blockNumber,
+                      txIndex: event.txIndex,
+                      txHash: event.txHash,
+                      labelhash: decodedFunctionArgs1[0],
+                      key: decodedFunctionArgs1[1],
+                      value: decodedFunctionArgs1[2],
+                    });
                   }
                 }
               }
-
-              // const decodedInput = ethers.utils.defaultAbiCoder.decode(
-              //   ['bytes[]'],
-              //   test[0],
-              // );
-
             }
           }
         }

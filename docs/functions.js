@@ -604,12 +604,12 @@ function processENSEventLogs(logs) {
           // TextChanged (index_topic_1 bytes32 node, index_topic_2 string indexedKey, string key)
           const logData = publicResolver2Interface.parseLog(log);
           const [node, indexedKey, key] = logData.args;
-          eventRecord = { type: "TextChanged", indexedKey: indexedKey.hash, key };
+          eventRecord = { type: "TextChanged", node, indexedKey: indexedKey.hash, key };
         } else if (log.topics[0] == "0x448bc014f1536726cf8d54ff3d6481ed3cbc683c2591ca204274009afa09b1a1") {
           // TextChanged (index_topic_1 bytes32 node, index_topic_2 string indexedKey, string key, string value)
           const logData = publicResolverInterface.parseLog(log);
           const [node, indexedKey, key, value] = logData.args;
-          eventRecord = { type: "TextChanged", indexedKey: indexedKey.hash, key, value };
+          eventRecord = { type: "TextChanged", node, indexedKey: indexedKey.hash, key, value };
         } else if (log.topics[0] == "0xe379c1624ed7e714cc0937528a32359d69d5281337765313dba4e081b72d7578") {
           // ContenthashChanged (index_topic_1 bytes32 node, bytes hash)
           const logData = publicResolverInterface.parseLog(log);

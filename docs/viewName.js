@@ -345,7 +345,7 @@ const ViewName = {
     },
     filteredItems() {
       const timestamps = this.timestamps[this.chainId] || {};
-      const results = [];
+      const results = (store.getters['viewName/forceRefresh'] % 2) == 0 ? [] : [];
       for (const [blockNumber, blockData] of Object.entries(this.events)) {
         for (const [txIndex, txData] of Object.entries(blockData)) {
           for (const [logIndex, event] of Object.entries(txData)) {
@@ -506,6 +506,7 @@ const viewNameModule = {
     events: {},
     info: {},
     show: false,
+    forceRefresh: 0,
   },
   getters: {
     name: state => state.name,
@@ -514,6 +515,7 @@ const viewNameModule = {
     events: state => state.events,
     info: state => state.info,
     show: state => state.show,
+    forceRefresh: state => state.forceRefresh,
   },
   mutations: {
     viewName(state, name) {
@@ -554,6 +556,36 @@ const viewNameModule = {
       // TODO: Find correct event and update the value field
       // state.info = info;
       // logInfo("viewNameModule", "mutations.setTextValue - state.events: " + JSON.stringify(state.events, null, 2));
+
+      if (state.events[info.blockNumber] && state.events[info.blockNumber][info.txIndex]) {
+        for (const [logIndex, data] of Object.entries(state.events[info.blockNumber][info.txIndex])) {
+          console.log("info.labelhash: " + info.labelhash + " vs " + data.node);
+          if (info.labelhash == data.node) {
+            console.log("---------" + info.blockNumber + "/" + info.txIndex + "/" + logIndex + " => " + JSON.stringify(data));
+            const newData = state.events[info.blockNumber][info.txIndex][logIndex];
+            newData.value = info.value;
+            Vue.set(state.events[info.blockNumber][info.txIndex], logIndex, newData);
+          // } else {
+          //   console.log("different");
+          }
+        }
+        console.log("state.events[info.blockNumber][info.txIndex]: " + JSON.stringify(state.events[info.blockNumber][info.txIndex], null, 2));
+      }
+
+      // await context.commit('setTextValue', {
+      //   chainId: store.getters['connection/chainId'],
+      //   blockNumber: event.blockNumber,
+      //   txIndex: event.txIndex,
+      //   txHash: event.txHash,
+      //   labelhash: decodedFunctionArgs1[0],
+      //   key: decodedFunctionArgs1[1],
+      //   value: decodedFunctionArgs1[2],
+      // });
+
+    },
+    forceRefresh(state) {
+      Vue.set(state, 'forceRefresh', parseInt(state.forceRefresh) + 1);
+      logInfo("viewNameModule", "mutations.forceRefresh: " + state.forceRefresh);
     },
     // setMine(state, mine) {
     //   logInfo("viewNameModule", "mutations.setMine - mine: " + mine);
@@ -866,6 +898,7 @@ const viewNameModule = {
         // // reverseAddress: a2113f1e9a66c3b0a75bb466bbbfeeec987ac92e.addr.reverse, namehash: 0x7d75f26ebf4147fc33aef5d5d6ae97e7a8e0f8985a40d73bb2ddacdd1e5e3ce0
 
       }
+      context.commit('forceRefresh');
 
       // await context.commit('updateTransfers', info);
     },

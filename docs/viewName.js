@@ -73,14 +73,9 @@ const ViewName = {
                 </b-link>
               </span>
             </template>
-            <template #cell(txHash)="data">
-              <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerTxPrefix + data.item.txHash" target="_blank">
-                {{ data.item.txHash.substring(0, 10) + '...' + data.item.txHash.slice(-8) }}
-              </b-link>
-            </template>
             <template #cell(contract)="data">
-              <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.contract" target="_blank">
-                {{ data.item.contract.substring(0, 10) + '...' + data.item.contract.slice(-8) }}
+              <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerAddressPrefix + data.item.contract" v-b-popover.hover.top="data.item.contract" target="_blank">
+                {{ addressName(data.item.contract) }}
               </b-link>
             </template>
             <template #cell(info)="data">
@@ -386,6 +381,12 @@ const ViewName = {
     },
     setShow(show) {
       store.dispatch('viewName/setShow', show);
+    },
+    addressName(a) {
+      if (a in VALID_ENS_CONTRACTS) {
+        return VALID_ENS_CONTRACTS[a];
+      }
+      return a;
     },
 
     async refreshTokenMetadata() {

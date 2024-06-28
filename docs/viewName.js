@@ -799,12 +799,24 @@ const viewNameModule = {
             if (decodedData.functionFragment.name == "setText") {
               // console.log("setText - args: " + JSON.stringify(decodedData.args, null, 2));
               const decodedFunctionArgs = publicResolver2Interface.decodeFunctionData("setText", tx.data);
-              console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
+              // console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
             } else if (decodedData.functionFragment.name == "multicall") {
-              console.log(event.txHash);
+              // console.log(event.txHash);
               // console.log("multicall - decodedData: " + JSON.stringify(decodedData, null, 2));
               const decodedFunctionArgs = publicResolver2Interface.decodeFunctionData("multicall", tx.data);
-              console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
+              // console.log("decodedFunctionArgs: " + JSON.stringify(decodedFunctionArgs, null, 2));
+              for (const data1 of decodedFunctionArgs) {
+                // console.log("data1: " + data1);
+                for (const data2 of data1) {
+                  const decodedArrayData = publicResolver2Interface.parseTransaction({ data: data2, value: tx.value });
+                  // console.log("decodedArrayData: " + JSON.stringify(decodedArrayData, null, 2));
+                  if (decodedArrayData.functionFragment.name == "setText") {
+                    // console.log("setText - args: " + JSON.stringify(decodedData.args, null, 2));
+                    const decodedFunctionArgs1 = publicResolver2Interface.decodeFunctionData("setText", data2);
+                    console.log("decodedFunctionArgs1 - setText: " + JSON.stringify(decodedFunctionArgs1, null, 2));
+                  }
+                }
+              }
 
               // const decodedInput = ethers.utils.defaultAbiCoder.decode(
               //   ['bytes[]'],

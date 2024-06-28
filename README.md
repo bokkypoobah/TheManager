@@ -8,8 +8,8 @@ https://bokkypoobah.github.io/onlyfens/
 
 Notes:
 * <strike>Jun 25 2024 - Infura seems to have changed their event log scraping server's responses so that errors are returned when there are more than a few hundred events in the `getLog()` calls. This limit used to be 10k.</strike>
-
 * Jun 25 2024 - Infura now returning results with 10k max as normal.
+* Only .eth names are supported in this dapp
 
 <br />
 

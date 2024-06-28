@@ -83,6 +83,9 @@ const Search = {
           </div>
           <div class="mt-0 flex-grow-1">
           </div>
+          <div class="mt-0 pr-1">
+            <b-button size="sm" :disabled="!coinbase" @click="searchName" variant="link" v-b-popover.hover.top="'Check name'"><b-icon-search shift-v="+1" font-scale="0.95"></b-icon-search></b-button>
+          </div>
           <!-- <div v-if="sync.section == null" class="mt-0 pr-1">
             <b-button size="sm" @click="exportEvents" :disabled="!coinbase" variant="link" v-b-popover.hover.top="'Export events'"><b-icon-file-earmark-spreadsheet shift-v="+1" font-scale="1.2"></b-icon-file-earmark-spreadsheet></b-button>
           </div> -->
@@ -609,6 +612,9 @@ const Search = {
     async halt() {
       store.dispatch('search/setSyncHalt', true);
     },
+    async searchName() {
+      store.dispatch('viewName/viewName', null);
+    },
     // async exportEvents() {
     //   logInfo("Search", "methods.exportEvents");
     // },
@@ -634,7 +640,7 @@ const Search = {
     rowSelected(item) {
       logInfo("Search", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        store.dispatch('viewName/viewName', { label: item[0].name.replace(/.eth$/, ''), contract: item[0].contract, tokenId: item[0].tokenId });
+        store.dispatch('viewName/viewName', item[0].name);
         this.$refs.searchTable.clearSelected();
       }
     },

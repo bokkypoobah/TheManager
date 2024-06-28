@@ -77,6 +77,9 @@ const Names = {
           </div>
           <div class="mt-0 flex-grow-1">
           </div>
+          <div class="mt-0 pr-1">
+            <b-button size="sm" :disabled="!coinbase" @click="searchName" variant="link" v-b-popover.hover.top="'Check name'"><b-icon-search shift-v="+1" font-scale="0.95"></b-icon-search></b-button>
+          </div>
           <div class="mt-0 flex-grow-1">
           </div>
           <div class="mt-0 pr-1">
@@ -612,6 +615,9 @@ const Names = {
     async halt() {
       store.dispatch('data/setSyncHalt', true);
     },
+    async searchName() {
+      store.dispatch('viewName/viewName', null);
+    },
     formatTimestamp(ts) {
       if (ts != null) {
         if (ts > 1000000000000n) {
@@ -634,7 +640,7 @@ const Names = {
     rowSelected(item) {
       // logInfo("Names", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        store.dispatch('viewName/viewName', { label: item[0].name.replace(/.eth$/, ''), contract: item[0].contract, tokenId: item[0].tokenId });
+        store.dispatch('viewName/viewName', item[0].name);
         this.$refs.namesTable.clearSelected();
       }
     },

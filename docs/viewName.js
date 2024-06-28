@@ -889,7 +889,7 @@ const viewNameModule = {
     async loadTimestamps(context, info) {
       logInfo("viewNameModule", "actions.loadTimestamps - info: " + JSON.stringify(info));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const timestamps = store.getters['data/timestamps'][store.getters['connection/chainId']];
+      const timestamps = store.getters['data/timestamps'][store.getters['connection/chainId']] || {};
       const blockNumbers = Object.keys(context.state.events);
       let modified = false;
       for (const blockNumber of blockNumbers) {

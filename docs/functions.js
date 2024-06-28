@@ -490,7 +490,9 @@ const VALID_ENS_CONTRACTS = {
   "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": "ENS: Registry with Fallback",
   "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63": "ENS: Public Resolver",
   "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41": "ENS: Public Resolver 2",
+  "0x226159d592E2b063810a10Ebf6dcbADA94Ed68b8": "ENS: Old Public Resolver 2",
   "0x314159265dD8dbb310642f98f50C066173C1259b": "ENS: Eth Name Service",
+  "0xFaC7BEA255a6990f749363002136aF6556b31e04": "ENS: Old ENS Token",
 };
 
 function processENSEventLogs(logs) {
@@ -505,6 +507,7 @@ function processENSEventLogs(logs) {
   const nameWrapperInterface = new ethers.utils.Interface(ENS_NAMEWRAPPER_ABI);
   const registryWithFallbackInterface = new ethers.utils.Interface(ENS_REGISTRYWITHFALLBACK_ABI);
   const publicResolverInterface = new ethers.utils.Interface(ENS_PUBLICRESOLVER_ABI);
+  const publicResolver2Interface = new ethers.utils.Interface(ENS_PUBLICRESOLVER2_ABI);
 
   const records = [];
   for (const log of logs) {
@@ -597,6 +600,11 @@ function processENSEventLogs(logs) {
           const logData = publicResolverInterface.parseLog(log);
           const [node, coinType, newAddress] = logData.args;
           eventRecord = { type: "AddressChanged", node, coinType: coinType.toString(), newAddress };
+        } else if (log.topics[0] == "0xd8c9334b1a9c2f9da342a0a2b32629c1a229b6445dad78947f674b44444a7550") {
+          // TextChanged (index_topic_1 bytes32 node, index_topic_2 string indexedKey, string key)
+          const logData = publicResolver2Interface.parseLog(log);
+          const [node, indexedKey, key] = logData.args;
+          eventRecord = { type: "TextChanged", indexedKey: indexedKey.hash, key };
         } else if (log.topics[0] == "0x448bc014f1536726cf8d54ff3d6481ed3cbc683c2591ca204274009afa09b1a1") {
           // TextChanged (index_topic_1 bytes32 node, index_topic_2 string indexedKey, string key, string value)
           const logData = publicResolverInterface.parseLog(log);

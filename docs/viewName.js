@@ -5,15 +5,23 @@ const ViewName = {
         <template #modal-title>Name: {{ name }}</template>
 
         <b-row>
-          <b-col>
+          <b-col cols="8">
             <b-form-input size="sm" id="token-name" v-model.trim="name" debounce="2400" placeholder="Enter an .eth ENS name. The .eth is optional" class="px-2 w-100"></b-form-input>
           </b-col>
-          <b-col>
-            Two
+          <b-col cols="4">
+            <b-img v-if="info && info.image" button rounded fluid size="15rem" :src="info.image" class="m-0" style="width: 300px;">
+              <!-- <template v-if="selectedTraits[layer] && selectedTraits[layer][trait.value]" #badge><b-icon icon="check"></b-icon></template> -->
+            </b-img>
+
+            <!-- <font size="-2">
+              <pre>
+{{ JSON.stringify(info, null, 2) }}
+              </pre>
+            </font> -->
           </b-col>
         </b-row>
 
-        <b-form-group label="Contract:" label-for="token-contract" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+        <b-form-group v-if="false" label="Contract:" label-for="token-contract" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-input-group size="sm" class="w-100">
             <b-form-input size="sm" plaintext id="token-contract" v-model.trim="contract" class="px-2"></b-form-input>
             <b-input-group-append>
@@ -24,7 +32,7 @@ const ViewName = {
           </b-input-group>
         </b-form-group>
 
-        <b-form-group label="Token Id:" label-for="token-tokenid" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+        <b-form-group v-if="false" label="Token Id:" label-for="token-tokenid" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-input-group size="sm" class="w-100">
             <component size="sm" plaintext :is="tokenId && tokenId.length > 30 ? 'b-form-textarea' : 'b-form-input'" v-model="tokenId" rows="2" max-rows="3" class="px-2" />
             <b-input-group-append>
@@ -35,15 +43,15 @@ const ViewName = {
           </b-input-group>
         </b-form-group>
 
-        <b-form-group label="Name:" label-for="token-name" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+        <b-form-group v-if="false" label="Name:" label-for="token-name" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-form-input size="sm" plaintext id="token-name" :value="name" class="px-2 w-100"></b-form-input>
         </b-form-group>
 
-        <b-form-group label="Description:" label-for="token-description" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+        <b-form-group v-if="false" label="Description:" label-for="token-description" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <component size="sm" plaintext :is="description && description.length > 60 ? 'b-form-textarea' : 'b-form-input'" :value="description" rows="3" max-rows="10" class="px-2" />
         </b-form-group>
 
-        <b-form-group label="Image:" label-for="token-image" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+        <b-form-group v-if="false" label="Image:" label-for="token-image" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <!-- <b-avatar v-if="image" button rounded size="15rem" :src="image" class="m-2"> -->
             <!-- <template v-if="selectedTraits[layer] && selectedTraits[layer][trait.value]" #badge><b-icon icon="check"></b-icon></template> -->
           <!-- </b-avatar> -->
@@ -58,7 +66,7 @@ const ViewName = {
 
         </b-form-group>
 
-        <b-form-group label="Attributes:" label-for="token-image" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+        <b-form-group v-if="false" label="Attributes:" label-for="token-image" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
           <b-row v-for="(attribute, i) in attributes"  v-bind:key="i" class="m-0 p-0">
             <b-col cols="3" class="m-0 px-2 text-right"><font size="-3">{{ attribute.trait_type }}</font></b-col>
             <b-col cols="9" class="m-0 px-2"><b><font size="-2">{{ ["Created", "Registration", "Expiry"].includes(attribute.trait_type) ? formatTimestamp(attribute.value) : attribute.value }}</font></b></b-col>
@@ -135,13 +143,17 @@ const ViewName = {
               <span v-else-if="data.item.type == 'TextChanged'">
                 Key: {{ data.item.key }}
                 <span v-if="data.item.key == 'avatar'">
-                  Value:
-                    <b-link :href="data.item.value" target="_blank">
-                      {{ data.item.value }}
-                    </b-link>
+                  <span v-if="data.item.value">
+                    Value:
+                      <b-link :href="data.item.value" target="_blank">
+                        {{ data.item.value }}
+                      </b-link>
+                  </span>
                 </span>
                 <span v-else>
-                  Value: {{ data.item.value }}
+                  <span v-if="data.item.value">
+                    Value: {{ data.item.value }}
+                  </span>
                 </span>
               </span>
               <span v-else-if="data.item.type == 'AddrChanged'">
@@ -238,6 +250,9 @@ const ViewName = {
     events() {
       return store.getters['viewName/events'];
     },
+    info() {
+      return store.getters['viewName/info'];
+    },
     // tokens() {
     //   return store.getters['data/tokens'];
     // },
@@ -246,6 +261,12 @@ const ViewName = {
     },
     metadata() {
       return this.contract && this.tokenId && this.prices[this.chainId] && this.prices[this.chainId][this.contract] && this.prices[this.chainId][this.contract][this.tokenId] || {};
+    },
+    erc721Contract() {
+      return ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS;
+    },
+    erc1155Contract() {
+      return ENS_NAMEWRAPPER_ADDRESS;
     },
     name: {
       get: function () {
@@ -616,6 +637,7 @@ const viewNameModule = {
               '0xb7d29e911041e8d9b843369e890bcb72c9388692ba48b65ac54e7214c4c348f7', // NameChanged (index_topic_1 bytes32 node, string name)
               '0x52d7d861f09ab3d26239d492e8968629f95e9e318cf0b73bfddc441522a15fd2', // AddrChanged (index_topic_1 bytes32 node, address a)
               '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752', // AddressChanged (index_topic_1 bytes32 node, uint256 coinType, bytes newAddress)
+              '0xd8c9334b1a9c2f9da342a0a2b32629c1a229b6445dad78947f674b44444a7550', // TextChanged (index_topic_1 bytes32 node, index_topic_2 string indexedKey, string key)
               '0x448bc014f1536726cf8d54ff3d6481ed3cbc683c2591ca204274009afa09b1a1', // TextChanged (index_topic_1 bytes32 node, index_topic_2 string indexedKey, string key, string value)
               '0xe379c1624ed7e714cc0937528a32359d69d5281337765313dba4e081b72d7578', // ContenthashChanged (index_topic_1 bytes32 node, bytes hash)
             ],
@@ -758,6 +780,7 @@ const viewNameModule = {
 
         await context.commit('setInfo', {
           wrapped,
+          owner: wrapped ? erc1155Owner : erc721Owner,
           erc721Owner,
           erc1155Owner,
           erc721TokenId: erc721TokenIdDecimals,

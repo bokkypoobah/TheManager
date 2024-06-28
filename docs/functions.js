@@ -490,6 +490,7 @@ const VALID_ENS_CONTRACTS = {
   "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": "ENS: Registry with Fallback",
   "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63": "ENS: Public Resolver",
   "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41": "ENS: Public Resolver 2",
+  "0x314159265dD8dbb310642f98f50C066173C1259b": "ENS: Eth Name Service",
 };
 
 function processENSEventLogs(logs) {

@@ -340,8 +340,7 @@ const ViewName = {
           }
         }
       }
-
-      logInfo("Search", "filteredItems - results[0..9]: " + JSON.stringify(results.slice(0, 10), null, 2));
+      // logInfo("ViewName", "filteredItems - results[0..9]: " + JSON.stringify(results.slice(0, 10), null, 2));
       return results;
     },
     filteredSortedItems() {
@@ -353,7 +352,7 @@ const ViewName = {
           return b.blockNumber - a.blockNumber;
         }
       });
-      logInfo("Search", "filteredSortedItems - results[0..9]: " + JSON.stringify(results.slice(0, 10), null, 2));
+      // logInfo("ViewName", "filteredSortedItems - results[0..9]: " + JSON.stringify(results.slice(0, 10), null, 2));
       return results;
     },
 
@@ -484,6 +483,7 @@ const viewNameModule = {
     // contract: null,
     // tokenId: null,
     events: {},
+    info: {},
     show: false,
   },
   getters: {
@@ -491,6 +491,7 @@ const viewNameModule = {
     // contract: state => state.contract,
     // tokenId: state => state.tokenId,
     events: state => state.events,
+    info: state => state.info,
     show: state => state.show,
   },
   mutations: {
@@ -500,6 +501,7 @@ const viewNameModule = {
       // state.contract = info.contract;
       // state.tokenId = info.tokenId;
       state.events = {};
+      state.info = {};
       state.show = true;
       logInfo("viewNameModule", "mutations.viewName - state: " + JSON.stringify(state));
     },
@@ -520,6 +522,11 @@ const viewNameModule = {
         });
       }
       // logInfo("viewNameModule", "mutations.addEvents - state.events: " + JSON.stringify(state.events, null, 2));
+    },
+    setInfo(state, info) {
+      logInfo("viewNameModule", "mutations.setInfo - info: " + JSON.stringify(info, null, 2));
+      state.info = info;
+      // logInfo("viewNameModule", "mutations.setInfo - state.events: " + JSON.stringify(state.events, null, 2));
     },
     // setMine(state, mine) {
     //   logInfo("viewNameModule", "mutations.setMine - mine: " + mine);
@@ -654,6 +661,7 @@ const viewNameModule = {
         }
         // console.log("selectedAddresses: " + JSON.stringify(selectedAddresses));
 
+        const erc721TokenIdDecimals = ethers.BigNumber.from(erc721TokenId).toString();
         const erc1155TokenIdDecimals = ethers.BigNumber.from(erc1155TokenId).toString();
 
         // ERC-1155 Transfers To My Account
@@ -711,6 +719,51 @@ const viewNameModule = {
         } catch (e) {
           logInfo("viewNameModule", "actions.loadENSEvents.getLogs - ERROR fromBlock: " + fromBlock + ", toBlock: " + toBlock + " " + e.message);
         }
+
+        const eventList = [];
+        for (const [blockNumber, blockData] of Object.entries(context.state.events)) {
+          // console.log(blockNumber + " => " + JSON.stringify(blockData));
+          for (const [txIndex, txData] of Object.entries(blockData)) {
+            for (const [logIndex, event] of Object.entries(txData)) {
+              eventList.push({
+                ...event,
+                blockNumber,
+                txIndex,
+                logIndex,
+              });
+            }
+          }
+        }
+        eventList.sort((a, b) => {
+          if (a.blockNumber == b.blockNumber) {
+            return b.logIndex - a.logIndex;
+          } else {
+            return b.blockNumber - a.blockNumber;
+          }
+        });
+        // console.log("eventList AFTER: " + JSON.stringify(eventList, null, 2));
+        const erc721Transfers = eventList.filter(e => e.type == "Transfer");
+        // console.log("erc721Transfers: " + JSON.stringify(erc721Transfers, null, 2));
+        const erc721Owner = erc721Transfers.length > 0 ? erc721Transfers[0].to : null;
+        // console.log("erc721Owner: " + erc721Owner);
+        const wrapped = erc721Owner == ENS_NAMEWRAPPER_ADDRESS;
+        // console.log("wrapped: " + wrapped);
+        const erc1155Transfers = wrapped ? eventList.filter(e => e.type == "TransferSingle" || e.type == "TransferBatch") : [];
+        // console.log("erc1155Transfers: " + JSON.stringify(erc1155Transfers, null, 2));
+        // TODO: Handle TransferBatch
+        const erc1155Owner = erc1155Transfers.length > 0 ? erc1155Transfers[0].to : null;
+        // console.log("erc1155Owner: " + erc1155Owner);
+        const image = "https://metadata.ens.domains/mainnet/" + (wrapped ? ENS_NAMEWRAPPER_ADDRESS + "/" + erc1155TokenIdDecimals : ENS_BASEREGISTRARIMPLEMENTATION_ADDRESS + "/" + erc721TokenIdDecimals) + "/image";
+        // console.log("image: " + image);
+
+        await context.commit('setInfo', {
+          wrapped,
+          erc721Owner,
+          erc1155Owner,
+          erc721TokenId: erc721TokenIdDecimals,
+          erc1155TokenId: erc1155TokenIdDecimals,
+          image,
+        });
 
         // // 2nd parameter with tokenId
         //

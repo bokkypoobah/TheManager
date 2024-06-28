@@ -635,7 +635,6 @@ const Search = {
       logInfo("Search", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
         store.dispatch('viewName/viewName', { label: item[0].name.replace(/.eth$/, ''), contract: item[0].contract, tokenId: item[0].tokenId });
-        // store.dispatch('viewToken/viewToken', { contract: item[0].contract, tokenId: item[0].tokenId });
         this.$refs.searchTable.clearSelected();
       }
     },

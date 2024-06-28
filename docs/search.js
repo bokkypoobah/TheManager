@@ -640,7 +640,7 @@ const Search = {
     rowSelected(item) {
       logInfo("Search", "methods.rowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        store.dispatch('viewName/viewName', item[0].name);
+        store.dispatch('viewName/viewName', item[0].name + ".eth");
         this.$refs.searchTable.clearSelected();
       }
     },

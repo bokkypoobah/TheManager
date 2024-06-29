@@ -7,17 +7,16 @@ const ViewName = {
         <b-row>
           <b-col cols="8">
             <b-form-input size="sm" id="token-name" v-model.trim="name" debounce="2400" placeholder="Enter an .eth ENS name. The .eth is optional" class="px-2 w-100"></b-form-input>
-          </b-col>
-          <b-col cols="4">
-            <b-img v-if="info && info.image" button rounded fluid size="15rem" :src="info.image" class="m-0" style="width: 300px;">
-              <!-- <template v-if="selectedTraits[layer] && selectedTraits[layer][trait.value]" #badge><b-icon icon="check"></b-icon></template> -->
-            </b-img>
-
-            <!-- <font size="-2">
+            <font size="-2">
               <pre>
 {{ JSON.stringify(info, null, 2) }}
               </pre>
-            </font> -->
+            </font>
+          </b-col>
+          <b-col cols="4" style="min-height: 300px;">
+            <b-img v-if="info && info.image" button rounded fluid size="15rem" :src="info.image" class="m-0" style="width: 300px;">
+              <!-- <template v-if="selectedTraits[layer] && selectedTraits[layer][trait.value]" #badge><b-icon icon="check"></b-icon></template> -->
+            </b-img>
           </b-col>
         </b-row>
 

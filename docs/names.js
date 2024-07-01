@@ -94,6 +94,34 @@ const Names = {
           <div class="mt-0 pl-1">
             <b-form-select size="sm" v-model="settings.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.top="'Page size'"></b-form-select>
           </div>
+          <div class="mt-0 pl-1">
+            <b-dropdown size="sm" variant="link" v-b-popover.hover="'View'" right>
+              <template #button-content>
+                <span v-if="settings.viewOption == 'list'">
+                  <b-iconstack font-scale="1">
+                    <b-icon stacked icon="list-ol" variant="info" scale="0.75"></b-icon>
+                  </b-iconstack>
+                </span>
+                <span v-else>
+                  <b-iconstack font-scale="1">
+                    <b-icon stacked icon="grid3x3-gap" variant="info" scale="0.75"></b-icon>
+                  </b-iconstack>
+                </span>
+              </template>
+              <b-dropdown-item href="#" @click="settings.viewOption = 'list'; saveSettings()">
+                <b-iconstack font-scale="1">
+                  <b-icon stacked icon="list-ol" variant="info" scale="0.75"></b-icon>
+                </b-iconstack>
+                List
+              </b-dropdown-item>
+              <b-dropdown-item href="#" @click="settings.viewOption = 'icons'; saveSettings()">
+                <b-iconstack font-scale="1">
+                  <b-icon stacked icon="grid3x3-gap" variant="info" scale="0.75"></b-icon>
+                </b-iconstack>
+                Icons
+              </b-dropdown-item>
+            </b-dropdown>
+          </div>
         </div>
 
         <b-table ref="namesTable" small fixed striped responsive hover selectable select-mode="single" @row-selected='rowSelected' :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1">
@@ -303,7 +331,8 @@ const Names = {
         currentPage: 1,
         pageSize: 10,
         sortOption: 'expiryasc',
-        version: 0,
+        viewOption: 'list',
+        version: 1,
       },
       transfer: {
         item: null,

@@ -124,7 +124,7 @@ const Names = {
           </div>
         </div>
 
-        <b-table ref="namesTable" small fixed striped responsive hover selectable select-mode="single" @row-selected='rowSelected' :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1">
+        <b-table v-if="settings.viewOption == 'list'" ref="namesTable" small fixed striped responsive hover selectable select-mode="single" @row-selected='rowSelected' :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1">
           <template #empty="scope">
             <h6>{{ scope.emptyText }}</h6>
             <div>
@@ -316,6 +316,18 @@ const Names = {
           </template>
 
         </b-table>
+
+        <b-card-group v-if="settings.viewOption == 'icons'" deck class="m-1 p-1">
+          <div v-for="record in pagedFilteredSortedItems">
+            <b-card body-class="p-1" header-class="p-1" footer-class="p-1" img-top class="m-1 p-0 border-0">
+              <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].nftTokenPrefix + record.contract + '/' + record.tokenId" target="_blank">
+                <b-img-lazy width="200%" :src="'https://metadata.ens.domains/mainnet/' + record.contract + '/' + record.tokenId + '/image'">
+                </b-img-lazy>
+              </b-link>
+            </b-card>
+          </div>
+        </b-card-group>
+
       </b-card>
     </div>
   `,

@@ -71,9 +71,13 @@ Click on the [Do It] button.
 
 This will take a few minutes.
 
-### ENS Names
+### ENS Names - List View
 
-<kbd><img src="images/Names.png" /></kbd>
+<kbd><img src="images/Names-ListView.png" /></kbd>
+
+### ENS Names - Icon View
+
+<kbd><img src="images/Names-IconView.png" /></kbd>
 
 ### View Names
 

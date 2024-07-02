@@ -324,6 +324,25 @@ const Names = {
                 <b-img-lazy width="200%" :src="'https://metadata.ens.domains/mainnet/' + record.contract + '/' + record.tokenId + '/image'">
                 </b-img-lazy>
               </b-link>
+              <b-card-text>
+                <div class="d-flex justify-content-between m-0 p-0">
+                  <div class="mt-0 pr-1">
+                    <div v-for="(info, i) in record.owners"  v-bind:key="i" class="m-0 p-0">
+                      <b-link v-if="chainInfo[chainId]" :href="chainInfo[chainId].explorerTokenPrefix + record.contract + '?a=' + info.owner + '#inventory'" target="_blank">
+                        <font size="-1">
+                          {{ info.owner.substring(0, 6) + '...' + info.owner.slice(-4) }}
+                          <!-- <span v-if="record.type == 'erc1155'" class="small muted">
+                            {{ 'x' + info.count }}
+                          </span> -->
+                        </font>
+                      </b-link>
+                    </div>
+                  </div>
+                  <!-- <div class="mt-0 pr-1">
+                    one
+                  </div> -->
+                </div>
+              </b-card-text>
             </b-card>
           </div>
         </b-card-group>
